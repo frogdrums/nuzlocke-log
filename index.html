@@ -1,0 +1,2438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Nuzlocke Log</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#16241b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nuzlocke Log">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #16241b;
+    --panel: #1f3327;
+    --panel-raised: #294634;
+    --lcd: #9bbc0f;
+    --lcd-dim: #4f7942;
+    --cream: #e8dcc4;
+    --cream-dim: #9c9584;
+    --dead: #c9524f;
+    --dead-dim: #6b332f;
+    --gold: #d4af37;
+    --line: #3a5641;
+    --lcd-rgb: 155,188,15;
+    --bezel-top: #223a2b;
+    --frame-border: #0d1712;
+    --frame-ring: #2f4a37;
+    --radius: 3px;
+  }
+  /* Renegade Platinum gets its own palette — cool blue/grey/teal instead of
+     Emerald's GBA green, so the two games are visually distinct at a
+     glance. Toggled by renderAll() setting data-game on <body>. Adding a
+     future game the same way: define its own body[data-game="..."] block
+     here, no other CSS needs to change since every component is themed
+     entirely through these custom properties. */
+  body[data-game="renegade"]{
+    --bg: #141e26;
+    --panel: #1d2e3a;
+    --panel-raised: #274252;
+    --lcd: #4fd6c7;
+    --lcd-dim: #2c7d75;
+    --cream: #dbe8ec;
+    --cream-dim: #85a0ac;
+    --dead: #d1685f;
+    --dead-dim: #5c332f;
+    --gold: #d9a856;
+    --line: #2f4653;
+    --lcd-rgb: 79,214,199;
+    --bezel-top: #1c2e3a;
+    --frame-border: #0a1418;
+    --frame-ring: #24404d;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0);
+    background-size: 3px 3px;
+    color: var(--cream);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing: antialiased;
+  }
+  .pixel{ font-family: 'Press Start 2P', monospace; }
+
+  /* ---------- top bezel ---------- */
+  .device{
+    max-width: 640px;
+    margin: 0 auto;
+    border: 3px solid var(--frame-border);
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--bezel-top) 0%, var(--bg) 40px, var(--bg) 100%);
+    box-shadow: 0 0 0 1px var(--frame-ring), 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+  .screen-header{
+    padding: 16px 16px 10px;
+    border-bottom: 2px solid var(--line);
+    background: repeating-linear-gradient(180deg, rgba(var(--lcd-rgb),0.04) 0px, rgba(var(--lcd-rgb),0.04) 1px, transparent 1px, transparent 3px);
+  }
+  .title-row{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap;}
+  .title-row h1{
+    font-size: 17px;
+    color: var(--lcd);
+    margin: 0;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 6px rgba(var(--lcd-rgb),0.35);
+  }
+  .led{
+    display:inline-block; width:7px; height:7px; border-radius:50%;
+    background: var(--lcd); box-shadow: 0 0 5px var(--lcd);
+    margin-right: 6px; vertical-align: middle;
+  }
+  .game-select-wrap{ margin-top: 10px; }
+  select.game-select{
+    width:100%; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    color: var(--lcd); font-family:'JetBrains Mono',monospace; font-size: 14px; font-weight:700;
+    letter-spacing: 0.5px; text-transform: uppercase; padding: 7px 8px; outline:none;
+  }
+  select.game-select:focus{ border-color: var(--lcd); }
+  .run-name-wrap{ margin-top: 10px; }
+  input.run-name{
+    background: transparent; border:none; border-bottom: 1px dashed var(--line);
+    color: var(--cream); font-family:'JetBrains Mono',monospace; font-size: 19px; font-weight:700;
+    padding: 4px 2px; width: 100%; outline:none;
+  }
+  input.run-name::placeholder{ color: var(--cream-dim); }
+  input.run-name:focus{ border-bottom-color: var(--lcd); }
+
+  /* ---------- badges strip ---------- */
+  .badges{
+    display:flex; gap:7px; margin-top:12px; flex-wrap: wrap;
+  }
+  .badge{
+    width: 26px; height:26px; border-radius:50%;
+    border: 2px solid var(--line);
+    background: var(--panel);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 15px; color: var(--cream-dim);
+    transition: all .15s ease;
+    flex-shrink:0;
+  }
+  .badge.on{
+    background: radial-gradient(circle at 35% 30%, #f3d873, var(--gold) 70%);
+    border-color: #a5822a;
+    color: #3a2c05;
+    box-shadow: 0 0 8px rgba(212,175,55,0.6);
+  }
+
+  /* ---------- rules row ---------- */
+  .rules{
+    display:flex; gap:14px; flex-wrap:wrap; margin-top:12px;
+    font-size: 14px; color: var(--cream-dim);
+  }
+  .rules label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
+  .rules input{ accent-color: var(--lcd); }
+
+  /* ---------- stats strip ---------- */
+  .stats{
+    display:grid; grid-template-columns: repeat(4,1fr); gap:1px;
+    background: var(--line);
+    border-top: 2px solid var(--line);
+    border-bottom: 2px solid var(--line);
+  }
+  .stat{
+    background: var(--panel); padding: 10px 6px; text-align:center;
+  }
+  .stat .n{ font-size: 22px; font-weight:700; color: var(--lcd); }
+  .stat .l{ font-size: 12px; color: var(--cream-dim); text-transform:uppercase; letter-spacing: 0.5px; margin-top:3px; }
+
+  /* ---------- tabs ---------- */
+  .tabs{ display:flex; }
+  .tab{
+    flex:1; text-align:center; padding: 11px 4px; font-size: 14px;
+    background: var(--bg); color: var(--cream-dim); cursor:pointer;
+    border-bottom: 2px solid var(--line); letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .tab.active{ background: var(--panel); color: var(--lcd); border-bottom-color: var(--lcd); }
+
+  .content{ padding: 14px 16px 20px; }
+
+  /* ---------- add form ---------- */
+  .add-form{
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 12px; margin-bottom: 16px;
+  }
+  .add-form .row{ display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+  .add-form .row > div{ flex:1; min-width: 110px; }
+  label.f{ display:block; font-size: 13px; color: var(--cream-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+  input[type=text], input[type=number], select{
+    width:100%; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+    color: var(--cream); font-family:'JetBrains Mono',monospace; font-size: 17px; padding: 7px 8px; outline:none;
+  }
+  input:focus, select:focus{ border-color: var(--lcd); }
+  select{ appearance:none; -webkit-appearance:none; background-image: linear-gradient(45deg, transparent 50%, var(--cream-dim) 50%), linear-gradient(135deg, var(--cream-dim) 50%, transparent 50%); background-position: calc(100% - 14px) center, calc(100% - 9px) center; background-size: 5px 5px, 5px 5px; background-repeat:no-repeat;}
+  button{
+    font-family:'JetBrains Mono',monospace; cursor:pointer; border-radius: var(--radius);
+    border: 1px solid var(--line); background: var(--panel-raised); color: var(--cream);
+    padding: 8px 12px; font-size: 16px; font-weight:700;
+  }
+  button:active{ transform: translateY(1px); }
+  .btn-primary{ background: var(--lcd-dim); border-color: var(--lcd); color: #0d1712; width:100%; padding:10px; font-size: 16px; }
+  .btn-primary:hover{ background: var(--lcd); }
+  .btn-danger{ background: var(--dead-dim); border-color: var(--dead); color:#fff; }
+  .btn-ghost{ background:transparent; }
+
+  /* ---------- roster cards ----------
+     3-per-row (roughly — auto-fill reflows by actual width) grid of
+     compact tiles instead of one full-width row per mon, so a long run
+     doesn't turn into an endless vertical scroll. Not grouped by route —
+     a Nuzlocke rarely has more than one active mon per route, so a
+     per-route grid would mostly be groups of one; route shows on the
+     card itself instead (.route-tag). */
+  .route-cards, #graveyardList{
+    display:grid; grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 8px;
+  }
+  .card{
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 8px 9px; display:flex; flex-direction:column; gap:3px; min-width:0;
+  }
+  .card.status-dead{ opacity: 0.75; border-left: 3px solid var(--dead); }
+  .card.status-alive{ border-left: 3px solid var(--lcd); }
+  .card.status-boxed{ border-left: 3px solid var(--cream-dim); }
+  .card-top{ display:flex; align-items:center; gap:5px; min-width:0; }
+  .dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .dot.status-alive{ background: var(--lcd); box-shadow: 0 0 5px var(--lcd); }
+  .dot.status-dead{ background: var(--dead); box-shadow: 0 0 5px var(--dead); }
+  .dot.status-boxed{ background: var(--cream-dim); }
+  .nick{ font-weight:700; font-size: 13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+  .species{ color: var(--cream-dim); font-size: 11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .route-tag{
+    font-size: 9.5px; color: var(--gold); text-transform:uppercase; letter-spacing:0.3px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .meta{ font-size: 10.5px; color: var(--cream-dim); }
+  .meta b{ color: var(--cream); }
+  .card-actions{ display:flex; gap:4px; flex-wrap:wrap; margin-top:3px; }
+  .card-actions button{ font-size: 13px; padding: 4px 3px; flex:1; min-width: 0; line-height:1; }
+  .cause{ font-size: 10.5px; color: var(--dead); font-style: italic; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .empty{ text-align:center; color: var(--cream-dim); font-size: 15px; padding: 30px 10px; border: 1px dashed var(--line); border-radius: var(--radius); }
+
+  /* ---------- checklist ---------- */
+  .checklist-note{
+    font-size: 14px; color: var(--cream-dim); background: var(--panel);
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .cl-card{
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 10px 12px; margin-bottom: 8px;
+  }
+  .cl-card.done{ border-left: 3px solid var(--lcd); }
+  .cl-card.pending{ border-left: 3px solid var(--gold); }
+  .cl-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .cl-name{ font-weight:700; font-size: 17px; }
+  .cl-status{ font-size: 13px; text-transform:uppercase; letter-spacing:0.5px; padding: 3px 7px; border-radius: 10px; flex-shrink:0; }
+  .cl-status.done{ background: var(--lcd-dim); color: #0d1712; }
+  .cl-status.pending{ background: transparent; border: 1px solid var(--gold); color: var(--gold); }
+  .cl-species{ display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
+  .cl-method{ font-size: 13px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 9px; }
+  .cl-toggle{ margin-top: 9px; font-size: 14px; padding: 6px 10px; width: 100%; background: var(--panel-raised); border-color: var(--line); cursor: pointer; border-radius: var(--radius); color: var(--cream); font-family: 'JetBrains Mono', monospace; }
+  .cl-collapsed .cl-toggle{ background: var(--lcd-dim); color: #0d1712; font-weight: 700; border-color: var(--lcd); }
+  .cl-card.cl-collapsed{ opacity: 0.7; }
+  .cl-method:first-of-type{ margin-top: 8px; }
+  .chip-lv{ opacity: 0.75; font-size: 12px; }
+  .chip-time{ opacity: 0.75; font-size: 12px; color: var(--gold); font-style: italic; }
+  .chip{
+    font-size: 13px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+    padding: 5px 9px; color: var(--cream-dim); cursor: pointer; font-family:'JetBrains Mono',monospace;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .chip:active{ transform: scale(0.96); }
+  .chip-caught{ background: var(--lcd-dim); border-color: var(--lcd); color: #0d1712; font-weight:700; }
+
+  /* ---------- boss battles ---------- */
+  .boss-section-title{
+    font-size: 14px; color: var(--gold); text-transform:uppercase; letter-spacing:0.5px;
+    margin: 16px 0 8px; border-bottom: 1px dashed var(--line); padding-bottom: 4px;
+  }
+  .boss-section-title:first-child{ margin-top: 0; }
+  .trainer-location{
+    font-size: 13px; color: var(--cream-dim); text-transform:uppercase; letter-spacing:0.5px;
+    margin: 10px 0 6px;
+  }
+  .trainer-location:first-of-type{ margin-top: 2px; }
+  .split-header{
+    display:flex; justify-content:space-between; align-items:baseline; cursor:pointer;
+    font-size: 14px; color: var(--gold); text-transform:uppercase; letter-spacing:0.5px;
+    margin: 16px 0 8px; border-bottom: 1px dashed var(--line); padding-bottom: 4px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .split-header:first-child{ margin-top: 0; }
+  .split-caret{ font-size: 12px; flex-shrink:0; }
+  .split-header.split-collapsed{ color: var(--cream-dim); border-bottom-style: solid; }
+  .boss-card{
+    background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--gold);
+    border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px;
+  }
+  .boss-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  .boss-name{ font-weight:700; font-size: 17px; }
+  .boss-cap{ font-size: 14px; color: var(--gold); font-weight:700; flex-shrink:0; }
+  .boss-meta{ font-size: 14px; color: var(--cream-dim); margin-top:3px; }
+  .boss-items{ font-size: 14px; color: var(--gold); margin-top: 4px; font-weight: 600; }
+  .boss-team{ font-size: 14px; color: var(--cream); margin-top:5px; line-height:1.5; }
+  .boss-note{ font-size: 13px; color: var(--cream-dim); margin-top:5px; font-style: italic; line-height:1.4; }
+  .boss-toggle{ margin-top: 9px; font-size: 14px; padding: 6px 10px; width: 100%; background: var(--panel-raised); border-color: var(--line); }
+  .boss-beaten{ opacity: 0.65; }
+  .boss-beaten .boss-toggle{ background: var(--lcd-dim); color: #0d1712; font-weight: 700; border-color: var(--lcd); }
+  .boss-mon{ background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 7px 9px; margin-top: 6px; }
+  .boss-mon-top{ display:flex; justify-content:space-between; font-size: 15px; font-weight:700; }
+  .boss-mon-meta{ font-size: 13px; color: var(--cream-dim); margin-top: 2px; }
+  .boss-mon-moves{ font-size: 13px; color: var(--cream); margin-top: 3px; line-height: 1.4; }
+  .boss-mon-stats{ font-size: 13px; color: var(--lcd); margin-top: 4px; font-weight: 700; letter-spacing: 0.2px; }
+  .boss-summary{ font-size: 14px; color: var(--cream-dim); margin-top: 6px; font-style: italic; line-height: 1.4; }
+
+  /* ---------- guide tab ---------- */
+  .guide-subtabs{ display:flex; gap:6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .guide-subtab{
+    font-size: 14px; padding: 6px 10px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--cream-dim); cursor: pointer;
+  }
+  .guide-subtab.active{ background: var(--lcd-dim); color: #0d1712; border-color: var(--lcd); font-weight: 700; }
+  .guide-card{
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 10px 12px; margin-bottom: 8px;
+  }
+  .guide-card-title{ font-weight:700; font-size: 16px; color: var(--lcd); margin-bottom: 4px; }
+  .guide-card-body{ font-size: 15px; color: var(--cream); line-height: 1.5; }
+  .nature-table{ width:100%; border-collapse: collapse; font-size: 14px; }
+  .nature-table th{ text-align:left; color: var(--cream-dim); font-size: 13px; text-transform:uppercase; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+  .nature-table td{ padding: 5px 6px; border-bottom: 1px solid var(--line); }
+  .nature-table tr:nth-child(even){ background: var(--panel-raised); }
+  .ev-up{ color: var(--lcd); }
+  .ev-down{ color: var(--dead); }
+
+  /* ---------- footer ---------- */
+  .footer{
+    display:flex; gap:8px; padding: 12px 16px 16px; border-top: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .footer button{ flex:1; font-size: 14px; }
+  #fileInput{ display:none; }
+
+  .toast{
+    position: fixed; bottom: 18px; left:50%; transform: translateX(-50%);
+    background: var(--panel-raised); border:1px solid var(--lcd); color: var(--lcd);
+    padding: 9px 16px; border-radius: var(--radius); font-size: 15px;
+    opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease;
+    z-index: 50;
+  }
+  .toast.show{ opacity:1; transform: translateX(-50%) translateY(-4px); }
+
+  /* ---------- in-page confirm/prompt modal ----------
+     Replaces window.confirm()/prompt(): some embedded/preview webviews
+     (and possibly some installed-PWA contexts) block or silently no-op
+     native blocking dialogs, which made Mark Fainted/Delete/Reset Run
+     appear to do nothing. This is fully in-DOM instead. */
+  .modal-overlay{
+    position: fixed; inset: 0; background: rgba(13,23,18,0.72);
+    display:flex; align-items:center; justify-content:center; padding: 20px;
+    opacity:0; pointer-events:none; transition: opacity .15s ease; z-index: 100;
+  }
+  .modal-overlay.show{ opacity:1; pointer-events:auto; }
+  .modal-box{
+    background: var(--panel-raised); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px; max-width: 360px; width:100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .modal-msg{ font-size: 15px; color: var(--cream); line-height: 1.5; margin-bottom: 12px; }
+  .modal-input{
+    width:100%; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+    color: var(--cream); font-family:'JetBrains Mono',monospace; font-size: 17px; padding: 7px 8px;
+    outline:none; margin-bottom: 12px;
+  }
+  .modal-input:focus{ border-color: var(--lcd); }
+  .modal-actions{ display:flex; gap:8px; }
+  .modal-actions button{ flex:1; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="device">
+  <div class="screen-header">
+    <div class="title-row">
+      <h1 class="pixel"><span class="led"></span>NUZLOCKE LOG</h1>
+    </div>
+    <div class="game-select-wrap">
+      <select class="game-select" id="gameSelect"></select>
+    </div>
+    <div class="run-name-wrap">
+      <input class="run-name" id="runName" type="text" placeholder="Name this run… e.g. Emerald Solo Run">
+    </div>
+    <div class="badges" id="badges"></div>
+    <div class="rules" id="rulesRow">
+      <label><input type="checkbox" data-rule="species"> Species clause</label>
+      <label><input type="checkbox" data-rule="dupes"> Dupes clause</label>
+      <label><input type="checkbox" data-rule="shiny"> Shiny clause</label>
+      <label><input type="checkbox" data-rule="nickname"> Nickname required</label>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Encounters</div></div>
+    <div class="stat"><div class="n" id="statAlive">0</div><div class="l">Alive</div></div>
+    <div class="stat"><div class="n" id="statDead">0</div><div class="l">Fallen</div></div>
+    <div class="stat"><div class="n" id="statBadges">0/8</div><div class="l">Badges</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="roster">Route Log</div>
+    <div class="tab" data-tab="checklist">Encounters</div>
+    <div class="tab" data-tab="bosses">Bosses</div>
+    <div class="tab" data-tab="trainers">Trainers</div>
+    <div class="tab" data-tab="guide">Guide</div>
+    <div class="tab" data-tab="graveyard">Graveyard</div>
+  </div>
+
+  <div class="content">
+
+    <div id="panel-roster">
+      <div class="add-form">
+        <div class="row">
+          <div>
+            <label class="f">Route / Location</label>
+            <input type="text" id="fRoute" placeholder="Route 3">
+          </div>
+          <div>
+            <label class="f">Species</label>
+            <input type="text" id="fSpecies" placeholder="Pidgey">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label class="f">Nickname</label>
+            <input type="text" id="fNick" placeholder="Gale">
+          </div>
+          <div style="max-width:90px; flex:0 0 90px;">
+            <label class="f">Level</label>
+            <input type="number" id="fLevel" placeholder="5" min="1" max="100">
+          </div>
+        </div>
+        <button class="btn-primary" id="addBtn">+ Add Encounter</button>
+      </div>
+
+      <div id="rosterList"></div>
+    </div>
+
+    <div id="panel-checklist" style="display:none;">
+      <div class="checklist-note" id="checklistNote"></div>
+      <div id="checklistList"></div>
+    </div>
+
+    <div id="panel-bosses" style="display:none;">
+      <div id="bossesList"></div>
+    </div>
+
+    <div id="panel-trainers" style="display:none;">
+      <div class="checklist-note" id="trainersNote"></div>
+      <div id="trainersList"></div>
+    </div>
+
+    <div id="panel-guide" style="display:none;">
+      <div class="guide-subtabs" id="guideSubtabs"></div>
+      <div id="guideContent"></div>
+    </div>
+
+    <div id="panel-graveyard" style="display:none;">
+      <div id="graveyardList"></div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <button class="btn-ghost" id="exportBtn">⭳ Export Backup</button>
+    <button class="btn-ghost" id="importBtn">⭱ Import Backup</button>
+    <input type="file" id="fileInput" accept=".json">
+    <button class="btn-danger" id="resetBtn">Reset Run</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-msg" id="modalMsg"></div>
+    <input type="text" class="modal-input" id="modalInput" style="display:none;">
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="modalCancel">Cancel</button>
+      <button type="button" class="btn-primary" id="modalOk">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var STORAGE_KEY = "nuzlocke-tracker-state-v1";
+  var state = null;
+
+  // ---------- encounter guide data ----------
+  // Source: PokeTraqr (built from Serebii/PokeAPI data), pulled route by route.
+  // Unique species per location, in-game order. Being filled in progressively —
+  // more locations get appended here as they're compiled.
+  // Each location now carries per-species method + level range (sourced from
+  // the same decomp-backed wild_encounters.json data used for the boss/rival
+  // fights). Locations marked "estimated" didn't have an explicit table in
+  // the sources fetched and use a best-available fallback.
+  var EMERALD_GUIDE = [
+    { name: "Littleroot Town", encounters: [
+      {sp:"Treecko",m:"Gift",lv:"5"},{sp:"Torchic",m:"Gift",lv:"5"},{sp:"Mudkip",m:"Gift",lv:"5"}
+    ]},
+    { name: "Route 101", encounters: [
+      {sp:"Poochyena",m:"Grass",lv:"2-3"},{sp:"Wurmple",m:"Grass",lv:"2-3"},{sp:"Zigzagoon",m:"Grass",lv:"2-3"}
+    ]},
+    { name: "Route 103", encounters: [
+      {sp:"Poochyena",m:"Grass",lv:"2-4"},{sp:"Wingull",m:"Grass",lv:"2-4"},{sp:"Zigzagoon",m:"Grass",lv:"3-4"},
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"25-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Route 102", encounters: [
+      {sp:"Poochyena",m:"Grass",lv:"3-4"},{sp:"Wurmple",m:"Grass",lv:"3-4"},{sp:"Lotad",m:"Grass",lv:"3-4"},
+      {sp:"Zigzagoon",m:"Grass",lv:"3-4"},{sp:"Ralts",m:"Grass",lv:"4"},{sp:"Seedot",m:"Grass",lv:"3"},
+      {sp:"Marill",m:"Surf",lv:"5-35"},{sp:"Goldeen",m:"Surf",lv:"20-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Goldeen",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Corphish",m:"Good Rod",lv:"10-30"},{sp:"Goldeen",m:"Good Rod",lv:"10-30"},
+      {sp:"Corphish",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Petalburg City", encounters: [
+      {sp:"Marill",m:"Surf",lv:"5-35"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Goldeen",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Corphish",m:"Good Rod",lv:"10-30"},{sp:"Goldeen",m:"Good Rod",lv:"10-30"},
+      {sp:"Corphish",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Route 104", encounters: [
+      {sp:"Poochyena",m:"Grass",lv:"4-5"},{sp:"Marill",m:"Grass",lv:"4-5"},{sp:"Wurmple",m:"Grass",lv:"4"},
+      {sp:"Taillow",m:"Grass",lv:"4-5"},{sp:"Wingull",m:"Grass",lv:"3-5"},
+      {sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Magikarp",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Petalburg Woods", encounters: [
+      {sp:"Poochyena",m:"Grass",lv:"5-6"},{sp:"Wurmple",m:"Grass",lv:"5-6"},{sp:"Shroomish",m:"Grass",lv:"5-6"},
+      {sp:"Cascoon",m:"Grass",lv:"5"},{sp:"Silcoon",m:"Grass",lv:"5"},{sp:"Slakoth",m:"Grass",lv:"5-6"},{sp:"Taillow",m:"Grass",lv:"5-6"}
+    ]},
+    { name: "Rustboro City", encounters: [
+      {sp:"Lileep",m:"Gift (fossil)",lv:"—"},{sp:"Anorith",m:"Gift (fossil)",lv:"—"}
+    ]},
+    { name: "Route 116", encounters: [
+      {sp:"Poochyena",m:"Grass",lv:"6-8"},{sp:"Nincada",m:"Grass",lv:"6-7"},{sp:"Taillow",m:"Grass",lv:"6-8"},
+      {sp:"Whismur",m:"Grass",lv:"6"},{sp:"Abra",m:"Grass",lv:"7"},{sp:"Skitty",m:"Grass",lv:"7-8"}
+    ]},
+    { name: "Rusturf Tunnel", encounters: [
+      {sp:"Whismur",m:"Grass",lv:"5-8"}
+    ]},
+    { name: "Route 115", encounters: [
+      {sp:"Swablu",m:"Grass (estimated)",lv:"—"},{sp:"Taillow",m:"Grass (estimated)",lv:"—"},{sp:"Swellow",m:"Grass (estimated)",lv:"—"},
+      {sp:"Jigglypuff",m:"Grass (estimated)",lv:"—"},{sp:"Wingull",m:"Grass (estimated)",lv:"—"},
+      {sp:"Tentacool",m:"Surf (estimated)",lv:"—"},{sp:"Pelipper",m:"Surf (estimated)",lv:"—"},
+      {sp:"Magikarp",m:"Fish (estimated)",lv:"—"},{sp:"Wailmer",m:"Fish (estimated)",lv:"—"}
+    ]},
+    { name: "Dewford Town", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Route 106", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Granite Cave", encounters: [
+      {sp:"Makuhita",m:"Grass",lv:"6-10"},{sp:"Zubat",m:"Grass",lv:"7-11"},{sp:"Abra",m:"Grass",lv:"8-10"},
+      {sp:"Geodude",m:"Grass",lv:"6-9"},{sp:"Aron",m:"Grass",lv:"9-12"},{sp:"Sableye",m:"Grass",lv:"9-12"},
+      {sp:"Geodude",m:"Rock Smash",lv:"5-20"},{sp:"Nosepass",m:"Rock Smash",lv:"10-20"}
+    ]},
+    { name: "Route 109", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Slateport City", encounters: [
+      {sp:"Tentacool",m:"Surf (estimated)",lv:"—"},{sp:"Wingull",m:"Surf (estimated)",lv:"—"},{sp:"Pelipper",m:"Surf (estimated)",lv:"—"},
+      {sp:"Magikarp",m:"Fish (estimated)",lv:"—"},{sp:"Wailmer",m:"Fish (estimated)",lv:"—"}
+    ]},
+    { name: "Route 110", encounters: [
+      {sp:"Electrike",m:"Grass",lv:"12-13"},{sp:"Poochyena",m:"Grass",lv:"12"},{sp:"Gulpin",m:"Grass",lv:"12-13"},
+      {sp:"Minun",m:"Grass",lv:"13"},{sp:"Oddish",m:"Grass",lv:"13"},{sp:"Wingull",m:"Grass",lv:"12"},{sp:"Plusle",m:"Grass",lv:"12-13"},
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Route 117", encounters: [
+      {sp:"Oddish",m:"Grass",lv:"13-14"},{sp:"Poochyena",m:"Grass",lv:"13-14"},{sp:"Illumise",m:"Grass",lv:"13-14"},
+      {sp:"Marill",m:"Grass",lv:"13"},{sp:"Seedot",m:"Grass",lv:"13"},{sp:"Volbeat",m:"Grass",lv:"13"},
+      {sp:"Marill",m:"Surf",lv:"5-35"},{sp:"Goldeen",m:"Surf",lv:"20-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Goldeen",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Corphish",m:"Good Rod",lv:"10-30"},{sp:"Goldeen",m:"Good Rod",lv:"10-30"},
+      {sp:"Corphish",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Route 111", encounters: [
+      {sp:"Sandshrew",m:"Grass",lv:"19-21"},{sp:"Trapinch",m:"Grass",lv:"19-21"},{sp:"Baltoy",m:"Grass",lv:"19-21"},{sp:"Cacnea",m:"Grass",lv:"20-22"},
+      {sp:"Marill",m:"Surf",lv:"5-35"},{sp:"Goldeen",m:"Surf",lv:"20-30"},
+      {sp:"Geodude",m:"Rock Smash",lv:"5-20"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Goldeen",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Barboach",m:"Good Rod",lv:"10-30"},{sp:"Goldeen",m:"Good Rod",lv:"10-30"},
+      {sp:"Barboach",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Route 112", encounters: [
+      {sp:"Numel",m:"Grass",lv:"14-16"},{sp:"Marill",m:"Grass",lv:"14-16"}
+    ]},
+    { name: "Fiery Path", encounters: [
+      {sp:"Numel",m:"Grass",lv:"15-16"},{sp:"Koffing",m:"Grass",lv:"15-16"},{sp:"Torkoal",m:"Grass",lv:"14-16"},
+      {sp:"Machop",m:"Grass",lv:"15-16"},{sp:"Slugma",m:"Grass",lv:"15"},{sp:"Grimer",m:"Grass",lv:"14"}
+    ]},
+    { name: "Route 113", encounters: [
+      {sp:"Spinda",m:"Grass",lv:"14-16"},{sp:"Slugma",m:"Grass",lv:"14-16"},{sp:"Skarmory",m:"Grass",lv:"16"}
+    ]},
+    { name: "Route 114", encounters: [
+      {sp:"Swablu",m:"Grass",lv:"15-17"},{sp:"Lotad",m:"Grass",lv:"15-16"},{sp:"Lombre",m:"Grass",lv:"16-18"},
+      {sp:"Seviper",m:"Grass",lv:"15-17"},{sp:"Nuzleaf",m:"Grass",lv:"15"},
+      {sp:"Marill",m:"Surf",lv:"5-35"},{sp:"Goldeen",m:"Surf",lv:"20-30"},
+      {sp:"Geodude",m:"Rock Smash",lv:"5-20"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Goldeen",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Barboach",m:"Good Rod",lv:"10-30"},{sp:"Goldeen",m:"Good Rod",lv:"10-30"},
+      {sp:"Barboach",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Meteor Falls", encounters: [
+      {sp:"Zubat",m:"Grass",lv:"14-20"},{sp:"Solrock",m:"Grass",lv:"14-39"},{sp:"Golbat",m:"Grass",lv:"33-40"},{sp:"Bagon",m:"Grass",lv:"25-35"},
+      {sp:"Zubat",m:"Surf",lv:"5-35"},{sp:"Golbat",m:"Surf",lv:"30-35"},{sp:"Solrock",m:"Surf",lv:"5-35"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Goldeen",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Barboach",m:"Good Rod",lv:"10-30"},{sp:"Goldeen",m:"Good Rod",lv:"10-30"},
+      {sp:"Barboach",m:"Super Rod",lv:"25-35"},{sp:"Whiscash",m:"Super Rod",lv:"30-45"}
+    ]},
+    { name: "Magma Hideout", encounters: [
+      {sp:"Geodude",m:"Grass",lv:"27-30"},{sp:"Torkoal",m:"Grass",lv:"28-30"},{sp:"Graveler",m:"Grass",lv:"30-33"}
+    ]},
+    { name: "Jagged Pass", encounters: [
+      {sp:"Numel",m:"Grass",lv:"20-22"},{sp:"Machop",m:"Grass",lv:"20-22"},{sp:"Spoink",m:"Grass",lv:"20-22"}
+    ]},
+    { name: "Lavaridge Town", encounters: [
+      {sp:"Wynaut",m:"Gift (Egg)",lv:"—"}
+    ]},
+    { name: "Mirage Tower", encounters: [
+      {sp:"Sandshrew",m:"Grass",lv:"20-24"},{sp:"Trapinch",m:"Grass",lv:"20-24"}
+    ]},
+    { name: "Route 105", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Island Cave", encounters: [
+      {sp:"Regice",m:"Static",lv:"40"}
+    ]},
+    { name: "Route 107", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Route 108", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Abandoned Ship", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Tentacruel",m:"Surf",lv:"30-35"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},
+      {sp:"Tentacool",m:"Super Rod",lv:"25-35"},{sp:"Tentacruel",m:"Super Rod",lv:"20-35"}
+    ]},
+    { name: "New Mauville", encounters: [
+      {sp:"Magnemite",m:"Grass",lv:"22-26"},{sp:"Voltorb",m:"Grass",lv:"22-26"},{sp:"Electrode",m:"Grass",lv:"26"},{sp:"Magneton",m:"Grass",lv:"26"}
+    ]},
+    { name: "Route 118", encounters: [
+      {sp:"Electrike",m:"Grass",lv:"24-26"},{sp:"Zigzagoon",m:"Grass",lv:"24-26"},{sp:"Wingull",m:"Grass",lv:"25-27"},
+      {sp:"Linoone",m:"Grass",lv:"26"},{sp:"Manectric",m:"Grass",lv:"26"},{sp:"Kecleon",m:"Grass",lv:"25"},
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Carvanha",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},
+      {sp:"Carvanha",m:"Super Rod",lv:"20-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Route 119", encounters: [
+      {sp:"Linoone",m:"Grass",lv:"25-27"},{sp:"Oddish",m:"Grass",lv:"24-27"},{sp:"Zigzagoon",m:"Grass",lv:"25-27"},
+      {sp:"Tropius",m:"Grass",lv:"25-27"},{sp:"Kecleon",m:"Grass",lv:"25"},
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Carvanha",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},
+      {sp:"Carvanha",m:"Super Rod",lv:"20-45"},
+      {sp:"Feebas",m:"Any Rod (6 special tiles)",lv:"20"},{sp:"Castform",m:"Gift (Weather Institute)",lv:"—"}
+    ]},
+    { name: "Route 120", encounters: [
+      {sp:"Mightyena",m:"Grass",lv:"25-27"},{sp:"Oddish",m:"Grass",lv:"25-27"},{sp:"Poochyena",m:"Grass",lv:"25"},
+      {sp:"Marill",m:"Grass",lv:"25-27"},{sp:"Absol",m:"Grass",lv:"25-27"},{sp:"Kecleon",m:"Grass",lv:"25"},{sp:"Seedot",m:"Grass",lv:"25"},
+      {sp:"Marill",m:"Surf",lv:"5-35"},{sp:"Goldeen",m:"Surf",lv:"20-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Goldeen",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Barboach",m:"Good Rod",lv:"10-30"},{sp:"Goldeen",m:"Good Rod",lv:"10-30"},
+      {sp:"Barboach",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Route 121", encounters: [
+      {sp:"Shuppet",m:"Grass",lv:"26-28"},{sp:"Mightyena",m:"Grass",lv:"26-28"},{sp:"Poochyena",m:"Grass",lv:"26"},
+      {sp:"Oddish",m:"Grass",lv:"26-28"},{sp:"Wingull",m:"Grass",lv:"26-28"},{sp:"Gloom",m:"Grass",lv:"28"},{sp:"Kecleon",m:"Grass",lv:"25"},
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Hoenn Safari Zone", encounters: [
+      {sp:"Oddish",m:"Safari Zone",lv:"25-31"},{sp:"Gloom",m:"Safari Zone",lv:"25-31"},{sp:"Girafarig",m:"Safari Zone",lv:"25-27"},
+      {sp:"Natu",m:"Safari Zone",lv:"25-31"},{sp:"Xatu",m:"Safari Zone",lv:"29-31"},{sp:"Doduo",m:"Safari Zone",lv:"25-31"},
+      {sp:"Dodrio",m:"Safari Zone",lv:"29-31"},{sp:"Wobbuffet",m:"Safari Zone",lv:"27-29"},{sp:"Pikachu",m:"Safari Zone",lv:"25-27"},
+      {sp:"Rhyhorn",m:"Safari Zone",lv:"27-29"},{sp:"Pinsir",m:"Safari Zone",lv:"27-29"},{sp:"Heracross",m:"Safari Zone",lv:"27-29"},
+      {sp:"Phanpy",m:"Safari Zone",lv:"27-29"},{sp:"Psyduck",m:"Safari Zone (Surf)",lv:"20-35"},{sp:"Golduck",m:"Safari Zone (Surf)",lv:"25-40"},
+      {sp:"Magikarp",m:"Safari Zone (Fish)",lv:"5-10"},{sp:"Goldeen",m:"Safari Zone (Fish)",lv:"5-40"},{sp:"Seaking",m:"Safari Zone (Fish)",lv:"25-40"},
+      {sp:"Wooper",m:"Safari Zone",lv:"—"},{sp:"Quagsire",m:"Safari Zone",lv:"—"},{sp:"Marill",m:"Safari Zone",lv:"—"},
+      {sp:"Remoraid",m:"Safari Zone",lv:"—"},{sp:"Octillery",m:"Safari Zone",lv:"—"},{sp:"Sunkern",m:"Safari Zone",lv:"—"},
+      {sp:"Mareep",m:"Safari Zone",lv:"—"},{sp:"Aipom",m:"Safari Zone",lv:"—"},{sp:"Spinarak",m:"Safari Zone",lv:"—"},
+      {sp:"Hoothoot",m:"Safari Zone",lv:"—"},{sp:"Snubbull",m:"Safari Zone",lv:"—"},{sp:"Stantler",m:"Safari Zone",lv:"—"},
+      {sp:"Gligar",m:"Safari Zone",lv:"—"},{sp:"Teddiursa",m:"Safari Zone",lv:"—"},{sp:"Ledyba",m:"Safari Zone",lv:"—"},
+      {sp:"Pineco",m:"Safari Zone",lv:"—"},{sp:"Houndour",m:"Safari Zone",lv:"—"},{sp:"Miltank",m:"Safari Zone",lv:"—"},
+      {sp:"Shuckle",m:"Safari Zone",lv:"—"},{sp:"Geodude",m:"Rock Smash",lv:"5-30"}
+    ]},
+    { name: "Route 123", encounters: [
+      {sp:"Poochyena",m:"Grass (estimated)",lv:"—"},{sp:"Shuppet",m:"Grass (estimated)",lv:"—"},{sp:"Mightyena",m:"Grass (estimated)",lv:"—"},
+      {sp:"Oddish",m:"Grass (estimated)",lv:"—"},{sp:"Gloom",m:"Grass (estimated)",lv:"—"},{sp:"Wingull",m:"Grass (estimated)",lv:"—"},
+      {sp:"Kecleon",m:"Grass (estimated)",lv:"—"},
+      {sp:"Tentacool",m:"Surf (estimated)",lv:"—"},{sp:"Pelipper",m:"Surf (estimated)",lv:"—"},
+      {sp:"Magikarp",m:"Fish (estimated)",lv:"—"},{sp:"Wailmer",m:"Fish (estimated)",lv:"—"}
+    ]},
+    { name: "Lilycove City", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"25-45"},{sp:"Staryu",m:"Super Rod",lv:"25-30"}
+    ]},
+    { name: "Route 122", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"25-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Mt Pyre", encounters: [
+      {sp:"Shuppet",m:"Grass",lv:"22-30"},{sp:"Duskull",m:"Grass",lv:"25-30"},{sp:"Vulpix",m:"Grass",lv:"25-29"},
+      {sp:"Wingull",m:"Grass",lv:"26-28"},{sp:"Chimecho",m:"Grass",lv:"28"}
+    ]},
+    { name: "Team Aqua Hideout", encounters: [
+      {sp:"Electrode",m:"Fake item",lv:"—"}
+    ]},
+    { name: "Route 124", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Clamperl",m:"Dive",lv:"20-35"},{sp:"Chinchou",m:"Dive",lv:"20-30"},{sp:"Relicanth",m:"Dive",lv:"30-35"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"25-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Mossdeep City", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"25-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"},
+      {sp:"Beldum",m:"Gift (postgame)",lv:"5"}
+    ]},
+    { name: "Shoal Cave", encounters: [
+      {sp:"Spheal",m:"Grass (low tide)",lv:"26-32"},{sp:"Zubat",m:"Grass (low tide)",lv:"26-32"},{sp:"Golbat",m:"Grass (low tide)",lv:"32"},
+      {sp:"Tentacool",m:"Surf (low tide)",lv:"5-35"},{sp:"Zubat",m:"Surf (low tide)",lv:"5-35"},{sp:"Spheal",m:"Surf (low tide)",lv:"25-35"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Route 125", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"25-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Route 126", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Clamperl",m:"Dive",lv:"20-35"},{sp:"Chinchou",m:"Dive",lv:"20-30"},{sp:"Relicanth",m:"Dive",lv:"30-35"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"25-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Seafloor Cavern", encounters: [
+      {sp:"Zubat",m:"Grass",lv:"28-35"},{sp:"Golbat",m:"Grass",lv:"33-36"},
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Zubat",m:"Surf",lv:"5-35"},{sp:"Golbat",m:"Surf",lv:"30-35"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"20-45"}
+    ]},
+    { name: "Sootopolis City", encounters: [
+      {sp:"Magikarp",m:"Surf",lv:"5-35"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},
+      {sp:"Magikarp",m:"Super Rod",lv:"30-35"},{sp:"Gyarados",m:"Super Rod",lv:"5-45"}
+    ]},
+    { name: "Cave of Origin", encounters: [
+      {sp:"Zubat",m:"Grass",lv:"28-35"},{sp:"Golbat",m:"Grass",lv:"33-36"},{sp:"Sableye",m:"Grass",lv:"30-34"}
+    ]},
+    { name: "Sky Pillar", encounters: [
+      {sp:"Golbat",m:"Grass",lv:"34-35"},{sp:"Sableye",m:"Grass",lv:"33-34"},{sp:"Claydol",m:"Grass",lv:"36-38"},
+      {sp:"Banette",m:"Grass",lv:"37-38"},{sp:"Altaria",m:"Grass",lv:"38-39"}
+    ]},
+    { name: "Route 127", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"25-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Route 128", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Luvdisc",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"30-45"},{sp:"Luvdisc",m:"Super Rod",lv:"30-35"},{sp:"Corsola",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Route 129", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},{sp:"Wailord",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"25-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Route 130", encounters: [
+      {sp:"Wynaut",m:"Grass (Mirage Island only)",lv:"5-50"},
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"25-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Mirage Island", encounters: [
+      {sp:"Wynaut",m:"Grass",lv:"5-50"}
+    ]},
+    { name: "Route 131", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"25-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Route 132", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"30-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"},{sp:"Horsea",m:"Super Rod",lv:"25-30"}
+    ]},
+    { name: "Route 133", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"30-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"},{sp:"Horsea",m:"Super Rod",lv:"25-30"}
+    ]},
+    { name: "Route 134", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"30-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"},{sp:"Horsea",m:"Super Rod",lv:"25-30"}
+    ]},
+    { name: "Pacifidlog Town", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Tentacool",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"25-45"},{sp:"Sharpedo",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Ever Grande City", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"5-35"},{sp:"Wingull",m:"Surf",lv:"10-30"},{sp:"Pelipper",m:"Surf",lv:"25-30"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Tentacool",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Luvdisc",m:"Good Rod",lv:"10-30"},{sp:"Wailmer",m:"Good Rod",lv:"10-30"},
+      {sp:"Wailmer",m:"Super Rod",lv:"30-45"},{sp:"Luvdisc",m:"Super Rod",lv:"30-35"},{sp:"Corsola",m:"Super Rod",lv:"30-35"}
+    ]},
+    { name: "Hoenn Victory Road", encounters: [
+      {sp:"Golbat",m:"Grass",lv:"38-44"},{sp:"Hariyama",m:"Grass",lv:"38-42"},{sp:"Lairon",m:"Grass",lv:"40-44"},
+      {sp:"Loudred",m:"Grass",lv:"40"},{sp:"Makuhita",m:"Grass",lv:"36"},{sp:"Zubat",m:"Grass",lv:"36"},
+      {sp:"Aron",m:"Grass",lv:"36"},{sp:"Whismur",m:"Grass",lv:"36"},{sp:"Mawile",m:"Grass",lv:"38-44"},{sp:"Sableye",m:"Grass",lv:"40-44"},
+      {sp:"Graveler",m:"Rock Smash",lv:"30-40"},{sp:"Geodude",m:"Rock Smash",lv:"30-40"},{sp:"Golbat",m:"Surf",lv:"25-40"},
+      {sp:"Magikarp",m:"Old Rod",lv:"5-10"},{sp:"Goldeen",m:"Old Rod",lv:"5-10"},
+      {sp:"Magikarp",m:"Good Rod",lv:"10-30"},{sp:"Barboach",m:"Good Rod",lv:"10-30"},{sp:"Goldeen",m:"Good Rod",lv:"10-30"},
+      {sp:"Barboach",m:"Super Rod",lv:"25-35"},{sp:"Whiscash",m:"Super Rod",lv:"30-45"}
+    ]},
+    { name: "Hoenn Battle Frontier", encounters: [
+      {sp:"Sudowoodo",m:"Static (postgame)",lv:"40"}
+    ]},
+    { name: "Artisan Cave", encounters: [
+      {sp:"Smeargle",m:"Grass (postgame)",lv:"—"}
+    ]},
+    { name: "Desert Underpass", encounters: [
+      {sp:"Ditto",m:"Grass (postgame)",lv:"—"},{sp:"Whismur",m:"Grass (postgame)",lv:"—"},{sp:"Loudred",m:"Grass (postgame)",lv:"—"}
+    ]},
+    { name: "Marine Cave", encounters: [
+      {sp:"Kyogre",m:"Static (postgame)",lv:"70"}
+    ]},
+    { name: "Terra Cave", encounters: [
+      {sp:"Groudon",m:"Static (postgame)",lv:"70"}
+    ]},
+    { name: "Roaming Hoenn", encounters: [
+      {sp:"Latias",m:"Roaming (postgame)",lv:"—"},{sp:"Latios",m:"Roaming (postgame)",lv:"—"}
+    ]},
+    { name: "Southern Island", encounters: [
+      {sp:"Latios",m:"Static (event item)",lv:"—"},{sp:"Latias",m:"Static (event item)",lv:"—"}
+    ]},
+    { name: "Ancient Tomb", encounters: [
+      {sp:"Registeel",m:"Static",lv:"40"}
+    ]},
+    { name: "Desert Ruins", encounters: [
+      {sp:"Regirock",m:"Static",lv:"40"}
+    ]},
+    { name: "Hoenn Altering Cave", encounters: [
+      {sp:"Zubat",m:"Grass (default table)",lv:"—"},{sp:"Mareep",m:"Grass (e-Reader event only)",lv:"—"},
+      {sp:"Pineco",m:"Grass (e-Reader event only)",lv:"—"},{sp:"Houndour",m:"Grass (e-Reader event only)",lv:"—"},
+      {sp:"Teddiursa",m:"Grass (e-Reader event only)",lv:"—"},{sp:"Aipom",m:"Grass (e-Reader event only)",lv:"—"},
+      {sp:"Shuckle",m:"Grass (e-Reader event only)",lv:"—"},{sp:"Stantler",m:"Grass (e-Reader event only)",lv:"—"},
+      {sp:"Smeargle",m:"Grass (e-Reader event only)",lv:"—"}
+    ]},
+    { name: "Team Magma Hideout", encounters: [
+      {sp:"Electrode",m:"Fake item",lv:"—"}
+    ]},
+    { name: "Faraway Island", encounters: [
+      {sp:"Mew",m:"Static (event item)",lv:"—"}
+    ]},
+    { name: "Hoenn Pokecenter", encounters: [
+      {sp:"Celebi",m:"Event distribution",lv:"—"},{sp:"Jirachi",m:"Event distribution",lv:"—"}
+    ]}
+  ];
+
+  // ---------- boss battle guide data ----------
+  // Locked to the Treecko starter path per user preference. Gym leader and
+  // rival data below is confirmed from Bulbapedia's Emerald-specific trainer
+  // pages (species/level/ability/item/moves) — sourced directly, not guessed.
+  // Full stat blocks only go up to ~Lv. 40 for now; Tate & Liza, Juan, the
+  // Elite Four, and the postgame rival/evil-team fights are level-cap-only
+  // and will get full blocks in a future pass.
+  var EMERALD_BOSSES = {
+    gymLeaders: [
+      { name: "Roxanne", location: "Rustboro Gym", type: "Rock", cap: 15, battleItems: "2x Potion (3x Full Restore in rematches)",
+        mons: [
+          { name: "Geodude", level: 12, stats: [33,25,30,13,13,11], ability: "Rock Head", item: "—", moves: "Tackle, Rock Throw, Rock Tomb, Defense Curl" },
+          { name: "Geodude", level: 12, stats: [33,25,30,14,13,9], ability: "Rock Head", item: "—", moves: "Tackle, Rock Throw, Rock Tomb, Defense Curl" },
+          { name: "Nosepass", level: 15, stats: [37,24,44,22,35,17], ability: "Magnet Pull", item: "Oran Berry", moves: "Tackle, Rock Tomb, Harden, Block" }
+        ],
+        tip: "Nosepass's Block traps your Pokémon in — don't send in something with a bad matchup. Water or Grass moves 4x Geodude." },
+      { name: "Brawly", location: "Dewford Gym", type: "Fighting", cap: 19, battleItems: "2x Super Potion (3x Full Restore in rematches)",
+        mons: [
+          { name: "Machop", level: 16, stats: [50,32,22,18,18,18], ability: "Guts", item: "—", moves: "Karate Chop, Low Kick, Seismic Toss, Bulk Up" },
+          { name: "Meditite", level: 16, stats: [37,17,24,19,26,26], ability: "Pure Power", item: "—", moves: "Focus Punch, Light Screen, Reflect, Bulk Up" },
+          { name: "Makuhita", level: 19, stats: [60,32,22,17,18,19], ability: "Thick Fat", item: "Sitrus Berry", moves: "Arm Thrust, Vital Throw, Reversal, Bulk Up" }
+        ],
+        tip: "Makuhita's Vital Throw and Reversal can 2HKO a Grovyle. Meditite's only attack is Focus Punch — easy to play around by attacking first." },
+      { name: "Wattson", location: "Mauville Gym", type: "Electric", cap: 24, battleItems: "2x Super Potion (3x Full Restore in rematches)",
+        mons: [
+          { name: "Voltorb", level: 20, stats: [50,21,29,31,31,49], ability: "Static", item: "—", moves: "Rollout, Spark, Self-Destruct, Shock Wave" },
+          { name: "Electrike", level: 20, stats: [50,27,25,35,25,35], ability: "Static", item: "—", moves: "Shock Wave, Leer, Quick Attack, Howl" },
+          { name: "Magneton", level: 22, stats: [59,37,57,56,41,41], ability: "Magnet Pull", item: "—", moves: "Supersonic, Shock Wave, Thunder Wave, Sonic Boom" },
+          { name: "Manectric", level: 24, stats: [74,52,41,62,41,55], ability: "Static", item: "Sitrus Berry", moves: "Quick Attack, Thunder Wave, Shock Wave, Howl" }
+        ],
+        tip: "Shock Wave never misses, so accuracy tricks won't save you — bring Paralyze Heals. Ground-types are immune to everything here." },
+      { name: "Flannery", location: "Lavaridge Gym", type: "Fire", cap: 29, battleItems: "2x Hyper Potion (3x Full Restore in rematches)",
+        mons: [
+          { name: "Numel", level: 24, stats: [68,39,29,36,32,29], ability: "Oblivious", item: "—", moves: "Magnitude, Take Down, Overheat, Sunny Day" },
+          { name: "Slugma", level: 24, stats: [58,26,29,44,31,20], ability: "Magma Armor", item: "—", moves: "Smog, Overheat, Light Screen, Sunny Day" },
+          { name: "Camerupt", level: 26, stats: [80,70,49,60,51,33], ability: "Magma Armor", item: "—", moves: "Overheat, Tackle, Attract, Sunny Day" },
+          { name: "Torkoal", level: 29, stats: [88,56,94,69,54,25], ability: "White Smoke", item: "White Herb", moves: "Body Slam, Overheat, Attract, Sunny Day" }
+        ],
+        tip: "Torkoal and Camerupt know Attract — bring same-gender or genderless Pokémon, or a female if you're worried about males getting locked out of attacking." },
+      { name: "Norman", location: "Petalburg Gym", type: "Normal", cap: 31, battleItems: "2x Hyper Potion (3x Full Restore in rematches)",
+        mons: [
+          { name: "Spinda", level: 27, stats: [75,43,43,43,43,43], ability: "Own Tempo", item: "—", moves: "Facade, Psybeam, Teeter Dance, Encore" },
+          { name: "Vigoroth", level: 27, stats: [86,54,54,41,36,66], ability: "Vital Spirit", item: "—", moves: "Slash, Facade, Faint Attack, Encore" },
+          { name: "Linoone", level: 29, stats: [91,57,42,40,47,69], ability: "Pickup", item: "—", moves: "Slash, Facade, Headbutt, Belly Drum" },
+          { name: "Slaking", level: 31, stats: [143,113,76,73,59,68], ability: "Truant", item: "Sitrus Berry", moves: "Facade, Faint Attack, Counter, Yawn" }
+        ],
+        tip: "Every mon here knows Facade — avoid poisoning or paralyzing your own team into a 210-power hit. Slaking's Truant means it only attacks every other turn." },
+      { name: "Winona", location: "Fortree Gym", type: "Flying", cap: 33, battleItems: "2x Hyper Potion (3x Full Restore in rematches)",
+        mons: [
+          { name: "Swablu", level: 29, stats: [72,35,42,35,55,45], ability: "Natural Cure", item: "—", moves: "Aerial Ace, Perish Song, Mirror Move, Safeguard" },
+          { name: "Tropius", level: 29, stats: [103,51,66,48,62,41], ability: "Chlorophyll", item: "—", moves: "Solar Beam, Aerial Ace, Sunny Day, Synthesis" },
+          { name: "Pelipper", level: 30, stats: [83,37,72,63,59,51], ability: "Keen Eye", item: "—", moves: "Aerial Ace, Water Gun, Supersonic, Protect" },
+          { name: "Skarmory", level: 31, stats: [89,55,99,37,61,56], ability: "Keen Eye", item: "—", moves: "Aerial Ace, Steel Wing, Fury Attack, Sand-Attack" },
+          { name: "Altaria", level: 33, stats: [102,61,74,61,84,68], ability: "Natural Cure", item: "Oran Berry", moves: "Earthquake, Aerial Ace, Dragon Breath, Dragon Dance" }
+        ],
+        tip: "Everything knows Aerial Ace, so accuracy-lowering tricks won't help. Electric, Ice, and Rock moves hit this whole team hard." },
+      { name: "Tate & Liza", location: "Mossdeep Gym", type: "Psychic", cap: 42, battleItems: "4x Hyper Potion (3x Full Restore in rematches)",
+        mons: [
+          { name: "Claydol", level: 41, stats: [112,74,113,74,103,78], ability: "Levitate", item: "—", moves: "Earthquake, Ancient Power, Psychic, Light Screen" },
+          { name: "Xatu", level: 41, stats: [116,78,74,95,74,95], ability: "Synchronize", item: "—", moves: "Psychic, Sunny Day, Confuse Ray, Calm Mind" },
+          { name: "Lunatone", level: 42, stats: [123,63,79,87,89,76], ability: "Levitate", item: "—", moves: "Psychic, Hypnosis, Calm Mind, Light Screen" },
+          { name: "Solrock", level: 42, stats: [123,87,89,69,72,76], ability: "Levitate", item: "—", moves: "Solar Beam, Psychic, Flamethrower, Sunny Day" }
+        ],
+        tip: "This is a Double Battle — all four come out across two rounds (Claydol+Xatu lead, then Lunatone+Solrock). Dark and Ghost moves hit everything for weakness; Xatu and Solrock use Sunny Day to buff Solrock's Flamethrower and weaken your Water moves." },
+      { name: "Juan", location: "Sootopolis Gym", type: "Water", cap: 46,
+        mons: [
+          { name: "Luvdisc", level: 41, stats: [96,42,59,42,68,94], ability: "Swift Swim", item: "—", moves: "Water Pulse, Flail, Sweet Kiss, Attract" },
+          { name: "Whiscash", level: 41, stats: [151,78,66,77,73,70], ability: "Oblivious", item: "—", moves: "Water Pulse, Earthquake, Rain Dance, Amnesia" },
+          { name: "Sealeo", level: 43, stats: [140,66,75,79,67,59], ability: "Thick Fat", item: "—", moves: "Aurora Beam, Water Pulse, Body Slam, Encore" },
+          { name: "Crawdaunt", level: 43, stats: [117,129,88,82,62,62], ability: "Hyper Cutter", item: "—", moves: "Crabhammer, Water Pulse, Taunt, Leer" },
+          { name: "Kingdra", level: 46, stats: [138,106,106,106,95,106], ability: "Swift Swim", item: "Chesto Berry", moves: "Ice Beam, Water Pulse, Double Team, Rest" }
+        ],
+        tip: "Kingdra's only weakness in Gen 3 is Dragon — no Dragon move exists yet on your side realistically, so plan to just out-bulk it with status/Electric/Grass on the rest of the team first." }
+    ],
+    eliteFour: [
+      { name: "Sidney", type: "Dark",
+        mons: [
+          { name: "Mightyena", level: 46, stats: [134,101,83,81,66,83], ability: "Intimidate", item: "—", moves: "Crunch, Double-Edge, Sand-Attack, Roar" },
+          { name: "Absol", level: 49, stats: [137,132,85,93,78,93], ability: "Pressure", item: "—", moves: "Aerial Ace, Rock Slide, Slash, Swords Dance" },
+          { name: "Shiftry", level: 48, stats: [158,115,77,94,77,105], ability: "Chlorophyll", item: "—", moves: "Extrasensory, Double Team, Swagger, Torment" },
+          { name: "Crawdaunt", level: 48, stats: [132,147,101,105,64,72], ability: "Hyper Cutter", item: "—", moves: "Surf, Strength, Facade, Swords Dance" },
+          { name: "Cacturne", level: 46, stats: [134,136,74,111,74,69], ability: "Sand Veil", item: "—", moves: "Faint Attack, Needle Arm, Cotton Spore, Leech Seed" }
+        ],
+        tip: "Fighting and Bug moves are efficient here. Don't assume every Dark-type is passive — several carry real coverage and stat-boosting moves." },
+      { name: "Phoebe", type: "Ghost",
+        mons: [
+          { name: "Dusclops", level: 48, stats: [110,94,144,77,129,43], ability: "Pressure", item: "—", moves: "Shadow Punch, Protect, Confuse Ray, Curse" },
+          { name: "Dusclops", level: 51, stats: [117,92,153,73,168,46], ability: "Pressure", item: "—", moves: "Ice Beam, Shadow Ball, Rock Slide, Earthquake" },
+          { name: "Sableye", level: 50, stats: [125,95,95,76,93,70], ability: "Keen Eye", item: "—", moves: "Shadow Ball, Night Shade, Faint Attack, Double Team" },
+          { name: "Banette", level: 49, stats: [136,118,83,101,89,83], ability: "Insomnia", item: "—", moves: "Shadow Ball, Faint Attack, Will-O-Wisp, Grudge" },
+          { name: "Banette", level: 49, stats: [136,132,83,101,72,91], ability: "Insomnia", item: "—", moves: "Shadow Ball, Psychic, Thunderbolt, Facade" }
+        ],
+        tip: "Normal and Fighting moves fail completely into her all-Ghost team — bring Dark or Ghost coverage instead, and watch for status (Will-O-Wisp, Confuse Ray)." },
+      { name: "Glacia", type: "Ice",
+        mons: [
+          { name: "Sealeo", level: 50, stats: [165,88,90,95,90,58], ability: "Thick Fat", item: "—", moves: "Ice Ball, Body Slam, Hail, Encore" },
+          { name: "Glalie", level: 50, stats: [155,100,100,100,100,100], ability: "Inner Focus", item: "—", moves: "Ice Beam, Icy Wind, Crunch, Light Screen" },
+          { name: "Sealeo", level: 52, stats: [171,83,93,98,93,67], ability: "Thick Fat", item: "—", moves: "Blizzard, Double-Edge, Hail, Attract" },
+          { name: "Glalie", level: 52, stats: [160,103,92,113,103,103], ability: "Inner Focus", item: "—", moves: "Ice Beam, Explosion, Shadow Ball, Hail" },
+          { name: "Walrein", level: 53, stats: [196,106,116,122,104,99], ability: "Thick Fat", item: "—", moves: "Ice Beam, Surf, Body Slam, Sheer Cold" }
+        ],
+        tip: "Fire and Fighting help, but her whole team resists neither cleanly since they're bulky Water/Ice — Electric or a strong neutral physical attacker is often the cleaner answer." },
+      { name: "Drake", type: "Dragon",
+        mons: [
+          { name: "Shelgon", level: 52, stats: [145,119,124,91,72,64], ability: "Rock Head", item: "—", moves: "Rock Tomb, Double-Edge, Dragon Claw, Protect" },
+          { name: "Altaria", level: 54, stats: [161,86,118,105,134,107], ability: "Natural Cure", item: "—", moves: "Dragon Breath, Aerial Ace, Double-Edge, Dragon Dance" },
+          { name: "Kingdra", level: 53, stats: [158,121,121,121,121,111], ability: "Swift Swim", item: "—", moves: "Surf, Body Slam, Dragon Dance, Smokescreen" },
+          { name: "Flygon", level: 53, stats: [163,126,115,105,94,126], ability: "Levitate", item: "—", moves: "Dragon Breath, Earthquake, Crunch, Flamethrower" },
+          { name: "Salamence", level: 55, stats: [186,153,121,143,110,132], ability: "Intimidate", item: "—", moves: "Dragon Claw, Rock Slide, Crunch, Flamethrower" }
+        ],
+        tip: "Ice Beam is the single best answer to this whole team. Without it, lean on status and avoid giving Salamence a free turn to set up." }
+    ],
+    champion: {
+      name: "Wallace", location: "Ever Grande City, Champion's Room", battleItems: "—",
+      mons: [
+        { name: "Wailord", level: 57, stats: [278,125,73,137,65,91], ability: "Water Veil", item: "—", moves: "Blizzard, Double-Edge, Water Spout, Rain Dance" },
+        { name: "Tentacruel", level: 55, stats: [170,99,93,110,169,118], ability: "Clear Body", item: "—", moves: "Ice Beam, Sludge, Hydro Pump, Toxic" },
+        { name: "Milotic", level: 58, stats: [196,92,102,138,183,116], ability: "Marvel Scale", item: "—", moves: "Ice Beam, Surf, Toxic, Recover" },
+        { name: "Gyarados", level: 56, stats: [189,162,110,97,120,113], ability: "Intimidate", item: "—", moves: "Surf, Hyper Beam, Earthquake, Dragon Dance" },
+        { name: "Ludicolo", level: 56, stats: [172,100,100,123,134,100], ability: "Swift Swim", item: "—", moves: "Giga Drain, Surf, Double Team, Leech Seed" },
+        { name: "Whiscash", level: 56, stats: [206,109,104,107,111,80], ability: "Oblivious", item: "—", moves: "Surf, Hyper Beam, Earthquake, Amnesia" }
+      ],
+      tip: "Electric and Grass pressure most of this team, but Whiscash is immune to Electric and Ludicolo resists Grass — bring a balanced answer rather than one type spam."
+    },
+    otherBattles: [
+      { name: "Wally", location: "Mauville City (Gym door)", note: "His very first battle as a trainer — trivial, but worth knowing it exists.",
+        mons: [
+          { name: "Ralts", level: 16, stats: [35,14,13,19,14,18], ability: "Synchronize", item: "—", moves: "Growl, Confusion, Double Team, Teleport" }
+        ] },
+      { name: "Wally", location: "Victory Road", note: "The shy kid from Petalburg, now with a full team — this is his real debut as a serious trainer. Only one Victory Road encounter is confirmed; there isn't a separate rematch here.",
+        mons: [
+          { name: "Altaria", level: 44, stats: [127,74,92,66,105,91], ability: "Natural Cure", item: "—", moves: "Dragon Breath, Aerial Ace, Dragon Dance, Safeguard" },
+          { name: "Delcatty", level: 43, stats: [120,68,68,60,60,72], ability: "Cute Charm", item: "—", moves: "Faint Attack, Sing, Charm, Assist" },
+          { name: "Magneton", level: 41, stats: [99,61,99,99,69,69], ability: "Magnet Pull", item: "—", moves: "Tri Attack, Thunderbolt, Supersonic, Screech" },
+          { name: "Roselia", level: 44, stats: [105,71,52,90,83,70], ability: "Natural Cure", item: "—", moves: "Magical Leaf, Giga Drain, Leech Seed, Toxic" },
+          { name: "Gardevoir", level: 45, stats: [129,77,77,131,109,99], ability: "Synchronize", item: "—", moves: "Psychic, Future Sight, Double Team, Calm Mind" }
+        ] }
+    ],
+    evilTeam: [
+      { name: "Team Magma/Aqua Grunts", location: "Route 111 / various", note: "Scattered early grunt battles guarding routes and the Weather Institute — teams vary, generally low-level single Pokémon." },
+      { name: "Maxie", location: "Mt. Chimney", note: "Blocks the machine controlling Mt. Chimney's volcanic activity.",
+        mons: [
+          { name: "Mightyena", level: 24, stats: [71,52,46,38,34,42], ability: "Intimidate", item: "—", moves: "Bite, Sand-Attack, Roar, Odor Sleuth" },
+          { name: "Zubat", level: 24, stats: [57,33,23,23,28,35], ability: "Inner Focus", item: "—", moves: "Wing Attack, Bite, Astonish, Supersonic" },
+          { name: "Camerupt", level: 25, stats: [74,64,44,55,47,29], ability: "Magma Armor", item: "—", moves: "Magnitude, Ember, Tackle, Focus Energy" }
+        ] },
+      { name: "Tabitha", location: "Mt. Chimney (before Maxie)", note: "Fought right before Maxie on the same mountain, not in the hideout.",
+        mons: [
+          { name: "Numel", level: 18, stats: [50,27,22,29,19,18], ability: "Oblivious", item: "—", moves: "Ember, Tackle, Growl" },
+          { name: "Zubat", level: 22, stats: [50,26,21,20,20,30], ability: "Inner Focus", item: "—", moves: "Wing Attack, Bite, Astonish, Supersonic" },
+          { name: "Poochyena", level: 20, stats: [45,28,20,18,18,20], ability: "Intimidate", item: "—", moves: "Bite, Howl, Sand-Attack, Odor Sleuth" },
+          { name: "Numel", level: 22, stats: [59,32,20,37,26,21], ability: "Oblivious", item: "—", moves: "Magnitude, Ember, Tackle, Growl" }
+        ] },
+      { name: "Aqua Admin Shelly", location: "Weather Institute", note: "Guards the institute during the Castform rescue.",
+        mons: [
+          { name: "Carvanha", level: 28, stats: [64,57,17,38,17,47], ability: "Rough Skin", item: "—", moves: "Crunch, Screech, Focus Energy, Scary Face" },
+          { name: "Mightyena", level: 28, stats: [78,62,40,40,40,45], ability: "Intimidate", item: "—", moves: "Bite, Swagger, Roar, Odor Sleuth" }
+        ] },
+      { name: "Magma Admin Tabitha", location: "Magma Hideout (4F)", note: "Blocks the deeper path to Maxie's chamber. A separate, later fight from the Mt. Chimney one above.",
+        mons: [
+          { name: "Numel", level: 26, stats: [69,38,30,41,27,25], ability: "Oblivious", item: "—", moves: "Magnitude, Ember, Tackle, Focus Energy" },
+          { name: "Mightyena", level: 28, stats: [79,57,46,41,41,46], ability: "Intimidate", item: "—", moves: "Bite, Swagger, Roar, Odor Sleuth" },
+          { name: "Zubat", level: 30, stats: [66,34,25,25,34,40], ability: "Inner Focus", item: "—", moves: "Wing Attack, Bite, Astonish, Confuse Ray" },
+          { name: "Camerupt", level: 33, stats: [92,73,59,77,51,34], ability: "Magma Armor", item: "—", moves: "Rock Slide, Take Down, Amnesia, Focus Energy" }
+        ] },
+      { name: "Magma Leader Maxie", location: "Magma Hideout (4F, awakening Groudon)", note: "The real Groudon-awakening confrontation — much stronger than the Mt. Chimney fight.",
+        mons: [
+          { name: "Mightyena", level: 37, stats: [105,78,69,56,50,63], ability: "Intimidate", item: "—", moves: "Take Down, Swagger, Scary Face, Roar" },
+          { name: "Crobat", level: 38, stats: [119,88,64,65,72,110], ability: "Inner Focus", item: "—", moves: "Air Cutter, Wing Attack, Bite, Confuse Ray" },
+          { name: "Camerupt", level: 39, stats: [110,99,66,83,70,43], ability: "Magma Armor", item: "—", moves: "Earthquake, Rock Slide, Take Down, Amnesia" }
+        ] },
+      { name: "Aqua Admin Matt", location: "Team Aqua Hideout (B2F, Lilycove)", note: "Covers Archie's escape with the stolen submarine. Grab the Master Ball in this hideout before leaving.",
+        mons: [
+          { name: "Mightyena", level: 34, stats: [93,61,59,47,47,54], ability: "Intimidate", item: "—", moves: "Swagger, Roar, Scary Face, Odor Sleuth" },
+          { name: "Golbat", level: 34, stats: [97,61,54,51,58,68], ability: "Inner Focus", item: "—", moves: "Wing Attack, Bite, Astonish, Confuse Ray" }
+        ] },
+      { name: "Maxie & Tabitha (double battle)", location: "Mossdeep Space Center (2F)", note: "Fought alongside Steven as a 3-on-3 multi battle — both admins' full trios confirmed.",
+        mons: [
+          { name: "Tabitha's Camerupt", level: 36, stats: [100,81,59,84,63,38], ability: "Magma Armor", item: "—", moves: "Rock Slide, Take Down, Amnesia, Focus Energy" },
+          { name: "Tabitha's Mightyena", level: 38, stats: [105,77,68,49,55,62], ability: "Intimidate", item: "—", moves: "Take Down, Swagger, Scary Face, Taunt" },
+          { name: "Tabitha's Golbat", level: 40, stats: [114,73,65,61,69,81], ability: "Inner Focus", item: "—", moves: "Air Cutter, Wing Attack, Bite, Confuse Ray" },
+          { name: "Maxie's Mightyena", level: 42, stats: [105,77,68,49,55,62], ability: "Intimidate", item: "—", moves: "Take Down, Swagger, Roar, Scary Face" },
+          { name: "Maxie's Camerupt", level: 44, stats: [123,110,74,94,78,48], ability: "Magma Armor", item: "—", moves: "Earthquake, Take Down, Rock Slide, Amnesia" },
+          { name: "Maxie's Crobat", level: 43, stats: [133,99,72,72,81,124], ability: "Inner Focus", item: "—", moves: "Air Cutter, Wing Attack, Confuse Ray, Mean Look" }
+        ] },
+      { name: "Aqua Admin Shelly", location: "Seafloor Cavern (Room 7)", note: "Fought right before Archie awakens Kyogre.",
+        mons: [
+          { name: "Sharpedo", level: 37, stats: [103,98,35,79,42,79], ability: "Rough Skin", item: "—", moves: "Scary Face, Crunch, Screech, Slash" },
+          { name: "Mightyena", level: 37, stats: [103,76,67,53,47,61], ability: "Intimidate", item: "—", moves: "Roar, Swagger, Scary Face, Take Down" }
+        ] },
+      { name: "Aqua Leader Archie", location: "Seafloor Cavern (Deepest Room)", note: "The story's climax fight — right after this, Kyogre and Groudon both awaken.",
+        mons: [
+          { name: "Mightyena", level: 41, stats: [115,94,69,61,61,62], ability: "Intimidate", item: "—", moves: "Take Down, Swagger, Roar, Scary Face" },
+          { name: "Crobat", level: 41, stats: [128,86,77,69,77,118], ability: "Inner Focus", item: "—", moves: "Air Cutter, Wing Attack, Bite, Confuse Ray" },
+          { name: "Sharpedo", level: 43, stats: [120,115,42,103,47,94], ability: "Rough Skin", item: "—", moves: "Slash, Swagger, Taunt, Screech" }
+        ] }
+    ],
+    rival: [
+      { stage: "1st battle", location: "Route 103", note: "Locked to your Treecko pick — the rival always gets the type advantage, so they open with Torchic.",
+        mons: [
+          { name: "Torchic", level: 5, ability: "Blaze", item: "—", moves: "Scratch, Growl" }
+        ] },
+      { stage: "2nd battle (optional)", location: "Rustboro City or Route 104", note: "Missable — only triggers if you white out before healing at Rustboro after rescuing Peeko.",
+        mons: [
+          { name: "Lotad", level: 13, ability: "Swift Swim", item: "—", moves: "Astonish, Growl, Absorb, Nature Power" },
+          { name: "Torchic", level: 15, ability: "Blaze", item: "—", moves: "Scratch, Growl, Focus Energy, Ember" }
+        ] },
+      { stage: "3rd battle", location: "Route 110", note: "First mandatory rematch, right after the Trick House area. Uses default level-up moves (not a fixed custom set), so treat the moves below as reported rather than guaranteed.",
+        mons: [
+          { name: "Wingull", level: 18, ability: "Keen Eye", item: "—", moves: "Growl, Water Gun, Supersonic, Wing Attack" },
+          { name: "Lombre", level: 18, ability: "Swift Swim", item: "—", moves: "Astonish, Growl, Absorb, Nature Power" },
+          { name: "Combusken", level: 20, ability: "Blaze", item: "—", moves: "Focus Energy, Ember, Double Kick, Peck" }
+        ] },
+      { stage: "4th battle", location: "Route 119", note: "After clearing the Weather Institute of Team Magma/Aqua and crossing the bridge north. Default level-up moves — treat as reported rather than guaranteed.",
+        mons: [
+          { name: "Pelipper", level: 29, ability: "Keen Eye", item: "—", moves: "Wing Attack, Supersonic, Mist, Protect" },
+          { name: "Lombre", level: 29, ability: "Swift Swim", item: "—", moves: "Absorb, Nature Power, Fake Out, Fury Swipes" },
+          { name: "Combusken", level: 31, ability: "Blaze", item: "—", moves: "Double Kick, Peck, Sand-Attack, Bulk Up" }
+        ] },
+      { stage: "5th battle", location: "Lilycove City", note: "At the department store entrance, after visiting Mt. Pyre. Default level-up moves — treat as reported rather than guaranteed.",
+        mons: [
+          { name: "Tropius", level: 31, ability: "Chlorophyll", item: "—", moves: "Stomp, Sweet Scent, Whirlwind, Magical Leaf" },
+          { name: "Pelipper", level: 32, ability: "Keen Eye", item: "—", moves: "Wing Attack, Supersonic, Mist, Protect" },
+          { name: "Ludicolo", level: 32, ability: "Swift Swim", item: "—", moves: "Astonish, Growl, Absorb, Nature Power" },
+          { name: "Combusken", level: 34, ability: "Blaze", item: "—", moves: "Double Kick, Bulk Up, Sand-Attack, Peck" }
+        ] }
+    ]
+  };
+
+  // ---------- tips, cheats, natures, EV training ----------
+  var EMERALD_TIPS = [
+    { title: "Good Rod location", body: "Given by the fisherman in the house on Route 118, right next to Mauville. Old Rod comes earlier from a fisherman on Route 118 too; Super Rod comes from the house on Route 105 (Mr. Briney's area)." },
+    { title: "Devon Scope", body: "Given by Devon Corp in Rustboro after you deliver the Devon Goods. Lets you see and battle the two hidden Kecleon on Route 119 and Route 120." },
+    { title: "Move Relearner", body: "House in Fallarbor Town. For one Heart Scale, re-teaches a Pokémon any level-up move it currently knows how to learn but has forgotten or evolved past — great for recovering an early move an evolution overwrote." },
+    { title: "Move Deleter", body: "House up the ladder next to the Pokémon Center in Lilycove City. Free to use — deletes any single move except Surf, including HMs, without affecting happiness." },
+    { title: "Move tutors (different from the two above)", body: "One-time-use tutors are scattered through the game and teach a specific bonus move for free — each can only be used once per playthrough. The two repeatable tutors in the Battle Frontier area teach moves for Battle Points (BP) instead of Heart Scales, and can be used as many times as you have BP." },
+    { title: "Best move tutors to seek out", body: "Of the Battle Frontier's repeatable BP tutor pool, the standouts: Dragon Claw (reliable STAB with no drawback for Dragon-types), Rock Slide (great coverage move, flinch chance), Sky Attack (strong Flying STAB before TM alternatives), Substitute (stalling/setup tool), Bulk Up (Attack+Defense boost for physical sweepers), and Dynamic Punch (guaranteed confusion if it lands). Worth saving BP for these over the flashier but more situational options." },
+    { title: "Held items worth grabbing", body: "Amulet Coin (Slateport, after helping the old man on Route 104), King's Rock (Route 119, Trick House gift), Lucky Egg (postgame, Battle Tower staff)." },
+    { title: "Heart Scale locations", body: "Hidden items (need the Itemfinder) on Route 104, Route 105, Route 106, and Lilycove City — one each. Underwater Route 124 has two, and Route 128 has three. Route 106's is on the southeast side, Lilycove's is south of the department store — worth a sweep once you have Dive and the Itemfinder, since the Move Relearner eats one per use." }
+  ];
+
+  var EMERALD_CHEATS = [
+    { title: "Pomeg Glitch (EV reset)", body: "Feeding a Pomeg/Kelpsy/Grepa/Hondew/Qualot Berry can reduce a stat to 0 if the Pokémon's level is low enough relative to its EVs, letting you re-train EVs from scratch without breeding a new one. Legitimate in-game mechanic, not a cheat device, but very few players know about it." },
+    { title: "Cloning glitch (Battle Tower/link cable)", body: "Trading a Pokémon and canceling the trade at the right moment during the animation (or disconnecting a link cable at the right frame) duplicates the Pokémon and its held item. Well-documented Gen 3 glitch — useful for cloning a Master Ball or a rare catch, but does require a second GBA/cartridge or an emulator link setup." },
+    { title: "Coin Case duplication", body: "An old, patched-in-later-games glitch involving the Coin Case and Game Corner; largely irrelevant in Emerald since it was fixed here. Mentioned for completeness — don't rely on it." },
+    { title: "Infinite Rare Candy / infinite money", body: "There's no built-in vanilla-cartridge glitch for infinite Rare Candies in Emerald; the closest legitimate approaches are: (1) the Cloning Glitch above to duplicate a stack you already own, or (2) Action Replay/GameShark codes if you're playing on an emulator or flashcart with cheat support. Since this breaks the entire point of a Nuzlocke's resource scarcity, I'd think hard before using these even if available." },
+    { title: "Action Replay codes (emulator only)", body: "If you're on an emulator and want to experiment outside of a serious Nuzlocke run, common Emerald AR codes include Rare Candy count/quantity modifiers, walk-through-walls, and encounter modifiers. These require a code database (e.g. from a ROM-hacking community) and only work in emulators/flashcarts that support cheat codes — not on unmodified real hardware." },
+    { title: "Wild Pokémon Modifier (emulator only)", body: "A well-known AR code type that lets you force a specific wild encounter species. Popular for Nuzlocke challenges that want a random-but-controlled encounter table, but changes the vanilla experience significantly." }
+  ];
+
+  var NATURE_GUIDE = [
+    { nature: "Hardy", up: "—", down: "—" },
+    { nature: "Lonely", up: "Attack", down: "Defense" },
+    { nature: "Brave", up: "Attack", down: "Speed" },
+    { nature: "Adamant", up: "Attack", down: "Sp. Attack" },
+    { nature: "Naughty", up: "Attack", down: "Sp. Defense" },
+    { nature: "Bold", up: "Defense", down: "Attack" },
+    { nature: "Docile", up: "—", down: "—" },
+    { nature: "Relaxed", up: "Defense", down: "Speed" },
+    { nature: "Impish", up: "Defense", down: "Sp. Attack" },
+    { nature: "Lax", up: "Defense", down: "Sp. Defense" },
+    { nature: "Timid", up: "Speed", down: "Attack" },
+    { nature: "Hasty", up: "Speed", down: "Defense" },
+    { nature: "Serious", up: "—", down: "—" },
+    { nature: "Jolly", up: "Speed", down: "Sp. Attack" },
+    { nature: "Naive", up: "Speed", down: "Sp. Defense" },
+    { nature: "Modest", up: "Sp. Attack", down: "Attack" },
+    { nature: "Mild", up: "Sp. Attack", down: "Defense" },
+    { nature: "Quiet", up: "Sp. Attack", down: "Speed" },
+    { nature: "Bashful", up: "—", down: "—" },
+    { nature: "Rash", up: "Sp. Attack", down: "Sp. Defense" },
+    { nature: "Calm", up: "Sp. Defense", down: "Attack" },
+    { nature: "Gentle", up: "Sp. Defense", down: "Defense" },
+    { nature: "Sassy", up: "Sp. Defense", down: "Speed" },
+    { nature: "Careful", up: "Sp. Defense", down: "Sp. Attack" },
+    { nature: "Quirky", up: "—", down: "—" }
+  ];
+
+  var EV_SPOTS = [
+    { stat: "HP", spot: "Linoone (Route 101/102, Zigzagoon line) or Whismur (Route 116/Rusturf Tunnel)", note: "1 HP EV per kill — grind early since these routes are low level." },
+    { stat: "Attack", spot: "Machop (Route 112/Mt. Chimney) or Makuhita (Route 105–109 fishing spots, Granite Cave)", note: "1–2 Attack EVs per kill depending on species." },
+    { stat: "Defense", spot: "Geodude/Graveler (Granite Cave, Victory Road) or Nosepass (Granite Cave)", note: "1 Defense EV per Geodude, 2 per Nosepass or Graveler." },
+    { stat: "Sp. Attack", spot: "Ralts line (Route 102) is 2 EVs but rare; more reliably, use Spinda (Route 113) or Gulpin (Route 110/213)", note: "There's no dedicated Sp. Atk farm in Emerald as strong as later games — Spinda (Route 113, 1 EV) is the most consistent early option." },
+    { stat: "Sp. Defense", spot: "Tentacool (any early water route, Old Rod) or Corphish (Route 102/111/117)", note: "1 Sp. Def EV per Tentacool kill; very easy to farm since they're everywhere in the water routes." },
+    { stat: "Speed", spot: "Zigzagoon (Route 101/102) or Taillow (Route 104/116/119)", note: "1 Speed EV per kill — Zigzagoon is the most common and easiest to chain early." }
+  ];
+
+  // ---------- Renegade Platinum data (stub — not yet extracted) ----------
+  // Source: "Pokemon Renegade Platinum - Documentation.xlsx" (see
+  // ../CLAUDE.md and the memory note "renegade-platinum-parsing-plan" for
+  // the sheet->shape mapping and extraction plan). Empty until the local-LLM
+  // extraction pipeline produces real data — the UI is written to degrade
+  // gracefully (renderChecklist/renderBosses show an empty-state) so the
+  // game can be selected and wired up before any rows are filled in.
+  // Wild encounter tables — extracted from the source spreadsheet's
+  // ENCOUNTERS sheet, Roark-split locations only so far (see CLAUDE.md
+  // romhack goal section for the rest of the game). Sandgem Town,
+  // Jubilife City, Oreburgh City and Oreburgh Gym have no wild encounter
+  // table in that sheet (no grass/water tiles) so they're left out of the
+  // Checklist entirely rather than shown with an empty species list.
+  //
+  // The ENCOUNTERS sheet isn't one vertical list — it's a grid of location
+  // blocks read top-to-bottom within a ~7-column band, then left-to-right
+  // to the next band, so a location's sheet position doesn't always match
+  // its story position (e.g. the TRAINER SCHOOL band's lower rows turned
+  // out to be Route 218/219 parked in a gap, not anything reachable this
+  // early). Ravaged Path and Route 207 *are* real Roark-split locations
+  // found this way — neither has any trainer battles, so they never
+  // surfaced from scanning the ROARK SPLiT sheet's location headers (that
+  // sheet was the source for every other location here) — and both
+  // sanity-check against the level curve (Ravaged Path 6-8 sits
+  // between Route 202 and Route 203/204S; Route 207 9-10 sits between
+  // Oreburgh Gate and Oreburgh Mine). Route 218/219 were excluded from
+  // Roark split — NOT because that band's data is junk (it isn't: a
+  // route can legitimately have more than one "clone" table elsewhere in
+  // the sheet, each gated behind something like Surf, so a low-level
+  // partial table there can be genuinely correct for right now while a
+  // separate high-level table elsewhere is the same route's later state
+  // — see the standing "search for clones" rule in CLAUDE.md before ever
+  // excluding a route on data-quality grounds again). They're excluded
+  // here because a full-sheet search for every other "ROUTE 218"/"ROUTE
+  // 219" occurrence turned up only a level 38-39 table (clearly
+  // post-Roark) and no matching low-level Grass table alongside the
+  // Old-Rod-only one — nothing suggesting either route is reachable this
+  // early, cap-16 romhack or not.
+  //
+  // Two extra optional fields beyond Emerald's {sp,m,lv} shape, both kept
+  // terse on purpose (checklist stays dense — see renderChecklist):
+  //   t    time-of-day restriction, only present when a species ISN'T
+  //        available all day — letters from "MDN" (Morning/Day/Night).
+  //        Omitted entirely when a species has nonzero odds at all three
+  //        (the common case), so it only shows up as an exception.
+  //   tier which rod(s) a fished species bites on, letters from "OGS"
+  //        (Old/Good/Super). Rod-fished species are one "Rod" method
+  //        group per location (not three separate Old/Good/Super Rod
+  //        groups) with tier noted per species — the sheet gives no
+  //        per-species level for these, hence lv:"—".
+  var RENEGADE_GUIDE = [
+    { name: "Twinleaf Town", encounters: [
+      {sp:"Turtwig",m:"Gift",lv:"5"},{sp:"Chimchar",m:"Gift",lv:"5"},{sp:"Piplup",m:"Gift",lv:"5"},
+      {sp:"Eevee",m:"Gift (from Mom)",lv:"5"},
+      {sp:"Psyduck",m:"Surf",lv:"20-40"},{sp:"Golduck",m:"Surf",lv:"30-40"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Poliwag",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Poliwhirl",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Route 201", encounters: [
+      {sp:"Starly",m:"Grass",lv:"4-5"},{sp:"Bidoof",m:"Grass",lv:"4-5"},{sp:"Pidgey",m:"Grass",lv:"4",t:"MD"},
+      {sp:"Kricketot",m:"Grass",lv:"4",t:"MN"},{sp:"Nidoran ♂",m:"Grass",lv:"4-5"},{sp:"Nidoran ♀",m:"Grass",lv:"4-5"},
+      {sp:"Hoothoot",m:"Grass",lv:"4",t:"N"},
+      {sp:"Doduo",m:"Poké Radar",lv:"5"},
+      {sp:"Mew",m:"Static (event)",lv:"40"}
+    ]},
+    { name: "Lake Verity", encounters: [
+      {sp:"Starly",m:"Grass",lv:"4-5"},{sp:"Bidoof",m:"Grass",lv:"4"},{sp:"Surskit",m:"Grass",lv:"4-5"},
+      {sp:"Azurill",m:"Grass",lv:"5"},{sp:"Psyduck",m:"Grass",lv:"5"},{sp:"Wingull",m:"Grass",lv:"4-5"},
+      {sp:"Wynaut",m:"Poké Radar",lv:"5"},
+      {sp:"Surskit",m:"Surf",lv:"20-40"},{sp:"Masquerain",m:"Surf",lv:"30-40"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Feebas",m:"Rod",lv:"—",tier:"O"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Route 202", encounters: [
+      {sp:"Shinx",m:"Grass",lv:"5"},{sp:"Zigzagoon",m:"Grass",lv:"5"},{sp:"Sentret",m:"Grass",lv:"5",t:"MD"},
+      {sp:"Rattata",m:"Grass",lv:"5"},{sp:"Poochyena",m:"Grass",lv:"5-6"},{sp:"Growlithe",m:"Grass",lv:"5-6"},
+      {sp:"Burmy",m:"Grass",lv:"5"},{sp:"Hoothoot",m:"Grass",lv:"5",t:"N"},
+      {sp:"Houndour",m:"Poké Radar",lv:"5-6"}
+    ]},
+    { name: "Ravaged Path", encounters: [
+      {sp:"Zubat",m:"Cave",lv:"6-8"},{sp:"Geodude",m:"Cave",lv:"6-8"},{sp:"Wooper",m:"Cave",lv:"6"},
+      {sp:"Psyduck",m:"Cave",lv:"6"},{sp:"Sandshrew",m:"Cave",lv:"6"},{sp:"Makuhita",m:"Cave",lv:"6"},
+      {sp:"Wooper",m:"Surf",lv:"20-30"},{sp:"Quagsire",m:"Surf",lv:"20-40"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Barboach",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Whiscash",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Route 204 (South)", encounters: [
+      {sp:"Starly",m:"Grass",lv:"6"},{sp:"Budew",m:"Grass",lv:"6"},{sp:"Bellsprout",m:"Grass",lv:"6-7"},
+      {sp:"Ralts",m:"Grass",lv:"6-7"},{sp:"Caterpie",m:"Grass",lv:"6"},{sp:"Weedle",m:"Grass",lv:"6"},
+      {sp:"Wurmple",m:"Grass",lv:"6",t:"MD"},{sp:"Ledyba",m:"Grass",lv:"6",t:"M"},{sp:"Sunkern",m:"Grass",lv:"6",t:"D"}
+    ]},
+    { name: "Route 203", encounters: [
+      {sp:"Starly",m:"Grass",lv:"7-8"},{sp:"Bidoof",m:"Grass",lv:"7"},{sp:"Spearow",m:"Grass",lv:"7-8"},
+      {sp:"Seedot",m:"Grass",lv:"7"},{sp:"Lotad",m:"Grass",lv:"7"},{sp:"Cubone",m:"Grass",lv:"7"},
+      {sp:"Abra",m:"Grass",lv:"7-8"},
+      {sp:"Pineco",m:"Poké Radar",lv:"7-8"},
+      {sp:"Psyduck",m:"Surf",lv:"20-30"},{sp:"Golduck",m:"Surf",lv:"20-40"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Corphish",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Crawdaunt",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Oreburgh Gate", encounters: [
+      {sp:"Zubat",m:"Cave (1F)",lv:"7-9"},{sp:"Geodude",m:"Cave (1F)",lv:"7-9"},{sp:"Diglett",m:"Cave (1F)",lv:"7-9"},{sp:"Riolu",m:"Cave (1F)",lv:"8"},
+      {sp:"Zubat",m:"Cave (B1F)",lv:"8-10"},{sp:"Geodude",m:"Cave (B1F)",lv:"8-10"},{sp:"Diglett",m:"Cave (B1F)",lv:"8-10"},{sp:"Riolu",m:"Cave (B1F)",lv:"9"},
+      {sp:"Zubat",m:"Surf",lv:"20-30"},{sp:"Golbat",m:"Surf",lv:"20-40"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Barboach",m:"Rod",lv:"—",tier:"OGS"}
+    ]},
+    { name: "Route 207", encounters: [
+      {sp:"Machop",m:"Grass",lv:"9-10"},{sp:"Rhyhorn",m:"Grass",lv:"9-10"},{sp:"Ponyta",m:"Grass",lv:"9-10"},
+      {sp:"Phanpy",m:"Grass",lv:"9"},{sp:"Larvitar",m:"Grass",lv:"9"},
+      {sp:"Stantler",m:"Poké Radar",lv:"9-10"},
+      {sp:"Aipom",m:"Honey Tree",lv:"—"},{sp:"Slakoth",m:"Honey Tree",lv:"—"},
+      {sp:"Metapod",m:"Honey Tree",lv:"—"},{sp:"Kakuna",m:"Honey Tree",lv:"—"},{sp:"Munchlax",m:"Honey Tree",lv:"—"}
+    ]},
+    { name: "Oreburgh Mine", encounters: [
+      {sp:"Geodude",m:"Cave (1F)",lv:"9-10"},{sp:"Zubat",m:"Cave (1F)",lv:"9-10"},{sp:"Whismur",m:"Cave (1F)",lv:"9-10"},
+      {sp:"Aron",m:"Cave (1F)",lv:"9"},{sp:"Onix",m:"Cave (1F)",lv:"10"},{sp:"Trapinch",m:"Cave (1F)",lv:"9"},
+      {sp:"Geodude",m:"Cave (B1F)",lv:"10-11"},{sp:"Zubat",m:"Cave (B1F)",lv:"10-11"},{sp:"Whismur",m:"Cave (B1F)",lv:"10-11"},
+      {sp:"Aron",m:"Cave (B1F)",lv:"10"},{sp:"Onix",m:"Cave (B1F)",lv:"11"},{sp:"Trapinch",m:"Cave (B1F)",lv:"11"}
+    ]}
+  ];
+  var RENEGADE_BOSSES = {
+    gymLeaders: [
+      { name: "Roark", cap: 16, location: "Oreburgh Gym", type: "Rock", mons: [
+        { name: "Nosepass", level: 15, stats: [30,35,135,55,90,30], ability: "Sturdy", item: "Smooth Rock", moves: "Stealth Rock, Sandstorm, Thunder Wave, Shock Wave" },
+        { name: "Bonsly", level: 15, stats: [60,85,95,10,55,10], ability: "Rock Head", item: "Rindo Berry", moves: "Stealth Rock, Brick Break, Rollout, Defense Curl" },
+        { name: "Geodude", level: 15, stats: [40,80,100,30,30,20], ability: "Rock Head", item: "Expert Belt", moves: "Bulldoze (!), Rock Tomb, Fire Punch, Thunder Punch" },
+        { name: "Onix", level: 15, stats: [35,75,160,30,45,80], ability: "Rock Head", item: "Muscle Band", moves: "Stealth Rock, Rock Tomb, Bulldoze (!), Sandstorm" },
+        { name: "Larvitar", level: 15, stats: [50,64,50,45,50,41], ability: "Guts", item: "Flame Orb", moves: "Rock Tomb, Bulldoze (!), Bite, Protect" },
+        { name: "Cranidos", level: 16, stats: [67,125,40,30,30,58], ability: "Rock Head (!)", item: "Sitrus Berry", moves: "Zen Headbutt, Rock Tomb, Thunder Punch, Scary Face" }
+      ] }
+    ],
+    eliteFour: [],
+    champion: null,
+    rival: [
+      { stage: "Route 201 (starter reveal)", location: "Route 201",
+        note: "Starter-locked to the Turtwig path — Barry gets the type-advantaged starter (Chimchar).",
+        mons: [
+          { name: "Chimchar", level: 5, stats: [44,58,44,58,44,61], ability: "Iron Fist (!)", item: "—", moves: "Scratch, Leer" }
+        ] },
+      { stage: "Route 203", location: "Route 203",
+        note: "Starter-locked to the Turtwig path — Barry gets the type-advantaged starter (Chimchar).",
+        mons: [
+          { name: "Starly", level: 10, stats: [40,55,30,30,30,60], ability: "Reckless (!)", item: "—", moves: "Wing Attack, Quick Attack, Growl" },
+          { name: "Munchlax", level: 10, stats: [135,85,40,40,85,5], ability: "Thick Fat", item: "—", moves: "Metronome, Tackle, Amnesia, Rock Tomb" },
+          { name: "Chimchar", level: 11, stats: [44,58,44,58,44,61], ability: "Iron Fist (!)", item: "Oran Berry", moves: "Fury Swipes, Ember, Taunt" }
+        ] }
+    ],
+    otherBattles: [],
+    evilTeam: []
+  };
+  // Renegade Platinum's Guide tab is shaped differently from Emerald's —
+  // see GAMES.renegade.guideSections below. Items/TMs are stubs pending a
+  // pull from the source spreadsheet's iTEMSTMs sheet; Gifts/Events has
+  // the two "answer a quiz, win a battle, get a full starter trio" Reporter
+  // NPCs found while extracting the Roark trainer split (they're not
+  // regular trainer fights, hence Guide rather than the Trainers tab).
+  var RENEGADE_ITEMS = [];
+  var RENEGADE_TMS = [];
+  var RENEGADE_GIFTS = [
+    { title: "Kanto Starters — Reporter Kayla (Jubilife City Pokémon Center)",
+      body: "Answer her yes/no quiz correctly, then beat her Lv5 Bulbasaur/Charmander/Squirtle team — she gifts you all three Kanto starters." },
+    { title: "Hoenn Starters — Reporter Helen (Oreburgh City Pokémon Center)",
+      body: "Same deal as Kayla in Jubilife: answer the quiz, beat her Lv10 Treecko/Torchic/Mudkip team, and she gifts you all three Hoenn starters." }
+  ];
+
+  // ---------- Renegade Platinum trainer fights, split-by-split ----------
+  // Regular route/gym trainer battles — deliberately separate from
+  // RENEGADE_BOSSES (which stays reserved for rival/evil-team/gym/E4/
+  // champion, same as Emerald). There are far more of these per split than
+  // Emerald ever needed to track in one tab, hence the dedicated Trainers
+  // tab. `note` is a short flag for anything mechanically special about
+  // that fight (starter/gender-locked, optional double battle, avoidable,
+  // paired reward, etc.) — most fights don't need one.
+  var RENEGADE_TRAINER_FIGHTS = [
+    { split: "Roark", levelCap: 16, fights: [
+      { location: "Route 202", trainerClass: "Pkmn Trainer", name: "Lucas",
+        note: "Shown as Lucas (girl playthrough); same fight appears as Dawn if playing as a boy. Starter-locked to Turtwig path — Lucas gets Piplup.",
+        mons: [
+          { name: "Piplup", level: 9, stats: [53,51,53,61,56,40], ability: "Torrent", item: "—", moves: "Water Sport, Bubble, Growl, Pound" }
+        ] },
+      { location: "Route 202", trainerClass: "Lass", name: "Natalie",
+        mons: [
+          { name: "Sentret", level: 7, stats: [45,45,35,35,45,40], ability: "Run Away", item: "—", moves: "Fury Swipes, Quick Attack, Defense Curl, Foresight" },
+          { name: "Bidoof", level: 7, stats: [59,45,40,35,40,31], ability: "Simple", item: "—", moves: "Defense Curl, Growl, Tackle" }
+        ] },
+      { location: "Route 202", trainerClass: "Youngster", name: "Tristan",
+        mons: [
+          { name: "Hoothoot", level: 7, stats: [60,30,30,36,56,50], ability: "Tinted Lens (!)", item: "—", moves: "Hypnosis, Peck, Foresight, Growl" },
+          { name: "Starly", level: 7, stats: [40,55,30,30,30,60], ability: "Reckless (!)", item: "—", moves: "Quick Attack, Growl, Tackle" }
+        ] },
+      { location: "Route 202", trainerClass: "Youngster", name: "Logan",
+        mons: [
+          { name: "Growlithe", level: 7, stats: [55,70,45,70,50,60], ability: "Intimidate", item: "—", moves: "Ember, Howl, Roar, Leer" },
+          { name: "Burmy", level: 7, stats: [40,20,45,45,45,30], ability: "Battle Armor (!)", item: "—", moves: "Hidden Power, Bug Bite, Tackle, Protect" },
+          { name: "Zigzagoon", level: 7, stats: [38,40,41,30,41,60], ability: "Pickup", item: "—", moves: "Covet, Sand Attack, Tail Whip, Growl" }
+        ] },
+      { location: "Jubilife City Trainer School", trainerClass: "School Kid", name: "Harrison",
+        mons: [
+          { name: "Abra", level: 8, stats: [25,20,15,105,55,90], ability: "Magic Guard (!)", item: "—", moves: "Hidden Power" },
+          { name: "Psyduck", level: 8, stats: [50,52,48,65,50,55], ability: "Damp", item: "—", moves: "Hidden Power, Water Gun" }
+        ] },
+      { location: "Jubilife City Trainer School", trainerClass: "School Kid", name: "Christine",
+        note: "Beat both Harrison and Christine — together they award TM10 Hidden Power.",
+        mons: [
+          { name: "Ralts", level: 8, stats: [28,25,25,65,55,40], ability: "Synchronize", item: "—", moves: "Confusion, Hidden Power" },
+          { name: "Staryu", level: 8, stats: [30,45,55,70,55,85], ability: "Illuminate", item: "—", moves: "Hidden Power, Water Gun" }
+        ] },
+      { location: "Jubilife City Pokemon Center", trainerClass: "Reporter", name: "Kayla",
+        mons: [
+          { name: "Bulbasaur", level: 5, stats: [45,49,49,65,65,45], ability: "Chlorophyll (!)", item: "—", moves: "Tail Whip, Growl, Vine Whip" },
+          { name: "Charmander", level: 5, stats: [39,52,43,60,50,65], ability: "Solar Power (!)", item: "—", moves: "Ember, Growl, Scratch" },
+          { name: "Squirtle", level: 5, stats: [44,48,65,50,64,43], ability: "Rain Dish (!)", item: "—", moves: "Water Gun, Tail Whip, Tackle" }
+        ] },
+      { location: "Route 204 ~ South", trainerClass: "Lass", name: "Sarah",
+        mons: [
+          { name: "Shinx", level: 8, stats: [45,65,34,40,34,45], ability: "Intimidate", item: "—", moves: "Quick Attack, Howl, Leer, Tackle" },
+          { name: "Nidoran ♀", level: 8, stats: [55,47,52,40,40,41], ability: "Poison Point", item: "—", moves: "Fury Swipes, Poison Sting, Tail Whip, Scratch" },
+          { name: "Pidgey", level: 8, stats: [40,35,35,50,35,56], ability: "Keen Eye", item: "—", moves: "Quick Attack, Gust, Sand Attack, Tackle" }
+        ] },
+      { location: "Route 204 ~ South", trainerClass: "Youngster", name: "Tyler",
+        mons: [
+          { name: "Magikarp", level: 11, stats: [20,10,55,15,20,80], ability: "Swift Swim", item: "—", moves: "Flail, Tackle, Splash" }
+        ] },
+      { location: "Route 204 ~ South", trainerClass: "Lass", name: "Samantha",
+        mons: [
+          { name: "Oddish", level: 8, stats: [45,50,55,75,65,30], ability: "Chlorophyll", item: "—", moves: "Sweet Scent, Acid, Growth, Absorb" },
+          { name: "Budew", level: 8, stats: [40,30,35,50,70,55], ability: "Poison Point", item: "—", moves: "Water Sport, Growth, Absorb" },
+          { name: "Bellsprout", level: 8, stats: [50,75,35,70,30,40], ability: "Chlorophyll", item: "—", moves: "Wrap, Acid, Growth, Vine Whip" }
+        ] },
+      { location: "Route 203", trainerClass: "Youngster", name: "Dallas",
+        note: "Optional double battle: solo, or paired with Youngster Michael (Dallas left).",
+        mons: [
+          { name: "Shinx", level: 10, stats: [45,65,34,40,34,45], ability: "Intimidate", item: "—", moves: "Spark, Quick Attack, Howl, Leer" },
+          { name: "Sandshrew", level: 10, stats: [50,75,85,20,30,40], ability: "Sand Veil", item: "—", moves: "Bulldoze (!), Rollout, Poison Sting, Sand Attack" }
+        ] },
+      { location: "Route 203", trainerClass: "Youngster", name: "Michael",
+        note: "Optional double battle: solo, or paired with Youngster Dallas (Michael right).",
+        mons: [
+          { name: "Kricketot", level: 9, stats: [37,35,41,35,41,25], ability: "Run Away (!)", item: "—", moves: "String Shot, Bug Bite, Bide, Growl" },
+          { name: "Zubat", level: 9, stats: [40,45,35,30,40,55], ability: "Inner Focus", item: "—", moves: "Bite, Astonish, Supersonic, Absorb" },
+          { name: "Rattata", level: 9, stats: [30,56,35,25,35,72], ability: "Hustle (!)", item: "—", moves: "Bite, Quick Attack, Tail Whip, Tackle" }
+        ] },
+      { location: "Route 203", trainerClass: "Youngster", name: "Sebastian",
+        mons: [
+          { name: "Makuhita", level: 10, stats: [72,60,30,20,30,25], ability: "Thick Fat", item: "—", moves: "Fake Out, Arm Thrust, Sand Attack, Focus Energy" },
+          { name: "Machop", level: 10, stats: [70,80,50,35,35,35], ability: "Guts", item: "—", moves: "Foresight, Karate Chop, Focus Energy, Leer" }
+        ] },
+      { location: "Route 203", trainerClass: "Lass", name: "Madeline",
+        note: "Optional double battle: solo, or paired with Lass Kaitlin (Madeline left).",
+        mons: [
+          { name: "Psyduck", level: 10, stats: [50,52,48,65,50,55], ability: "Damp", item: "—", moves: "Confusion, Water Gun, Tail Whip, Scratch" },
+          { name: "Sunkern", level: 10, stats: [30,30,30,30,30,30], ability: "Chlorophyll", item: "—", moves: "Mega Drain, Grass Whistle, Ingrain, Growth" }
+        ] },
+      { location: "Route 203", trainerClass: "Lass", name: "Kaitlin",
+        note: "Optional double battle: solo, or paired with Lass Madeline (Kaitlin right).",
+        mons: [
+          { name: "Spearow", level: 9, stats: [40,60,30,31,31,70], ability: "Keen Eye", item: "—", moves: "Pursuit, Leer, Growl, Peck" },
+          { name: "Cubone", level: 9, stats: [50,50,95,40,50,35], ability: "Rock Head", item: "—", moves: "Headbutt, Sing, Bone Club, Tail Whip" },
+          { name: "Azurill", level: 9, stats: [50,20,40,40,40,20], ability: "Huge Power", item: "—", moves: "Charm, Bubble, Water Sport, Tail Whip" }
+        ] },
+      { location: "Oreburgh Gate", trainerClass: "Camper", name: "Curtis",
+        mons: [
+          { name: "Seedot", level: 10, stats: [40,40,50,30,30,30], ability: "Chlorophyll", item: "—", moves: "Nature Power, Bullet Seed, Growth, Harden" },
+          { name: "Diglett", level: 10, stats: [10,55,25,35,45,95], ability: "Sand Veil", item: "—", moves: "Bulldoze (!), Astonish, Growl, Mud-slap" }
+        ] },
+      { location: "Oreburgh Gate", trainerClass: "Picknicker", name: "Diana",
+        mons: [
+          { name: "Whismur", level: 10, stats: [64,51,23,51,23,28], ability: "Soundproof", item: "—", moves: "Uproar, Astonish, Disarming Voice (!), Howl" },
+          { name: "Wooper", level: 10, stats: [55,55,55,25,25,15], ability: "Water Absorb", item: "—", moves: "Slam, Mud Shot, Mud Sport, Tail Whip" }
+        ] },
+      { location: "Oreburgh City Pokemon Center", trainerClass: "Reporter", name: "Helen",
+        mons: [
+          { name: "Treecko", level: 10, stats: [40,45,35,65,55,70], ability: "Unburden (!)", item: "—", moves: "Quick Attack, Absorb, Leer, Pound" },
+          { name: "Torchic", level: 10, stats: [45,60,40,70,50,45], ability: "Speed Boost (!)", item: "—", moves: "Sand Attack, Ember, Growl, Scratch" },
+          { name: "Mudkip", level: 10, stats: [50,70,50,50,50,40], ability: "Torrent", item: "—", moves: "Mud-slap, Water Gun, Growl, Tackle" }
+        ] },
+      { location: "Oreburgh Mine", trainerClass: "Worker", name: "Mason",
+        note: "Avoidable — only battles if you talk to him.",
+        mons: [
+          { name: "Aron", level: 12, stats: [50,70,100,40,40,30], ability: "Rock Head", item: "—", moves: "Metal Claw, Headbutt, Mud-slap, Harden" },
+          { name: "Phanpy", level: 12, stats: [90,60,60,40,40,40], ability: "Sand Veil (!)", item: "—", moves: "Rollout, Headbutt, Mud-slap, Defense Curl" },
+          { name: "Riolu", level: 12, stats: [40,70,40,35,40,60], ability: "Steadfast", item: "—", moves: "Force Palm, Counter, Bite, Low Kick" }
+        ] },
+      { location: "Oreburgh Mine", trainerClass: "Worker", name: "Colin",
+        note: "Avoidable — only battles if you talk to him.",
+        mons: [
+          { name: "Geodude", level: 12, stats: [40,80,100,30,30,20], ability: "Rock Head", item: "—", moves: "Rock Throw, Rock Polish, Mud Sport, Defense Curl" },
+          { name: "Whismur", level: 12, stats: [64,51,23,51,23,28], ability: "Soundproof", item: "—", moves: "Uproar, Astonish, Disarming Voice (!), Howl" },
+          { name: "Machop", level: 12, stats: [70,80,50,35,35,35], ability: "Guts", item: "—", moves: "Foresight, Karate Chop, Focus Energy, Leer" }
+        ] },
+      { location: "Oreburgh Gym", trainerClass: "Youngster", name: "Jonathon",
+        mons: [
+          { name: "Rhyhorn", level: 13, stats: [80,85,95,30,30,25], ability: "Rock Head", item: "—", moves: "Stomp, Bulldoze (!), Scary Face, Fury Attack" },
+          { name: "Omanyte", level: 13, stats: [35,40,100,90,55,35], ability: "Swift Swim", item: "—", moves: "Rollout, Bite, Leer, Withdraw" },
+          { name: "Kabuto", level: 13, stats: [30,80,90,55,45,55], ability: "Swift Swim", item: "—", moves: "Rollout, Aqua Jet, Absorb, Leer" }
+        ] },
+      { location: "Oreburgh Gym", trainerClass: "Youngster", name: "Darius",
+        mons: [
+          { name: "Aron", level: 13, stats: [50,70,100,40,40,30], ability: "Rock Head", item: "—", moves: "Rock Throw, Metal Claw, Headbutt, Mud-slap" },
+          { name: "Anorith", level: 13, stats: [45,95,50,40,50,75], ability: "Battle Armor", item: "—", moves: "Fury Cutter, Aqua Jet, Mud Sport, Water Gun" },
+          { name: "Lileep", level: 13, stats: [66,41,77,61,87,23], ability: "Suction Cups", item: "—", moves: "Confuse Ray, Ingrain, Acid, Astonish" }
+        ] }
+    ] }
+  ];
+
+  // ---------- game registry ----------
+  // Each game bundles its own guide/boss/guide-tab data plus the section
+  // labels that vary per game (rival name, evil team name, etc.). Adding a
+  // new game means: duplicate a *_GUIDE/*_BOSSES/*_TIPS/*_CHEATS/*_EV_SPOTS
+  // set above, add an entry here, and push its id onto GAME_ORDER. No
+  // render/UI code needs to change — see "Extending to a new game" in
+  // ../CLAUDE.md.
+  var GAMES = {
+    emerald: {
+      id: "emerald",
+      label: "Pokémon Emerald",
+      shortLabel: "Emerald",
+      guide: EMERALD_GUIDE,
+      guideComplete: true, // whole game done — Checklist note can say "All N locations"
+      bosses: EMERALD_BOSSES,
+      trainerFights: [], // Emerald folds every trainer into Bosses; no separate split data
+      // Guide subtabs are per-game because the sections themselves differ,
+      // not just their content — Emerald's Tips/Cheats/Natures/EV Spots
+      // don't map cleanly onto Renegade's Items/TMs/Gifts&Events, so each
+      // game lists its own subtabs here rather than sharing 4 fixed ones.
+      guideSections: [
+        { key: "tips", label: "Tips", type: "cards", data: EMERALD_TIPS },
+        { key: "cheats", label: "Cheats", type: "cards", data: EMERALD_CHEATS,
+          intro: "A Nuzlocke is built around scarcity, so use your judgment here — most of these are documented curiosities more than things worth using mid-run." },
+        { key: "natures", label: "Natures", type: "natures", data: NATURE_GUIDE },
+        { key: "ev", label: "EV Spots", type: "evspots", data: EV_SPOTS }
+      ],
+      rivalLabel: "Rival Battles (Treecko path)",
+      otherBattlesLabel: "Wally",
+      evilTeamLabel: "Team Magma / Aqua"
+    },
+    renegade: {
+      id: "renegade",
+      label: "Pokémon Renegade Platinum",
+      shortLabel: "Renegade Platinum",
+      guide: RENEGADE_GUIDE,
+      guideComplete: false, // only the Roark split's locations so far
+      bosses: RENEGADE_BOSSES,
+      trainerFights: RENEGADE_TRAINER_FIGHTS,
+      // Natures are shown directly in-game for Renegade Platinum, so no
+      // Natures subtab is needed here (Emerald's UI never shows nature,
+      // hence its reference chart). No EV Spots subtab either — nothing
+      // extracted for it yet; add one later the same way if it turns out
+      // useful for a rebalance romhack where EV yields may differ.
+      guideSections: [
+        { key: "items", label: "Items", type: "cards", data: RENEGADE_ITEMS },
+        { key: "tms", label: "TMs", type: "cards", data: RENEGADE_TMS },
+        { key: "gifts", label: "Gifts/Events", type: "cards", data: RENEGADE_GIFTS }
+      ],
+      rivalLabel: "Rival Battles (Barry)",
+      otherBattlesLabel: "Other Battles",
+      evilTeamLabel: "Team Galactic"
+    }
+  };
+  var GAME_ORDER = ["emerald", "renegade"];
+  var DEFAULT_GAME = "emerald";
+
+  function currentGame(){
+    return GAMES[state.selectedGame] || GAMES[DEFAULT_GAME];
+  }
+
+  // One run's worth of state — kept per-game (see `runs` below) so
+  // switching the game selector switches to a fully separate roster,
+  // badges, rules, etc. rather than overwriting a single shared run.
+  function defaultRules(){
+    return { species:false, dupes:false, shiny:false, nickname:false };
+  }
+  function defaultRunState(){
+    return {
+      runName: "",
+      badges: 0,
+      rules: defaultRules(),
+      mons: [], // {id, route, species, nick, level, status, cause, causeLevel, createdAt}
+      beatenBosses: {}, // key -> true
+      collapsedRoutes: {}, // route name -> true
+      collapsedSplits: {} // trainer-fight split name -> true
+    };
+  }
+
+  function defaultState(){
+    var runs = {};
+    GAME_ORDER.forEach(function(id){ runs[id] = defaultRunState(); });
+    return {
+      selectedGame: DEFAULT_GAME,
+      runs: runs // gameId -> run state, see defaultRunState()
+    };
+  }
+
+  // The run currently shown in the UI — the one for whichever game is
+  // selected. Creates a fresh run on first visit to a game so older saves
+  // (or a newly-added game in GAME_ORDER) never hit a missing run.
+  function currentRun(){
+    if(!state.runs[state.selectedGame]){
+      state.runs[state.selectedGame] = defaultRunState();
+    }
+    return state.runs[state.selectedGame];
+  }
+
+  // Accepts either the current multi-run shape, or an older single-run
+  // save/export (flat `mons` array at the top level, from before per-game
+  // runs existed) and normalizes both into the current shape. Returns null
+  // if `raw` isn't a recognizable save at all.
+  function normalizeState(raw){
+    if(!raw || typeof raw !== "object") return null;
+
+    function normalizeRun(r){
+      r = r || {};
+      return {
+        runName: r.runName || "",
+        badges: typeof r.badges === "number" ? r.badges : 0,
+        rules: Object.assign(defaultRules(), r.rules || {}),
+        mons: Array.isArray(r.mons) ? r.mons : [],
+        beatenBosses: r.beatenBosses || {},
+        collapsedRoutes: r.collapsedRoutes || {},
+        collapsedSplits: r.collapsedSplits || {}
+      };
+    }
+
+    if(raw.runs && typeof raw.runs === "object"){
+      var out = {
+        selectedGame: (raw.selectedGame && GAMES[raw.selectedGame]) ? raw.selectedGame : DEFAULT_GAME,
+        runs: {}
+      };
+      GAME_ORDER.forEach(function(id){ out.runs[id] = normalizeRun(raw.runs[id]); });
+      return out;
+    }
+
+    if(Array.isArray(raw.mons)){
+      // Legacy pre-multi-game save/export: everything was one flat run.
+      // Bring it in as the Emerald run (the only game that existed then)
+      // and leave other games untouched.
+      var legacy = defaultState();
+      legacy.selectedGame = DEFAULT_GAME;
+      legacy.runs[DEFAULT_GAME] = normalizeRun(raw);
+      return legacy;
+    }
+
+    return null;
+  }
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        var normalized = normalizeState(JSON.parse(raw));
+        if(normalized) return normalized;
+      }
+    }catch(e){ console.warn("Could not load saved run", e); }
+    return defaultState();
+  }
+
+  function save(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }catch(e){ console.warn("Could not save run", e); }
+  }
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  function showToast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(showToast._h);
+    showToast._h = setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  // ---------- in-page confirm/prompt (see .modal-overlay CSS comment) ----------
+  function showModal(opts){
+    var overlay = document.getElementById("modalOverlay");
+    var msgEl = document.getElementById("modalMsg");
+    var input = document.getElementById("modalInput");
+    var okBtn = document.getElementById("modalOk");
+    var cancelBtn = document.getElementById("modalCancel");
+
+    msgEl.textContent = opts.message;
+    if(opts.showInput){
+      input.style.display = "";
+      input.value = "";
+      input.placeholder = opts.inputPlaceholder || "";
+    } else {
+      input.style.display = "none";
+    }
+    overlay.classList.add("show");
+
+    function cleanup(){
+      overlay.classList.remove("show");
+      okBtn.removeEventListener("click", onOk);
+      cancelBtn.removeEventListener("click", onCancel);
+      input.removeEventListener("keydown", onKeydown);
+    }
+    function onOk(){ cleanup(); opts.onConfirm(opts.showInput ? input.value : true); }
+    function onCancel(){ cleanup(); if(opts.onCancel) opts.onCancel(); }
+    function onKeydown(e){ if(e.key === "Enter") onOk(); else if(e.key === "Escape") onCancel(); }
+
+    okBtn.addEventListener("click", onOk);
+    cancelBtn.addEventListener("click", onCancel);
+    input.addEventListener("keydown", onKeydown);
+    if(opts.showInput) setTimeout(function(){ input.focus(); }, 10);
+  }
+
+  function showConfirm(message, onConfirm){
+    showModal({ message: message, showInput: false, onConfirm: onConfirm });
+  }
+
+  function showPrompt(message, placeholder, onSubmit){
+    showModal({ message: message, showInput: true, inputPlaceholder: placeholder, onConfirm: onSubmit });
+  }
+
+  // ---------- rendering ----------
+  function renderBadges(){
+    var run = currentRun();
+    var wrap = document.getElementById("badges");
+    wrap.innerHTML = "";
+    for(var i=0;i<8;i++){
+      var b = document.createElement("div");
+      b.className = "badge" + (i < run.badges ? " on" : "");
+      b.textContent = (i+1);
+      b.title = "Badge " + (i+1);
+      (function(idx){
+        b.addEventListener("click", function(){
+          // clicking toggles up to that badge count
+          var r = currentRun();
+          if(r.badges === idx+1){ r.badges = idx; }
+          else { r.badges = idx+1; }
+          save(); renderAll();
+        });
+      })(i);
+      wrap.appendChild(b);
+    }
+  }
+
+  function renderStats(){
+    var run = currentRun();
+    var alive = run.mons.filter(function(m){ return m.status==="alive"; }).length;
+    var dead = run.mons.filter(function(m){ return m.status==="dead"; }).length;
+    document.getElementById("statTotal").textContent = run.mons.length;
+    document.getElementById("statAlive").textContent = alive;
+    document.getElementById("statDead").textContent = dead;
+    document.getElementById("statBadges").textContent = run.badges + "/8";
+  }
+
+  function cardHTML(m){
+    var statusLabel = m.status === "alive" ? "Active" : (m.status === "boxed" ? "Boxed" : "Fallen");
+    var actions = "";
+    if(m.status !== "dead"){
+      actions += '<button data-act="kill" data-id="'+m.id+'" class="btn-danger" title="Mark Fainted">💀</button>';
+    }
+    if(m.status === "alive"){
+      actions += '<button data-act="box" data-id="'+m.id+'" class="btn-ghost" title="Box">📦</button>';
+    }
+    if(m.status === "boxed"){
+      actions += '<button data-act="unbox" data-id="'+m.id+'" class="btn-ghost" title="Un-box">📤</button>';
+    }
+    if(m.status === "dead"){
+      actions += '<button data-act="revive" data-id="'+m.id+'" class="btn-ghost" title="Undo faint">↩️</button>';
+    }
+    actions += '<button data-act="delete" data-id="'+m.id+'" class="btn-ghost" title="Delete">🗑️</button>';
+
+    var cause = m.status === "dead" && m.cause ? '<div class="cause" title="'+escapeHTML(m.cause)+'">☠ ' + escapeHTML(m.cause) + '</div>' : "";
+    var speciesLine = m.nick ? '<div class="species">'+escapeHTML(m.species || "?")+'</div>' : "";
+    // Cards no longer sit under a per-route section header (mons from
+    // different routes/encounters now share the same grid — see
+    // renderRoster), so the route has to live on the card itself.
+    var routeLine = '<div class="route-tag">'+escapeHTML(m.route || "Unknown Location")+'</div>';
+
+    return (
+      '<div class="card status-'+m.status+'">' +
+        '<div class="card-top">' +
+          '<span class="dot status-'+m.status+'"></span>' +
+          '<span class="nick">'+escapeHTML(m.nick || m.species || "Unnamed")+'</span>' +
+        '</div>' +
+        speciesLine +
+        routeLine +
+        '<div class="meta">'+statusLabel+(m.level ? ' · Lv '+escapeHTML(String(m.level)) : '')+'</div>' +
+        cause +
+        '<div class="card-actions">'+actions+'</div>' +
+      '</div>'
+    );
+  }
+
+  function escapeHTML(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  // "OGS" -> "O/G/S", "MD" -> "M/D" — used for the rod-tier/time-of-day
+  // checklist badges so multi-letter values read as a list, not a word.
+  function letterDivide(s){
+    return String(s).split("").join("/");
+  }
+
+  function routeOrderIndex(routeName){
+    var idx = currentGame().guide.findIndex(function(loc){ return loc.name === routeName; });
+    return idx === -1 ? 9999 : idx;
+  }
+
+  function renderRoster(){
+    var alive = currentRun().mons.filter(function(m){ return m.status !== "dead"; });
+    var el = document.getElementById("rosterList");
+    if(alive.length === 0){
+      el.innerHTML = '<div class="empty">No active encounters logged yet.<br>Add your first catch above.</div>';
+      return;
+    }
+    // One flat grid in playthrough order, not one row per route — a real
+    // Nuzlocke almost never has more than one active mon per route, so
+    // grouping by route defeated the point of the 3-per-row grid (every
+    // group would just be a group of one). Array#sort is stable, so mons
+    // from the same route (multiple gifts at one town, etc) still land
+    // next to each other.
+    alive = alive.slice().sort(function(a, b){ return routeOrderIndex(a.route) - routeOrderIndex(b.route); });
+    el.innerHTML = '<div class="route-cards">' + alive.map(cardHTML).join("") + '</div>';
+  }
+
+  function renderGraveyard(){
+    var dead = currentRun().mons.filter(function(m){ return m.status === "dead"; });
+    var el = document.getElementById("graveyardList");
+    if(dead.length === 0){
+      el.innerHTML = '<div class="empty">No losses yet. Long may it last.</div>';
+      return;
+    }
+    dead = dead.slice().reverse();
+    el.innerHTML = dead.map(cardHTML).join("");
+  }
+
+  function renderAll(){
+    var run = currentRun();
+    document.body.setAttribute("data-game", state.selectedGame);
+    var themeMeta = document.querySelector('meta[name="theme-color"]');
+    if(themeMeta) themeMeta.setAttribute("content", state.selectedGame === "renegade" ? "#141e26" : "#16241b");
+    document.getElementById("runName").value = run.runName || "";
+    document.getElementById("gameSelect").value = state.selectedGame;
+    Object.keys(run.rules).forEach(function(k){
+      var input = document.querySelector('[data-rule="'+k+'"]');
+      if(input) input.checked = !!run.rules[k];
+    });
+    renderBadges();
+    renderStats();
+    renderRoster();
+    renderChecklist();
+    renderBosses();
+    renderTrainers();
+    renderGuide();
+    renderGraveyard();
+  }
+
+  // ---------- events ----------
+  document.getElementById("runName").addEventListener("input", function(e){
+    currentRun().runName = e.target.value; save();
+  });
+
+  function populateGameSelect(){
+    var sel = document.getElementById("gameSelect");
+    sel.innerHTML = GAME_ORDER.map(function(id){
+      var g = GAMES[id];
+      return '<option value="'+id+'">'+escapeHTML(g.shortLabel)+'</option>';
+    }).join("");
+  }
+
+  document.getElementById("gameSelect").addEventListener("change", function(e){
+    state.selectedGame = e.target.value;
+    save();
+    renderAll();
+  });
+
+  document.getElementById("rulesRow").addEventListener("change", function(e){
+    var rule = e.target.getAttribute("data-rule");
+    if(rule){ currentRun().rules[rule] = e.target.checked; save(); }
+  });
+
+  document.querySelectorAll(".tab").forEach(function(tab){
+    tab.addEventListener("click", function(){
+      document.querySelectorAll(".tab").forEach(function(t){ t.classList.remove("active"); });
+      tab.classList.add("active");
+      var which = tab.getAttribute("data-tab");
+      document.getElementById("panel-roster").style.display = which === "roster" ? "" : "none";
+      document.getElementById("panel-checklist").style.display = which === "checklist" ? "" : "none";
+      document.getElementById("panel-bosses").style.display = which === "bosses" ? "" : "none";
+      document.getElementById("panel-trainers").style.display = which === "trainers" ? "" : "none";
+      document.getElementById("panel-guide").style.display = which === "guide" ? "" : "none";
+      document.getElementById("panel-graveyard").style.display = which === "graveyard" ? "" : "none";
+    });
+  });
+
+  // A location can hold more than one logged mon now (gift + a wild
+  // encounter, multiple gifts at one town, etc) — see the mark-species
+  // handler below, which no longer enforces one-catch-per-route.
+  function findLoggedMonsForRoute(routeName){
+    return currentRun().mons.filter(function(m){
+      return (m.route || "").trim().toLowerCase() === routeName.toLowerCase();
+    });
+  }
+
+  function renderChecklist(){
+    var game = currentGame();
+    var note = document.getElementById("checklistNote");
+    var coverage = game.guideComplete
+      ? "All " + game.guide.length + " " + game.shortLabel + " locations"
+      : game.guide.length + " " + game.shortLabel + " locations extracted so far — more added as later splits are done";
+    note.textContent = coverage + ", grouped by method. A badge shows level, or rod tier (O/G/S) and, when a species isn't available all day, time of day (M/D/N). Tap to log a catch — tap again to undo. A location can hold more than one catch (e.g. a gift plus a wild encounter). Logged locations auto-collapse; tap to reopen.";
+
+    var el = document.getElementById("checklistList");
+    if(game.guide.length === 0){
+      el.innerHTML = '<div class="empty">No guide data loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
+      return;
+    }
+    el.innerHTML = game.guide.map(function(loc){
+      var loggedMons = findLoggedMonsForRoute(loc.name);
+      var logged = loggedMons.length > 0;
+      var collapsed = logged && !!currentRun().collapsedRoutes[loc.name];
+
+      if(collapsed){
+        var namesStr = loggedMons.map(function(m){ return m.species || "?"; }).join(", ");
+        return (
+          '<div class="cl-card done cl-collapsed">' +
+            '<div class="cl-top">' +
+              '<div class="cl-name">'+escapeHTML(loc.name)+'</div>' +
+              '<div class="cl-status done">Logged</div>' +
+            '</div>' +
+            '<button type="button" class="cl-toggle" data-act="toggle-collapse-route" data-route="'+escapeHTML(loc.name)+'">'+escapeHTML(namesStr)+' — tap to expand</button>' +
+          '</div>'
+        );
+      }
+
+      var caughtSpecies = {};
+      loggedMons.forEach(function(m){ caughtSpecies[m.species] = true; });
+
+      var groups = {};
+      var order = [];
+      loc.encounters.forEach(function(e){
+        if(!groups[e.m]){ groups[e.m] = []; order.push(e.m); }
+        groups[e.m].push(e);
+      });
+
+      var groupsHtml = order.map(function(method){
+        var chips = groups[method].map(function(e){
+          var isCaught = !!caughtSpecies[e.sp];
+          var badge = e.tier ? ' <span class="chip-lv">'+escapeHTML(letterDivide(e.tier))+'</span>'
+            : ((e.lv && e.lv !== "—") ? ' <span class="chip-lv">Lv '+escapeHTML(e.lv)+'</span>' : '');
+          var timeBadge = (e.t && e.t.length < 3) ? ' <span class="chip-time">'+escapeHTML(letterDivide(e.t))+'</span>' : '';
+          return '<button type="button" class="chip'+(isCaught?" chip-caught":"")+'" data-act="mark-species" data-route="'+escapeHTML(loc.name)+'" data-species="'+escapeHTML(e.sp)+'">'+(isCaught?"✓ ":"")+escapeHTML(e.sp)+badge+timeBadge+'</button>';
+        }).join("");
+        return '<div class="cl-method">'+escapeHTML(method)+'</div><div class="cl-species">'+chips+'</div>';
+      }).join("");
+
+      return (
+        '<div class="cl-card '+(logged?"done":"pending")+'">' +
+          '<div class="cl-top">' +
+            '<div class="cl-name">'+escapeHTML(loc.name)+'</div>' +
+            '<div class="cl-status '+(logged?"done":"pending")+'">'+(logged?"Logged":"Not yet")+'</div>' +
+          '</div>' +
+          groupsHtml +
+          (logged ? '<button type="button" class="cl-toggle" data-act="toggle-collapse-route" data-route="'+escapeHTML(loc.name)+'">Collapse</button>' : '') +
+        '</div>'
+      );
+    }).join("");
+  }
+
+  // Gen 3 base stats [HP, Atk, Def, SpA, SpD, Spe] for species appearing in
+  // confirmed boss stat blocks. Used to compute real numeric stats from the
+  // decomp's exact IV values (0 EVs, neutral nature assumed — trainer Pokémon
+  // don't have a clean exposed nature in the simplified trainer struct).
+  var BASE_STATS = {
+    "Geodude": [40,80,100,30,30,20],
+    "Nosepass": [30,45,135,45,90,30],
+    "Machop": [70,80,50,35,35,35],
+    "Meditite": [30,40,55,40,55,60],
+    "Makuhita": [72,60,30,20,30,25],
+    "Voltorb": [40,30,50,55,55,100],
+    "Electrike": [40,45,40,65,40,65],
+    "Magneton": [50,60,95,120,70,70],
+    "Manectric": [70,75,60,105,60,105],
+    "Numel": [60,60,40,65,45,35],
+    "Slugma": [40,40,40,70,40,20],
+    "Camerupt": [70,100,70,105,75,40],
+    "Torkoal": [70,85,140,85,70,20],
+    "Spinda": [60,60,60,60,60,60],
+    "Vigoroth": [80,80,80,55,55,90],
+    "Linoone": [78,70,61,50,61,100],
+    "Slaking": [150,160,100,95,65,100],
+    "Swablu": [45,40,60,40,75,50],
+    "Tropius": [99,68,83,72,87,51],
+    "Pelipper": [60,50,100,85,70,65],
+    "Skarmory": [65,80,140,40,70,70],
+    "Altaria": [75,70,90,70,105,80]
+  };
+
+  function computeStat(base, iv, level, isHP){
+    var val = Math.floor(((2*base + iv) * level) / 100);
+    return isHP ? (val + level + 10) : (val + 5);
+  }
+
+  function statLineHTML(m){
+    var hp, atk, def, spa, spd, spe, approxNote = "";
+    if(m.stats){
+      hp = m.stats[0]; atk = m.stats[1]; def = m.stats[2]; spa = m.stats[3]; spd = m.stats[4]; spe = m.stats[5];
+    } else {
+      var base = BASE_STATS[m.name];
+      if(!base || typeof m.iv !== "number") return "";
+      var iv = m.iv, lvl = m.level;
+      hp = computeStat(base[0], iv, lvl, true);
+      atk = computeStat(base[1], iv, lvl, false);
+      def = computeStat(base[2], iv, lvl, false);
+      spa = computeStat(base[3], iv, lvl, false);
+      spd = computeStat(base[4], iv, lvl, false);
+      spe = computeStat(base[5], iv, lvl, false);
+      approxNote = m.ivApprox ? " (IV estimated)" : " (estimated)";
+    }
+    return '<div class="boss-mon-stats">HP '+hp+' · Atk '+atk+' · Def '+def+' · SpA '+spa+' · SpD '+spd+' · Spe '+spe+approxNote+'</div>';
+  }
+
+  function monBlockHTML(m){
+    return (
+      '<div class="boss-mon">' +
+        '<div class="boss-mon-top"><span>'+escapeHTML(m.name)+'</span><span>Lv. '+m.level+'</span></div>' +
+        '<div class="boss-mon-meta">Ability: '+escapeHTML(m.ability)+' · Item: '+escapeHTML(m.item)+'</div>' +
+        '<div class="boss-mon-moves">'+escapeHTML(m.moves)+'</div>' +
+        statLineHTML(m) +
+      '</div>'
+    );
+  }
+
+  function bossCardHTML(key, nameHtml, capHtml, metaHtml, bodyHtml){
+    var beaten = !!currentRun().beatenBosses[key];
+    if(beaten){
+      return (
+        '<div class="boss-card boss-beaten">' +
+          '<div class="boss-top"><div class="boss-name">'+nameHtml+'</div>'+capHtml+'</div>' +
+          '<div class="boss-meta">'+metaHtml+'</div>' +
+          '<button type="button" class="boss-toggle" data-act="toggle-beaten" data-key="'+escapeHTML(key)+'">✓ Beaten — tap to expand</button>' +
+        '</div>'
+      );
+    }
+    return (
+      '<div class="boss-card">' +
+        '<div class="boss-top"><div class="boss-name">'+nameHtml+'</div>'+capHtml+'</div>' +
+        '<div class="boss-meta">'+metaHtml+'</div>' +
+        bodyHtml +
+        '<button type="button" class="boss-toggle" data-act="toggle-beaten" data-key="'+escapeHTML(key)+'">Mark Defeated</button>' +
+      '</div>'
+    );
+  }
+
+  function renderBosses(){
+    var el = document.getElementById("bossesList");
+    var game = currentGame();
+    var bosses = game.bosses || {};
+    var html = "";
+
+    if(bosses.gymLeaders && bosses.gymLeaders.length){
+      html += '<div class="boss-section-title">Gym Leaders &amp; Level Caps</div>';
+      bosses.gymLeaders.forEach(function(b){
+        var body =
+          (b.battleItems ? '<div class="boss-items">Battle items: '+escapeHTML(b.battleItems)+'</div>' : "") +
+          (b.mons ? b.mons.map(monBlockHTML).join("") : '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>') +
+          (b.tip ? '<div class="boss-note">'+escapeHTML(b.tip)+'</div>' : "");
+        html += bossCardHTML("gym-"+b.name, escapeHTML(b.name), '<div class="boss-cap">Cap Lv '+b.cap+'</div>', escapeHTML(b.location)+' · '+escapeHTML(b.type)+'-type', body);
+      });
+    }
+
+    if(bosses.eliteFour && bosses.eliteFour.length){
+      html += '<div class="boss-section-title">Elite Four</div>';
+      bosses.eliteFour.forEach(function(b){
+        var body =
+          (b.mons ? b.mons.map(monBlockHTML).join("") : "") +
+          (b.tip ? '<div class="boss-note">'+escapeHTML(b.tip)+'</div>' : "");
+        html += bossCardHTML("elite-"+b.name, escapeHTML(b.name), "", escapeHTML(b.type)+'-type specialist', body);
+      });
+    }
+
+    if(bosses.champion && bosses.champion.name){
+      html += '<div class="boss-section-title">Champion</div>';
+      (function(){
+        var c = bosses.champion;
+        var body =
+          (c.battleItems && c.battleItems !== "—" ? '<div class="boss-items">Battle items: '+escapeHTML(c.battleItems)+'</div>' : "") +
+          (c.mons ? c.mons.map(monBlockHTML).join("") : "") +
+          (c.tip ? '<div class="boss-note">'+escapeHTML(c.tip)+'</div>' : "");
+        html += bossCardHTML("champion-"+c.name, escapeHTML(c.name), "", escapeHTML(c.location), body);
+      })();
+    }
+
+    if(bosses.rival && bosses.rival.length){
+      html += '<div class="boss-section-title">'+escapeHTML(game.rivalLabel)+'</div>';
+      bosses.rival.forEach(function(b){
+        var body =
+          '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
+          (b.mons ? b.mons.map(monBlockHTML).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
+        html += bossCardHTML("rival-"+b.stage, escapeHTML(b.stage), "", escapeHTML(b.location), body);
+      });
+    }
+
+    if(bosses.otherBattles && bosses.otherBattles.length){
+      html += '<div class="boss-section-title">'+escapeHTML(game.otherBattlesLabel)+'</div>';
+      bosses.otherBattles.forEach(function(b){
+        var body =
+          '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
+          (b.mons ? b.mons.map(monBlockHTML).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
+        html += bossCardHTML("other-"+b.name+"-"+b.location, escapeHTML(b.name), "", escapeHTML(b.location), body);
+      });
+    }
+
+    if(bosses.evilTeam && bosses.evilTeam.length){
+      html += '<div class="boss-section-title">'+escapeHTML(game.evilTeamLabel)+'</div>';
+      bosses.evilTeam.forEach(function(b){
+        var body =
+          '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
+          (b.mons ? b.mons.map(monBlockHTML).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
+        html += bossCardHTML("evil-"+b.name+"-"+b.location, escapeHTML(b.name), "", escapeHTML(b.location), body);
+      });
+    }
+
+    if(!html){
+      html = '<div class="empty">No boss data loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
+    }
+
+    el.innerHTML = html;
+  }
+
+  function renderTrainers(){
+    var el = document.getElementById("trainersList");
+    var note = document.getElementById("trainersNote");
+    var game = currentGame();
+    var groups = game.trainerFights || [];
+
+    if(!groups.length){
+      note.textContent = "";
+      el.innerHTML = '<div class="empty">No trainer fight data loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
+      return;
+    }
+
+    note.textContent = "Regular route and gym trainer battles, split by story checkpoint. Rival, gym leader, and evil-team fights live in the Bosses tab instead.";
+
+    var run = currentRun();
+    var html = "";
+    groups.forEach(function(g){
+      var collapsed = !!run.collapsedSplits[g.split];
+      html += '<div class="split-header' + (collapsed ? ' split-collapsed' : '') + '" data-act="toggle-collapse-split" data-split="' + escapeHTML(g.split) + '">' +
+        '<span>' + escapeHTML(g.split) + ' Split' + (g.levelCap ? ' · Level Cap ' + g.levelCap : '') + '</span>' +
+        '<span class="split-caret">' + (collapsed ? '▸ ' + g.fights.length + ' fights' : '▾') + '</span>' +
+      '</div>';
+      if(collapsed) return;
+      var lastLoc = null;
+      g.fights.forEach(function(f, idx){
+        if(f.location !== lastLoc){
+          html += '<div class="trainer-location">' + escapeHTML(f.location) + '</div>';
+          lastLoc = f.location;
+        }
+        var body = f.mons.map(monBlockHTML).join("");
+        var key = "trainer-" + g.split + "-" + f.location + "-" + f.trainerClass + "-" + f.name + "-" + idx;
+        html += bossCardHTML(key, escapeHTML(f.trainerClass) + ' ' + escapeHTML(f.name), "", f.note ? escapeHTML(f.note) : "", body);
+      });
+    });
+
+    el.innerHTML = html;
+  }
+
+  // Which guide subtabs a game shows are per-game (GAMES[id].guideSections)
+  // since the sections themselves differ — Emerald's Tips/Cheats/Natures/EV
+  // Spots vs. Renegade's Items/TMs/Gifts&Events. `activeGuideKey` is
+  // transient UI state (not persisted): renderGuide() falls back to that
+  // game's first section whenever the current key doesn't belong to it,
+  // which covers both first load and switching games.
+  var activeGuideKey = null;
+
+  function guideCardsHTML(list, emptyLabel, game, intro){
+    var introHtml = intro ? '<div class="guide-card"><div class="guide-card-body">'+escapeHTML(intro)+'</div></div>' : "";
+    if(!list.length){
+      return introHtml + '<div class="empty">No ' + escapeHTML(emptyLabel) + ' loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
+    }
+    return introHtml + list.map(function(t){
+      return '<div class="guide-card"><div class="guide-card-title">'+escapeHTML(t.title)+'</div><div class="guide-card-body">'+escapeHTML(t.body)+'</div></div>';
+    }).join("");
+  }
+
+  function renderGuideSection(section, game){
+    if(section.type === "natures"){
+      var rows = section.data.map(function(n){
+        return '<tr><td>'+escapeHTML(n.nature)+'</td><td class="'+(n.up!=='—'?'ev-up':'')+'">'+escapeHTML(n.up)+'</td><td class="'+(n.down!=='—'?'ev-down':'')+'">'+escapeHTML(n.down)+'</td></tr>';
+      }).join("");
+      return '<div class="guide-card"><table class="nature-table"><tr><th>Nature</th><th>Raises</th><th>Lowers</th></tr>' + rows + '</table></div>';
+    }
+    if(section.type === "evspots"){
+      if(!section.data.length) return '<div class="empty">No EV spots loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
+      return section.data.map(function(e){
+        return '<div class="guide-card"><div class="guide-card-title">'+escapeHTML(e.stat)+'</div><div class="guide-card-body"><b>Where:</b> '+escapeHTML(e.spot)+'<br><b>Note:</b> '+escapeHTML(e.note)+'</div></div>';
+      }).join("");
+    }
+    return guideCardsHTML(section.data, section.label.toLowerCase(), game, section.intro);
+  }
+
+  function renderGuide(){
+    var game = currentGame();
+    var sections = game.guideSections || [];
+    var subtabsEl = document.getElementById("guideSubtabs");
+    var contentEl = document.getElementById("guideContent");
+
+    if(!sections.length){
+      subtabsEl.innerHTML = "";
+      contentEl.innerHTML = '<div class="empty">No guide content yet for ' + escapeHTML(game.shortLabel) + '.</div>';
+      return;
+    }
+
+    if(!activeGuideKey || !sections.some(function(s){ return s.key === activeGuideKey; })){
+      activeGuideKey = sections[0].key;
+    }
+
+    subtabsEl.innerHTML = sections.map(function(s){
+      return '<div class="guide-subtab' + (s.key === activeGuideKey ? ' active' : '') + '" data-act="guide-subtab" data-key="' + escapeHTML(s.key) + '">' + escapeHTML(s.label) + '</div>';
+    }).join("");
+
+    var active = sections.filter(function(s){ return s.key === activeGuideKey; })[0];
+    contentEl.innerHTML = renderGuideSection(active, game);
+  }
+
+  document.getElementById("addBtn").addEventListener("click", function(){
+    var route = document.getElementById("fRoute").value.trim();
+    var species = document.getElementById("fSpecies").value.trim();
+    var nick = document.getElementById("fNick").value.trim();
+    var level = document.getElementById("fLevel").value.trim();
+
+    if(!species && !nick){
+      showToast("Add at least a species or nickname");
+      return;
+    }
+    if(currentRun().rules.nickname && !nick){
+      showToast("This run requires a nickname");
+      return;
+    }
+
+    currentRun().mons.push({
+      id: uid(),
+      route: route || "Unknown Location",
+      species: species,
+      nick: nick,
+      level: level,
+      status: "alive",
+      cause: "",
+      createdAt: Date.now()
+    });
+    save();
+    document.getElementById("fRoute").value = "";
+    document.getElementById("fSpecies").value = "";
+    document.getElementById("fNick").value = "";
+    document.getElementById("fLevel").value = "";
+    document.getElementById("fRoute").focus();
+    renderAll();
+    showToast("Encounter added");
+  });
+
+  function findMon(id){
+    return currentRun().mons.find(function(m){ return m.id === id; });
+  }
+
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest("[data-act]");
+    if(!btn) return;
+    var act = btn.getAttribute("data-act");
+
+    if(act === "toggle-beaten"){
+      var key = btn.getAttribute("data-key");
+      currentRun().beatenBosses[key] = !currentRun().beatenBosses[key];
+      save();
+      renderBosses();
+      renderTrainers();
+      return;
+    }
+
+    if(act === "toggle-collapse-route"){
+      var routeKey = btn.getAttribute("data-route");
+      currentRun().collapsedRoutes[routeKey] = !currentRun().collapsedRoutes[routeKey];
+      save();
+      renderChecklist();
+      return;
+    }
+
+    if(act === "toggle-collapse-split"){
+      var splitKey = btn.getAttribute("data-split");
+      currentRun().collapsedSplits[splitKey] = !currentRun().collapsedSplits[splitKey];
+      save();
+      renderTrainers();
+      return;
+    }
+
+    if(act === "guide-subtab"){
+      activeGuideKey = btn.getAttribute("data-key");
+      renderGuide();
+      return;
+    }
+
+    if(act === "mark-species"){
+      var route = btn.getAttribute("data-route");
+      var species = btn.getAttribute("data-species");
+      // A route/location can hold more than one logged catch (a gift plus
+      // a wild encounter, several gifts at one town, etc) — only an exact
+      // (route, species) match toggles undo; any other species tapped at
+      // an already-logged location just adds another entry alongside it.
+      var existing = currentRun().mons.find(function(m){
+        return (m.route || "").trim().toLowerCase() === route.toLowerCase() && m.species === species;
+      });
+
+      if(existing){
+        currentRun().mons = currentRun().mons.filter(function(m){ return m.id !== existing.id; });
+        save(); renderAll();
+        showToast("Unmarked " + species);
+        return;
+      }
+      currentRun().mons.push({
+        id: uid(),
+        route: route,
+        species: species,
+        nick: "",
+        level: "",
+        status: "alive",
+        cause: "",
+        createdAt: Date.now()
+      });
+      currentRun().collapsedRoutes[route] = true; // auto-collapse once something's logged here
+      save(); renderAll();
+      showToast(species + " logged at " + route);
+      return;
+    }
+
+    var id = btn.getAttribute("data-id");
+    var mon = findMon(id);
+    if(!mon) return;
+
+    if(act === "kill"){
+      showPrompt("How did " + (mon.nick || mon.species || "it") + " fall? (optional)", "", function(cause){
+        mon.status = "dead";
+        mon.cause = cause || "";
+        showToast((mon.nick || mon.species) + " has fallen");
+        save();
+        renderAll();
+      });
+      return;
+    } else if(act === "box"){
+      mon.status = "boxed";
+      showToast((mon.nick || mon.species) + " boxed");
+    } else if(act === "unbox"){
+      mon.status = "alive";
+      showToast((mon.nick || mon.species) + " back in the party");
+    } else if(act === "revive"){
+      mon.status = "alive";
+      mon.cause = "";
+      showToast("Undone");
+    } else if(act === "delete"){
+      showConfirm("Delete this encounter permanently?", function(){
+        currentRun().mons = currentRun().mons.filter(function(m){ return m.id !== id; });
+        showToast("Deleted");
+        save();
+        renderAll();
+      });
+      return;
+    }
+    save();
+    renderAll();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    var game = currentGame();
+    showConfirm("This clears your " + game.shortLabel + " run: roster, graveyard, badges. Other games' runs are untouched. Export a backup first if you want to keep it. Continue?", function(){
+      state.runs[state.selectedGame] = defaultRunState();
+      save();
+      renderAll();
+      showToast(game.shortLabel + " run reset");
+    });
+  });
+
+  document.getElementById("exportBtn").addEventListener("click", function(){
+    // Exports the full save — every game's run, not just the one on
+    // screen — so Import Backup can restore everything at once.
+    var blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var safeName = (currentRun().runName || "nuzlocke-run").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+    a.href = url;
+    a.download = (safeName || "nuzlocke-run") + "-backup.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Backup downloaded");
+  });
+
+  document.getElementById("importBtn").addEventListener("click", function(){
+    document.getElementById("fileInput").click();
+  });
+
+  document.getElementById("fileInput").addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(evt){
+      try{
+        var parsed = JSON.parse(evt.target.result);
+        var normalized = normalizeState(parsed);
+        if(!normalized) throw new Error("bad format");
+        state = normalized;
+        save();
+        populateGameSelect();
+        renderAll();
+        showToast("Backup restored");
+      }catch(err){
+        showToast("Couldn't read that file");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  // ---------- init ----------
+  state = load();
+  populateGameSelect();
+  renderAll();
+})();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").catch(function(e){
+      console.warn("Service worker registration failed", e);
+    });
+  });
+}
+</script>
+</body>
+</html>
