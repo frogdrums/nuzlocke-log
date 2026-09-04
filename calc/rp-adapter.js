@@ -169,6 +169,18 @@
     get: function (id) { return movesById[id]; }
   };
 
+  // ---- Items ----
+  // rp.js carries no item data of its own (this romhack doesn't redefine
+  // items) — sourced from the same vanilla gen-8 item dex
+  // (calc/data/items.js's Items class) abilities/move-flags/natures above
+  // already come from. Items is iterable (see its Symbol.iterator), each
+  // yielding an Item with .name — the exact string buildPokemon()/
+  // Pokemon.hasItem() need (item matching is a plain string check, no
+  // toID normalization on the engine's side).
+  var itemNames = Array.from(vanillaGen.items)
+    .map(function (i) { return i.name; })
+    .sort(function (a, b) { return a.localeCompare(b); });
+
   // ---- The custom "Generation" object passed to calc.calculate() ----
   var RPGen = {
     num: 4,
@@ -198,6 +210,15 @@
       nature: opts.nature || 'Serious',
       ivs: opts.ivs || { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
       evs: opts.evs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+      // In-battle stat stages (-6..+6 per stat), NOT part of the base
+      // stat calculation below — Pokemon.withDefault(gen, options.boosts,
+      // 0, false) (calc/pokemon.js) fills in 0 for any stat left out, so
+      // passing undefined here (the common case, no UI boosts set) is
+      // equivalent to all-zero. The mechanics code
+      // (calc/mechanics/gen4.js) reads attacker.boosts/defender.boosts
+      // directly off the built Pokemon at calculate()-time, layered on
+      // top of rawStats — independent of the statsOverride path below.
+      boosts: opts.boosts,
       ability: opts.ability,
       item: opts.item || '',
       gender: opts.gender
@@ -233,11 +254,12 @@
   }
 
   // Runs one calculation. attackerOpts/defenderOpts: {species, level,
-  // nature, ivs, evs, ability, item, statsOverride}. statsOverride (optional)
-  // is [hp,atk,def,spa,spd,spe] of already-known-exact stats, used as-is
-  // instead of computing from level/nature/ivs/evs (see buildPokemon).
-  // moveName: string. fieldOpts (all optional): {weather, terrain,
-  // isReflect, isLightScreen}.
+  // nature, ivs, evs, boosts, ability, item, statsOverride}. boosts
+  // (optional) is {atk,def,spa,spd,spe} stat stages, -6..+6, default 0.
+  // statsOverride (optional) is [hp,atk,def,spa,spd,spe] of already-known-
+  // exact stats, used as-is instead of computing from level/nature/ivs/evs
+  // (see buildPokemon). moveName: string. fieldOpts (all optional):
+  // {weather, terrain, isReflect, isLightScreen}.
   function runCalculation(attackerOpts, defenderOpts, moveName, fieldOpts) {
     applyGameGlobals();
     fieldOpts = fieldOpts || {};
@@ -288,13 +310,41 @@
     }
   }
 
+  // Builds a Pokemon from the same opts shape runCalculation()'s
+  // attackerOpts/defenderOpts take and returns its computed rawStats
+  // (post level/nature/IV/EV — NOT stat-stage-boosted; see buildPokemon,
+  // boosts never touch rawStats, only the mechanics code's read of it at
+  // calculate()-time). Exists so index.html can show "what are this
+  // mon's actual stats right now" without re-deriving the stat formula
+  // itself — same numbers runCalculation()'s own attacker/defender used.
+  function computeStats(opts) {
+    applyGameGlobals();
+    try {
+      var pokemon = buildPokemon(opts);
+      return {
+        ok: true,
+        hp: pokemon.rawStats.hp,
+        atk: pokemon.rawStats.atk,
+        def: pokemon.rawStats.def,
+        spa: pokemon.rawStats.spa,
+        spd: pokemon.rawStats.spd,
+        spe: pokemon.rawStats.spe
+      };
+    } catch (e) {
+      return { ok: false, error: (e && e.message) || String(e) };
+    }
+  }
+
   window.RPCalc = {
     gen: RPGen,
     speciesNames: speciesNames,
     moveNames: moveNames,
+    itemNames: itemNames,
     getSpecies: function (name) { return speciesById[toID(name)]; },
     getMove: function (name) { return movesById[toID(name)]; },
+    getItem: function (name) { return vanillaGen.items.get(toID(name)); },
     getLearnsetMoveNames: getLearnsetMoveNames,
-    calculate: runCalculation
+    calculate: runCalculation,
+    computeStats: computeStats
   };
 })();

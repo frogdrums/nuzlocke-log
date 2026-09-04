@@ -326,14 +326,61 @@
   .calc-stat-row input{ width:100%; padding: 4px 2px; font-size: 13px; text-align:center; }
   .calc-checks{ display:flex; gap:16px; flex-wrap:wrap; margin-top: 10px; font-size: 13px; color: var(--cream-dim); }
   .calc-checks label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
-  .calc-result-card{
-    background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--lcd);
-    border-radius: var(--radius); padding: 12px; margin-top: 14px;
+
+  /* Type-to-filter dropdown (species / item / move fields). Deliberately
+     NOT position:absolute — .device (the outer bezel) uses overflow:hidden
+     for its rounded corners, and an absolutely-positioned list that grows
+     past the device's current content height would get silently clipped.
+     Instead the list is normal in-flow content that pushes the rest of
+     the card down while open, with its own max-height + overflow-y:auto
+     so a long list scrolls internally rather than growing unbounded. */
+  .calc-dd-wrap{ position:relative; }
+  .calc-dd-list{
+    margin-top: 4px; max-height: 190px; overflow-y:auto; -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg);
   }
-  .calc-result-desc{ font-size: 15px; line-height: 1.5; }
-  .calc-result-range{ font-size: 22px; font-weight:700; color: var(--lcd); margin-top: 6px; }
-  .calc-result-ko{ font-size: 14px; color: var(--gold); margin-top: 4px; }
+  .calc-dd-item{
+    padding: 10px 11px; font-size: 14px; color: var(--cream); cursor:pointer;
+    border-bottom: 1px solid var(--line); -webkit-tap-highlight-color: transparent;
+  }
+  .calc-dd-item:last-child{ border-bottom:none; }
+  .calc-dd-item:active{ background: var(--panel-raised); }
+  .calc-dd-empty{ padding: 9px 11px; font-size: 13px; color: var(--cream-dim); font-style: italic; }
+
+  .calc-move-slots{ display:flex; flex-direction:column; gap:6px; }
+  .calc-move-slots .calc-dd-wrap input{ font-size: 15px; }
+
+  .calc-team-chips{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom: 9px; }
+  .calc-team-chips .chip.active{ background: var(--lcd-dim); border-color: var(--lcd); color: #0d1712; font-weight:700; }
+
+  .calc-computed-stats{
+    font-size: 12.5px; color: var(--lcd); font-weight:700; letter-spacing:0.2px;
+    margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--line); line-height:1.5;
+  }
+
+  .calc-boost-row{ display:grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+  .calc-boost-row div{ display:flex; flex-direction:column; gap:2px; }
+  .calc-boost-row label{ font-size: 9.5px; color: var(--cream-dim); text-align:center; text-transform:uppercase; }
+  .calc-boost-row select{ width:100%; padding: 4px 1px; font-size: 12px; text-align:center; text-align-last:center; }
+
+  .calc-result-group{
+    background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--lcd);
+    border-radius: var(--radius); padding: 4px 12px 10px; margin-top: 12px;
+  }
+  .calc-result-group summary{
+    cursor:pointer; padding: 8px 0; font-size: 14px; font-weight:700; color: var(--gold);
+    text-transform:uppercase; letter-spacing:0.3px; -webkit-tap-highlight-color: transparent;
+  }
+  .calc-result-list{ display:flex; flex-direction:column; gap: 10px; }
+  .calc-result-row{ border-top: 1px dashed var(--line); padding-top: 8px; }
+  .calc-result-row:first-child{ border-top:none; padding-top:0; }
+  .calc-result-row-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .calc-result-move{ font-size: 15px; font-weight:700; }
+  .calc-result-pct{ font-size: 17px; font-weight:700; color: var(--lcd); flex-shrink:0; }
+  .calc-result-desc{ font-size: 13px; color: var(--cream-dim); line-height: 1.5; margin-top: 3px; }
+  .calc-result-ko{ font-size: 13px; color: var(--gold); margin-top: 3px; font-weight:700; }
   .calc-result-error{ font-size: 14px; color: var(--dead); }
+  .calc-result-empty{ font-size: 13px; color: var(--cream-dim); font-style: italic; padding: 4px 0; }
 
   /* ---------- guide tab ---------- */
   .guide-subtabs{ display:flex; gap:6px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -492,48 +539,84 @@
         <div class="calc-grid">
           <div class="calc-mon-card">
             <div class="calc-mon-title">Attacker</div>
+            <div class="calc-team-chips" id="calcAtkTeamChips" style="display:none;"></div>
             <label class="f">Species</label>
-            <input type="text" id="calcAtkSpecies" list="calcSpeciesList" placeholder="Start typing a species…">
+            <div class="calc-dd-wrap">
+              <input type="text" id="calcAtkSpecies" autocomplete="off" placeholder="Start typing a species…">
+              <div class="calc-dd-list" id="calcAtkSpeciesDD" style="display:none;"></div>
+            </div>
             <div class="add-form row" style="margin:8px 0 0;">
               <div><label class="f">Level</label><input type="number" id="calcAtkLevel" min="1" max="100" value="50"></div>
               <div><label class="f">Nature</label><select id="calcAtkNature"></select></div>
             </div>
             <div class="add-form row">
               <div><label class="f">Ability</label><select id="calcAtkAbility"></select></div>
-              <div><label class="f">Item</label><input type="text" id="calcAtkItem" placeholder="(none)"></div>
+              <div>
+                <label class="f">Item</label>
+                <div class="calc-dd-wrap">
+                  <input type="text" id="calcAtkItem" autocomplete="off" placeholder="(none)">
+                  <div class="calc-dd-list" id="calcAtkItemDD" style="display:none;"></div>
+                </div>
+              </div>
             </div>
-            <label class="f">Move</label>
-            <select id="calcAtkMove"></select>
+            <label class="f">Moves</label>
+            <div class="calc-move-slots">
+              <div class="calc-dd-wrap"><input type="text" id="calcAtkMove1" autocomplete="off" placeholder="Move 1"><div class="calc-dd-list" id="calcAtkMove1DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcAtkMove2" autocomplete="off" placeholder="Move 2"><div class="calc-dd-list" id="calcAtkMove2DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcAtkMove3" autocomplete="off" placeholder="Move 3"><div class="calc-dd-list" id="calcAtkMove3DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcAtkMove4" autocomplete="off" placeholder="Move 4"><div class="calc-dd-list" id="calcAtkMove4DD" style="display:none;"></div></div>
+            </div>
             <div class="calc-iv-ev">
               <div class="calc-iv-ev-title">IVs</div>
               <div class="calc-stat-row" id="calcAtkIvs"></div>
               <div class="calc-iv-ev-title">EVs</div>
               <div class="calc-stat-row" id="calcAtkEvs"></div>
+              <div class="calc-iv-ev-title">Stat Stages</div>
+              <div class="calc-boost-row" id="calcAtkBoosts"></div>
             </div>
+            <div class="calc-computed-stats" id="calcAtkComputed"></div>
           </div>
 
           <div class="calc-mon-card">
             <div class="calc-mon-title">Defender</div>
+            <div class="calc-team-chips" id="calcDefTeamChips" style="display:none;"></div>
             <label class="f">Species</label>
-            <input type="text" id="calcDefSpecies" list="calcSpeciesList" placeholder="Start typing a species…">
+            <div class="calc-dd-wrap">
+              <input type="text" id="calcDefSpecies" autocomplete="off" placeholder="Start typing a species…">
+              <div class="calc-dd-list" id="calcDefSpeciesDD" style="display:none;"></div>
+            </div>
             <div class="add-form row" style="margin:8px 0 0;">
               <div><label class="f">Level</label><input type="number" id="calcDefLevel" min="1" max="100" value="50"></div>
               <div><label class="f">Nature</label><select id="calcDefNature"></select></div>
             </div>
             <div class="add-form row">
               <div><label class="f">Ability</label><select id="calcDefAbility"></select></div>
-              <div><label class="f">Item</label><input type="text" id="calcDefItem" placeholder="(none)"></div>
+              <div>
+                <label class="f">Item</label>
+                <div class="calc-dd-wrap">
+                  <input type="text" id="calcDefItem" autocomplete="off" placeholder="(none)">
+                  <div class="calc-dd-list" id="calcDefItemDD" style="display:none;"></div>
+                </div>
+              </div>
+            </div>
+            <label class="f">Moves</label>
+            <div class="calc-move-slots">
+              <div class="calc-dd-wrap"><input type="text" id="calcDefMove1" autocomplete="off" placeholder="Move 1"><div class="calc-dd-list" id="calcDefMove1DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcDefMove2" autocomplete="off" placeholder="Move 2"><div class="calc-dd-list" id="calcDefMove2DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcDefMove3" autocomplete="off" placeholder="Move 3"><div class="calc-dd-list" id="calcDefMove3DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcDefMove4" autocomplete="off" placeholder="Move 4"><div class="calc-dd-list" id="calcDefMove4DD" style="display:none;"></div></div>
             </div>
             <div class="calc-iv-ev">
               <div class="calc-iv-ev-title">IVs</div>
               <div class="calc-stat-row" id="calcDefIvs"></div>
               <div class="calc-iv-ev-title">EVs</div>
               <div class="calc-stat-row" id="calcDefEvs"></div>
+              <div class="calc-iv-ev-title">Stat Stages</div>
+              <div class="calc-boost-row" id="calcDefBoosts"></div>
             </div>
+            <div class="calc-computed-stats" id="calcDefComputed"></div>
           </div>
         </div>
-
-        <datalist id="calcSpeciesList"></datalist>
 
         <div class="add-form row" style="margin-top:12px;">
           <div><label class="f">Weather</label><select id="calcWeather">
@@ -4294,25 +4377,36 @@
   // the vendored calc/ engine has data + correct mechanics settings for —
   // Emerald is Gen 3 and out of scope, see CLAUDE.md). Requires the RP
   // dex to actually know this species (guards against a name typo/gap in
-  // the trainer data rather than silently loading nothing).
-  function monSimButtonHTML(m){
+  // the trainer data rather than silently loading nothing). `team` is the
+  // full array of mons this one belongs to (a trainer's/boss's whole
+  // roster, e.g. b.mons/f.mons) — Simulate loads the WHOLE team into the
+  // calculator (with `m` preselected), not just this one mon, so tapping
+  // Simulate on any teammate gives the same result and the calculator's
+  // team-chip row lets the player flip through the rest from there.
+  function monToSimPayload(m){
+    return { name: m.name, level: m.level, ability: m.ability, item: m.item, moves: m.moves, stats: m.stats || null };
+  }
+  function monSimButtonHTML(m, team){
     if(state.selectedGame !== "renegade") return "";
     if(typeof window.RPCalc === "undefined" || !window.RPCalc.getSpecies(m.name)) return "";
+    var roster = (team || [m]).filter(function(t){ return window.RPCalc.getSpecies(t.name); });
+    var index = roster.indexOf(m);
+    if(index === -1) index = 0;
     var payload = JSON.stringify({
-      name: m.name, level: m.level, ability: m.ability, item: m.item,
-      moves: m.moves, stats: m.stats || null
+      team: roster.map(monToSimPayload),
+      index: index
     });
-    return '<button type="button" class="boss-mon-sim" data-act="calc-sim" data-mon="'+escapeHTML(payload)+'">▶ Simulate</button>';
+    return '<button type="button" class="boss-mon-sim" data-act="calc-sim" data-mon="'+escapeHTML(payload)+'">▶ Simulate Team</button>';
   }
 
-  function monBlockHTML(m){
+  function monBlockHTML(m, team){
     return (
       '<div class="boss-mon">' +
         '<div class="boss-mon-top"><span>'+escapeHTML(m.name)+'</span><span>Lv. '+m.level+'</span></div>' +
         '<div class="boss-mon-meta">Ability: '+escapeHTML(m.ability)+' · Item: '+escapeHTML(m.item)+'</div>' +
         '<div class="boss-mon-moves">'+escapeHTML(m.moves)+'</div>' +
         statLineHTML(m) +
-        monSimButtonHTML(m) +
+        monSimButtonHTML(m, team) +
       '</div>'
     );
   }
@@ -4349,7 +4443,7 @@
       bosses.gymLeaders.forEach(function(b){
         var body =
           (b.battleItems ? '<div class="boss-items">Battle items: '+escapeHTML(b.battleItems)+'</div>' : "") +
-          (b.mons ? b.mons.map(monBlockHTML).join("") : '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>') +
+          (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>') +
           (b.tip ? '<div class="boss-note">'+escapeHTML(b.tip)+'</div>' : "");
         html += bossCardHTML("gym-"+b.name, escapeHTML(b.name), '<div class="boss-cap">Cap Lv '+b.cap+'</div>', escapeHTML(b.location)+' · '+escapeHTML(b.type)+'-type', body);
       });
@@ -4359,7 +4453,7 @@
       html += '<div class="boss-section-title">Elite Four</div>';
       bosses.eliteFour.forEach(function(b){
         var body =
-          (b.mons ? b.mons.map(monBlockHTML).join("") : "") +
+          (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : "") +
           (b.tip ? '<div class="boss-note">'+escapeHTML(b.tip)+'</div>' : "");
         html += bossCardHTML("elite-"+b.name, escapeHTML(b.name), "", escapeHTML(b.type)+'-type specialist', body);
       });
@@ -4371,7 +4465,7 @@
         var c = bosses.champion;
         var body =
           (c.battleItems && c.battleItems !== "—" ? '<div class="boss-items">Battle items: '+escapeHTML(c.battleItems)+'</div>' : "") +
-          (c.mons ? c.mons.map(monBlockHTML).join("") : "") +
+          (c.mons ? c.mons.map(function(m){ return monBlockHTML(m, c.mons); }).join("") : "") +
           (c.tip ? '<div class="boss-note">'+escapeHTML(c.tip)+'</div>' : "");
         html += bossCardHTML("champion-"+c.name, escapeHTML(c.name), "", escapeHTML(c.location), body);
       })();
@@ -4382,7 +4476,7 @@
       bosses.rival.forEach(function(b){
         var body =
           '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
-          (b.mons ? b.mons.map(monBlockHTML).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
+          (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
         html += bossCardHTML("rival-"+b.stage, escapeHTML(b.stage), "", escapeHTML(b.location), body);
       });
     }
@@ -4392,7 +4486,7 @@
       bosses.otherBattles.forEach(function(b){
         var body =
           '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
-          (b.mons ? b.mons.map(monBlockHTML).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
+          (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
         html += bossCardHTML("other-"+b.name+"-"+b.location, escapeHTML(b.name), "", escapeHTML(b.location), body);
       });
     }
@@ -4402,7 +4496,7 @@
       bosses.evilTeam.forEach(function(b){
         var body =
           '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
-          (b.mons ? b.mons.map(monBlockHTML).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
+          (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
         html += bossCardHTML("evil-"+b.name+"-"+b.location, escapeHTML(b.name), "", escapeHTML(b.location), body);
       });
     }
@@ -4443,7 +4537,7 @@
           html += '<div class="trainer-location">' + escapeHTML(f.location) + '</div>';
           lastLoc = f.location;
         }
-        var body = f.mons.map(monBlockHTML).join("");
+        var body = f.mons.map(function(m){ return monBlockHTML(m, f.mons); }).join("");
         var key = "trainer-" + g.split + "-" + f.location + "-" + f.trainerClass + "-" + f.name + "-" + idx;
         html += bossCardHTML(key, escapeHTML(f.trainerClass) + ' ' + escapeHTML(f.name), "", f.note ? escapeHTML(f.note) : "", body);
       });
@@ -4457,10 +4551,13 @@
   // see the <script src="./calc/..."> block above). This tab's DOM is
   // static markup (in index.html, not template-rendered from state) so
   // typing in a field never gets wiped by a re-render; renderCalculator()
-  // only (re)populates the datalist/dropdowns and resets to defaults the
-  // first time the tab is opened, then leaves the form alone.
+  // only (re)populates the dropdowns/defaults the first time the tab is
+  // opened, then leaves the form alone.
   var STAT_KEYS = ["hp","atk","def","spa","spd","spe"];
   var STAT_LABELS = ["HP","Atk","Def","SpA","SpD","Spe"];
+  var BOOST_KEYS = ["atk","def","spa","spd","spe"];
+  var BOOST_LABELS = ["Atk","Def","SpA","SpD","Spe"];
+  var MOVE_SLOTS = [1,2,3,4];
   var NEUTRAL_NATURES = ["Hardy","Docile","Serious","Bashful","Quirky"];
   var calcInitialized = false;
 
@@ -4479,6 +4576,30 @@
     return out;
   }
 
+  // Stat-stage (-6..+6) row, one <select> per boost-eligible stat. HP has
+  // no stage, and accuracy/evasion are skipped — the vendored engine's
+  // Pokemon.boosts only carries hp/atk/def/spa/spd/spe (see
+  // calc/pokemon.js's `STATS`/`withDefault`), so there's no clean boosts
+  // field for accuracy/evasion to wire up here.
+  function calcBoostRowHTML(prefix){
+    return BOOST_KEYS.map(function(key, i){
+      var opts = "";
+      for(var v=-6; v<=6; v++){
+        opts += '<option value="'+v+'"'+(v===0?' selected':'')+'>'+(v>0?'+'+v:v)+'</option>';
+      }
+      return '<div><label>'+BOOST_LABELS[i]+'</label><select id="'+prefix+key+'">'+opts+'</select></div>';
+    }).join("");
+  }
+
+  function readBoostRow(prefix){
+    var out = {};
+    BOOST_KEYS.forEach(function(key){
+      var el = document.getElementById(prefix+key);
+      out[key] = el ? (parseInt(el.value, 10) || 0) : 0;
+    });
+    return out;
+  }
+
   function populateAbilitySelect(selectEl, speciesName, keepValue){
     var sp = window.RPCalc.getSpecies(speciesName);
     var abilities = sp ? sp.abilities : ["No Ability"];
@@ -4488,23 +4609,71 @@
     }).join("");
   }
 
-  function populateMoveSelect(selectEl, speciesName, keepValue){
-    var moves = window.RPCalc.getLearnsetMoveNames(speciesName);
-    var prev = keepValue && moves.indexOf(keepValue) !== -1 ? keepValue : moves[0];
-    selectEl.innerHTML = moves.map(function(mv){
-      return '<option value="'+escapeHTML(mv)+'"'+(mv===prev?' selected':'')+'>'+escapeHTML(mv)+'</option>';
-    }).join("");
+  // ---------- Reusable type-to-filter dropdown ----------
+  // A plain text <input> plus a sibling results list (both already in the
+  // static HTML — see the .calc-dd-wrap markup in the Calc tab). Filters
+  // `getOptions()` (called fresh each time, so a move field can scope its
+  // list to the currently-selected species' learnset) as the user types,
+  // and shows the matches as large tappable rows — built for a touchscreen
+  // specifically because the plain HTML <datalist>/<select> this replaces
+  // barely worked on mobile Safari (see real user feedback that prompted
+  // this). Deliberately NOT position:absolute (see the .calc-dd-list CSS
+  // comment) so it can never get clipped by .device's overflow:hidden.
+  function attachTypeahead(inputId, listId, getOptions){
+    var input = document.getElementById(inputId);
+    var list = document.getElementById(listId);
+    if(!input || !list) return;
+
+    function show(){
+      var q = input.value.trim().toLowerCase();
+      var opts = getOptions() || [];
+      var filtered = q ? opts.filter(function(o){ return o.toLowerCase().indexOf(q) !== -1; }) : opts;
+      if(!filtered.length){
+        list.innerHTML = '<div class="calc-dd-empty">No matches</div>';
+      } else {
+        list.innerHTML = filtered.slice(0, 60).map(function(o){
+          return '<div class="calc-dd-item" data-val="'+escapeHTML(o)+'">'+escapeHTML(o)+'</div>';
+        }).join("");
+      }
+      list.style.display = "";
+    }
+    function hide(){ list.style.display = "none"; }
+
+    input.addEventListener("focus", show);
+    input.addEventListener("input", show);
+    // Delayed so a tap on a list item (mousedown, below) has a chance to
+    // register before the list disappears out from under it.
+    input.addEventListener("blur", function(){ setTimeout(hide, 150); });
+    // mousedown (not click) fires before the input's blur — this is what
+    // lets a tap-to-select beat the blur-triggered hide() above. Setting
+    // the value programmatically doesn't fire a native change event, so
+    // that's dispatched manually for any listener (ability/move refresh,
+    // stats-override clearing, etc.) that expects one.
+    list.addEventListener("mousedown", function(e){
+      var item = e.target.closest(".calc-dd-item");
+      if(!item) return;
+      e.preventDefault();
+      input.value = item.getAttribute("data-val");
+      hide();
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    });
   }
 
   function calcInitOnce(){
     if(calcInitialized) return;
     calcInitialized = true;
 
-    // Species datalist, shared by both species inputs.
-    var dl = document.getElementById("calcSpeciesList");
-    dl.innerHTML = window.RPCalc.speciesNames.map(function(n){
-      return '<option value="'+escapeHTML(n)+'">';
-    }).join("");
+    attachTypeahead("calcAtkSpecies", "calcAtkSpeciesDD", function(){ return window.RPCalc.speciesNames; });
+    attachTypeahead("calcDefSpecies", "calcDefSpeciesDD", function(){ return window.RPCalc.speciesNames; });
+    attachTypeahead("calcAtkItem", "calcAtkItemDD", function(){ return window.RPCalc.itemNames; });
+    attachTypeahead("calcDefItem", "calcDefItemDD", function(){ return window.RPCalc.itemNames; });
+    ["Atk","Def"].forEach(function(side){
+      MOVE_SLOTS.forEach(function(i){
+        attachTypeahead("calc"+side+"Move"+i, "calc"+side+"Move"+i+"DD", function(){
+          return window.RPCalc.getLearnsetMoveNames(document.getElementById("calc"+side+"Species").value);
+        });
+      });
+    });
 
     // Nature dropdowns: NATURE_MODS' 20 stat-affecting natures plus the 5
     // neutral ones (no entry in NATURE_MODS since they have no effect).
@@ -4516,39 +4685,58 @@
       }).join("");
     });
 
-    // IV/EV grids.
+    // IV/EV/stat-stage grids.
     document.getElementById("calcAtkIvs").innerHTML = calcStatRowHTML("calcAtkIv", 31);
     document.getElementById("calcDefIvs").innerHTML = calcStatRowHTML("calcDefIv", 31);
     document.getElementById("calcAtkEvs").innerHTML = calcStatRowHTML("calcAtkEv", 0);
     document.getElementById("calcDefEvs").innerHTML = calcStatRowHTML("calcDefEv", 0);
+    document.getElementById("calcAtkBoosts").innerHTML = calcBoostRowHTML("calcAtkBoost");
+    document.getElementById("calcDefBoosts").innerHTML = calcBoostRowHTML("calcDefBoost");
 
-    // Default starting species so the form is immediately usable.
+    // Default starting species so the form is immediately usable, with a
+    // first move on each side so both calculation directions have
+    // something to show right away.
     document.getElementById("calcAtkSpecies").value = "Turtwig";
     document.getElementById("calcDefSpecies").value = "Starly";
     populateAbilitySelect(document.getElementById("calcAtkAbility"), "Turtwig");
     populateAbilitySelect(document.getElementById("calcDefAbility"), "Starly");
-    populateMoveSelect(document.getElementById("calcAtkMove"), "Turtwig");
+    document.getElementById("calcAtkMove1").value = window.RPCalc.getLearnsetMoveNames("Turtwig")[0] || "";
+    document.getElementById("calcDefMove1").value = window.RPCalc.getLearnsetMoveNames("Starly")[0] || "";
 
     document.getElementById("calcAtkSpecies").addEventListener("change", function(){
       populateAbilitySelect(document.getElementById("calcAtkAbility"), this.value);
-      populateMoveSelect(document.getElementById("calcAtkMove"), this.value);
+      clearStatsOverrideOn("Atk");
+      refreshComputedStats("Atk");
     });
     document.getElementById("calcDefSpecies").addEventListener("change", function(){
       populateAbilitySelect(document.getElementById("calcDefAbility"), this.value);
+      clearStatsOverrideOn("Def");
+      refreshComputedStats("Def");
     });
 
     // A Simulated-in mon's exact stats (calcStatsOverride) only make
     // sense until the player starts hand-editing that side — any change
     // to level/nature/IVs/EVs for a side drops back to computing stats
-    // from the form fields like a normal (non-Simulated) matchup.
+    // from the form fields like a normal (non-Simulated) matchup. Stat
+    // stages deliberately do NOT clear the override (they're an
+    // independent battle-time modifier layered on top of whichever base
+    // stats — override or computed — are in play; see runCalculator/
+    // buildPokemon), and they don't feed the "computed stats" line either
+    // (that line is explicitly the post-level/nature/IV/EV numbers).
     ["Atk","Def"].forEach(function(side){
       ["Level","Nature"].forEach(function(field){
-        document.getElementById("calc"+side+field).addEventListener("change", function(){ clearStatsOverrideOn(side); });
+        document.getElementById("calc"+side+field).addEventListener("change", function(){
+          clearStatsOverrideOn(side);
+          refreshComputedStats(side);
+        });
       });
       STAT_KEYS.forEach(function(key){
         ["Iv","Ev"].forEach(function(kind){
           var el = document.getElementById("calc"+side+kind+key);
-          if(el) el.addEventListener("change", function(){ clearStatsOverrideOn(side); });
+          if(el) el.addEventListener("change", function(){
+            clearStatsOverrideOn(side);
+            refreshComputedStats(side);
+          });
         });
       });
     });
@@ -4568,10 +4756,28 @@
           var tmp = a.value; a.value = b.value; b.value = tmp;
         });
       });
+      BOOST_KEYS.forEach(function(key){
+        var a = document.getElementById("calcAtkBoost"+key);
+        var b = document.getElementById("calcDefBoost"+key);
+        if(a && b){ var tmp = a.value; a.value = b.value; b.value = tmp; }
+      });
+      MOVE_SLOTS.forEach(function(i){
+        var a = document.getElementById("calcAtkMove"+i);
+        var b = document.getElementById("calcDefMove"+i);
+        var tmp = a.value; a.value = b.value; b.value = tmp;
+      });
+      var tmpOverride = calcStatsOverride.Atk; calcStatsOverride.Atk = calcStatsOverride.Def; calcStatsOverride.Def = tmpOverride;
+      var tmpTeam = calcTeamState.Atk; calcTeamState.Atk = calcTeamState.Def; calcTeamState.Def = tmpTeam;
+      renderTeamChips("Atk");
+      renderTeamChips("Def");
       populateAbilitySelect(document.getElementById("calcAtkAbility"), document.getElementById("calcAtkSpecies").value, document.getElementById("calcAtkAbility").value);
       populateAbilitySelect(document.getElementById("calcDefAbility"), document.getElementById("calcDefSpecies").value, document.getElementById("calcDefAbility").value);
-      populateMoveSelect(document.getElementById("calcAtkMove"), document.getElementById("calcAtkSpecies").value);
+      refreshComputedStats("Atk");
+      refreshComputedStats("Def");
     });
+
+    refreshComputedStats("Atk");
+    refreshComputedStats("Def");
   }
 
   function renderCalculator(){
@@ -4587,10 +4793,10 @@
     calcInitOnce();
   }
 
-  // Set by loadMonIntoCalculator() when a trainer mon is Simulated in —
+  // Set by applyMonToSide() when a trainer/boss mon is Simulated in —
   // its exact already-known real stats (from Phase 1's data pull), used
   // in place of computing stats from the form's IV/EV/nature fields for
-  // that side. Cleared as soon as the player edits any of those fields
+  // that side. Cleared as soon as the player edits level/nature/IVs/EVs
   // for that side, so it never silently keeps overriding a hand-edited
   // matchup.
   var calcStatsOverride = { Atk: null, Def: null };
@@ -4598,6 +4804,13 @@
   function clearStatsOverrideOn(side){
     calcStatsOverride[side] = null;
   }
+
+  // Set by loadTeamIntoCalculator() — { team: [mon, ...], index: N } for
+  // whichever side currently has a Simulated-in trainer/boss team loaded,
+  // so the chip row (renderTeamChips) can be redrawn and so Swap Sides
+  // can carry the team assignment across to the other side along with
+  // everything else.
+  var calcTeamState = { Atk: null, Def: null };
 
   function readMonForm(side){
     return {
@@ -4608,22 +4821,92 @@
       item: document.getElementById("calc"+side+"Item").value.trim(),
       ivs: readStatRow("calc"+side+"Iv"),
       evs: readStatRow("calc"+side+"Ev"),
+      boosts: readBoostRow("calc"+side+"Boost"),
       statsOverride: calcStatsOverride[side]
     };
+  }
+
+  function collectMoves(side){
+    var moves = [];
+    MOVE_SLOTS.forEach(function(i){
+      var el = document.getElementById("calc"+side+"Move"+i);
+      var v = el ? el.value.trim() : "";
+      if(v) moves.push(v);
+    });
+    return moves;
+  }
+
+  // Read off the vendored engine's own Pokemon instance (RPCalc.computeStats
+  // -> buildPokemon -> pokemon.rawStats) rather than hand-recomputing —
+  // guarantees this line never disagrees with what Calculate itself uses.
+  // Deliberately the post-level/nature/IV/EV numbers only (rawStats), not
+  // stat-stage-boosted — boosts are shown/edited separately above.
+  function refreshComputedStats(side){
+    var el = document.getElementById("calc"+side+"Computed");
+    if(!el || typeof window.RPCalc === "undefined") return;
+    var form = readMonForm(side);
+    if(!form.species || !window.RPCalc.getSpecies(form.species)){
+      el.textContent = "";
+      return;
+    }
+    var res = window.RPCalc.computeStats(form);
+    if(!res.ok){
+      el.textContent = "";
+      return;
+    }
+    el.textContent = "HP "+res.hp+" · Atk "+res.atk+" · Def "+res.def+" · SpA "+res.spa+" · SpD "+res.spd+" · Spe "+res.spe;
+  }
+
+  function calcResultRowHTML(moveName, res){
+    if(!res.ok){
+      return (
+        '<div class="calc-result-row">' +
+          '<div class="calc-result-row-top"><span class="calc-result-move">'+escapeHTML(moveName)+'</span></div>' +
+          '<div class="calc-result-error">'+escapeHTML(res.error)+'</div>' +
+        '</div>'
+      );
+    }
+    var pct = res.percent ? escapeHTML(res.percent[0]+'–'+res.percent[1]+'%') : "—";
+    var koHtml = res.ko && res.ko.text ? '<div class="calc-result-ko">'+escapeHTML(res.ko.text)+'</div>' : "";
+    return (
+      '<div class="calc-result-row">' +
+        '<div class="calc-result-row-top"><span class="calc-result-move">'+escapeHTML(moveName)+'</span><span class="calc-result-pct">'+pct+'</span></div>' +
+        koHtml +
+        '<div class="calc-result-desc">'+escapeHTML(res.text)+'</div>' +
+      '</div>'
+    );
+  }
+
+  // One collapsible <details> group per direction — both directions are
+  // always computed (every non-empty move slot on that side vs. the other
+  // mon), but shown as a native, large-tap-target collapsible section
+  // rather than a flat wall of numbers so 8 possible move results don't
+  // overwhelm a small screen. Forward (attacker's moves) starts open
+  // since that's the matchup the player is usually building; reverse
+  // starts collapsed but is never skipped.
+  function calcResultGroupHTML(label, atkForm, defForm, moves, field, openDefault){
+    var inner;
+    if(!moves.length){
+      inner = '<div class="calc-result-empty">No moves entered for this side.</div>';
+    } else {
+      inner = moves.map(function(mv){
+        return calcResultRowHTML(mv, window.RPCalc.calculate(atkForm, defForm, mv, field));
+      }).join("");
+    }
+    return '<details class="calc-result-group"'+(openDefault?' open':'')+'><summary>'+escapeHTML(label)+'</summary><div class="calc-result-list">'+inner+'</div></details>';
   }
 
   function runCalculator(){
     var resultEl = document.getElementById("calcResult");
     var attacker = readMonForm("Atk");
     var defender = readMonForm("Def");
-    var moveName = document.getElementById("calcAtkMove").value;
 
     if(!window.RPCalc.getSpecies(attacker.species)){
-      resultEl.innerHTML = '<div class="calc-result-card"><div class="calc-result-error">Unknown attacker species "'+escapeHTML(attacker.species)+'" — pick one from the list.</div></div>';
+      resultEl.innerHTML = '<div class="calc-result-group"><div class="calc-result-error">Unknown attacker species "'+escapeHTML(attacker.species)+'" — pick one from the list.</div></div>';
       return;
     }
     if(!window.RPCalc.getSpecies(defender.species)){
-      resultEl.innerHTML = '<div class="calc-result-card"><div class="calc-result-error">Unknown defender species "'+escapeHTML(defender.species)+'" — pick one from the list.</div></div>';
+      resultEl.innerHTML = '<div class="calc-result-group"><div class="calc-result-error">Unknown defender species "'+escapeHTML(defender.species)+'" — pick one from the list.</div></div>';
       return;
     }
 
@@ -4632,40 +4915,79 @@
       isReflect: document.getElementById("calcReflect").checked,
       isLightScreen: document.getElementById("calcLightScreen").checked
     };
+    // The Reflect/Light Screen checkboxes describe the DEFENDER's side of
+    // the field, for the attacker->defender direction. There's no second
+    // pair of checkboxes for "the attacker also has screens up" — rather
+    // than misapply the same two checkboxes to the wrong side, the
+    // defender->attacker direction below computes without screens.
+    // Weather is a whole-field condition, so it does carry over as-is.
+    var reverseField = { weather: field.weather, isReflect: false, isLightScreen: false };
 
-    var res = window.RPCalc.calculate(attacker, defender, moveName, field);
-    if(!res.ok){
-      resultEl.innerHTML = '<div class="calc-result-card"><div class="calc-result-error">'+escapeHTML(res.error)+'</div></div>';
-      return;
-    }
+    var atkMoves = collectMoves("Atk");
+    var defMoves = collectMoves("Def");
 
-    var rangeHtml = res.percent ? escapeHTML(res.percent[0]+' - '+res.percent[1]+'%') : "—";
-    var koHtml = res.ko && res.ko.text ? '<div class="calc-result-ko">'+escapeHTML(res.ko.text)+'</div>' : "";
     resultEl.innerHTML =
-      '<div class="calc-result-card">' +
-        '<div class="calc-result-desc">'+escapeHTML(res.text)+'</div>' +
-        '<div class="calc-result-range">'+rangeHtml+'</div>' +
-        koHtml +
-      '</div>';
+      calcResultGroupHTML("Attacker → Defender", attacker, defender, atkMoves, field, true) +
+      calcResultGroupHTML("Defender → Attacker", defender, attacker, defMoves, reverseField, false);
   }
 
-  // Loads a trainer/boss mon (from monSimButtonHTML's data-mon payload —
-  // {name, level, ability, item, moves, stats}) into one side of the
-  // calculator. Stats are set from the real computed values already on
-  // that mon (exact, from Phase 1's data pull) via calcStatsOverride,
-  // rather than re-derived from a guessed nature/IV spread.
-  function loadMonIntoCalculator(mon, side){
-    var prefix = side === "atk" ? "Atk" : "Def";
-    calcInitOnce();
-    document.getElementById("calc"+prefix+"Species").value = mon.name;
-    document.getElementById("calc"+prefix+"Level").value = mon.level;
-    document.getElementById("calc"+prefix+"Item").value = (mon.item && mon.item !== "—") ? mon.item : "";
-    populateAbilitySelect(document.getElementById("calc"+prefix+"Ability"), mon.name, mon.ability);
-    calcStatsOverride[prefix] = mon.stats || null;
-    if(side === "atk" && mon.moves){
-      var firstMove = String(mon.moves).split(",")[0].trim();
-      populateMoveSelect(document.getElementById("calcAtkMove"), mon.name, firstMove);
+  // Loads one trainer/boss mon (from monToSimPayload's shape — {name,
+  // level, ability, item, moves, stats}) into one side of the calculator.
+  // Stats are set from the real computed values already on that mon
+  // (exact, from Phase 1's data pull) via calcStatsOverride, rather than
+  // re-derived from a guessed nature/IV spread. `side` is "Atk"/"Def".
+  function applyMonToSide(mon, side){
+    document.getElementById("calc"+side+"Species").value = mon.name;
+    document.getElementById("calc"+side+"Level").value = mon.level;
+    document.getElementById("calc"+side+"Item").value = (mon.item && mon.item !== "—") ? mon.item : "";
+    populateAbilitySelect(document.getElementById("calc"+side+"Ability"), mon.name, mon.ability);
+    var moveList = mon.moves ? String(mon.moves).split(",").map(function(s){ return s.trim(); }).filter(Boolean) : [];
+    MOVE_SLOTS.forEach(function(i){
+      var el = document.getElementById("calc"+side+"Move"+i);
+      if(el) el.value = moveList[i-1] || "";
+    });
+    calcStatsOverride[side] = mon.stats || null;
+    refreshComputedStats(side);
+  }
+
+  // Team-switcher chip row above a side's fields — only shown once a
+  // Simulated team has 2+ mons loaded on that side (a single mon has
+  // nothing to switch between). Re-rendered on every pick/swap so the
+  // active chip stays in sync.
+  function renderTeamChips(side){
+    var el = document.getElementById("calc"+side+"TeamChips");
+    if(!el) return;
+    var t = calcTeamState[side];
+    if(!t || !t.team || t.team.length < 2){
+      el.style.display = "none";
+      el.innerHTML = "";
+      return;
     }
+    el.style.display = "";
+    el.innerHTML = t.team.map(function(m, i){
+      return '<button type="button" class="chip'+(i===t.index?' active':'')+'" data-act="calc-team-pick" data-side="'+side+'" data-idx="'+i+'">'+escapeHTML(m.name)+' Lv'+m.level+'</button>';
+    }).join("");
+  }
+
+  // Entry point from monSimButtonHTML's Simulate Team button — `team` is
+  // that trainer's/boss's whole roster, `index` the tapped mon's position
+  // in it. Loads the whole team onto `side` and shows the chip row.
+  function loadTeamIntoCalculator(team, index, side){
+    calcInitOnce();
+    calcTeamState[side] = { team: team, index: index };
+    renderTeamChips(side);
+    applyMonToSide(team[index], side);
+  }
+
+  // Wired from the document-level click delegate's "calc-team-pick" case
+  // (a team chip tap) — switches which already-loaded team member is
+  // active on that side without re-fetching or re-triggering Simulate.
+  function pickTeamMember(side, idx){
+    var t = calcTeamState[side];
+    if(!t || !t.team || !t.team[idx]) return;
+    t.index = idx;
+    renderTeamChips(side);
+    applyMonToSide(t.team[idx], side);
   }
 
   // Which guide subtabs a game shows are per-game (GAMES[id].guideSections)
@@ -4802,8 +5124,15 @@
     }
 
     if(act === "calc-sim"){
-      var mon = JSON.parse(btn.getAttribute("data-mon"));
-      loadMonIntoCalculator(mon, "def");
+      var payload = JSON.parse(btn.getAttribute("data-mon"));
+      // Simulate loads the WHOLE team (payload.team) into the defender
+      // side, with payload.index preselected — "checking my own mon
+      // (attacker, hand-edited) against each of the trainer's team in
+      // turn" is the actual Nuzlocke use case, so the trainer/boss side
+      // is always the defender here; the team-chip row this renders lets
+      // the player flip through the rest of that team without leaving
+      // the tab or tapping Simulate again per mon.
+      loadTeamIntoCalculator(payload.team, payload.index, "Def");
       document.querySelectorAll(".tab").forEach(function(t){ t.classList.remove("active"); });
       var calcTab = document.querySelector('.tab[data-tab="calculator"]');
       if(calcTab) calcTab.classList.add("active");
@@ -4815,6 +5144,13 @@
       document.getElementById("panel-guide").style.display = "none";
       document.getElementById("panel-graveyard").style.display = "none";
       renderCalculator();
+      return;
+    }
+
+    if(act === "calc-team-pick"){
+      var pickSide = btn.getAttribute("data-side");
+      var pickIdx = parseInt(btn.getAttribute("data-idx"), 10);
+      pickTeamMember(pickSide, pickIdx);
       return;
     }
 
