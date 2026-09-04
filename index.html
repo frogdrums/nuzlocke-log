@@ -157,11 +157,15 @@
   .stat .l{ font-size: 12px; color: var(--cream-dim); text-transform:uppercase; letter-spacing: 0.5px; margin-top:3px; }
 
   /* ---------- tabs ---------- */
-  .tabs{ display:flex; }
+  .tabs{
+    display:flex; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    scrollbar-width:none; border-bottom: 2px solid var(--line);
+  }
+  .tabs::-webkit-scrollbar{ display:none; }
   .tab{
-    flex:1; text-align:center; padding: 11px 4px; font-size: 14px;
+    flex:0 0 auto; white-space:nowrap; text-align:center; padding: 11px 14px; font-size: 14px;
     background: var(--bg); color: var(--cream-dim); cursor:pointer;
-    border-bottom: 2px solid var(--line); letter-spacing: 0.5px;
+    border-bottom: 2px solid transparent; margin-bottom:-2px; letter-spacing: 0.5px;
     text-transform: uppercase;
   }
   .tab.active{ background: var(--panel); color: var(--lcd); border-bottom-color: var(--lcd); }
@@ -353,6 +357,14 @@
   .calc-team-chips{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom: 9px; }
   .calc-team-chips .chip.active{ background: var(--lcd-dim); border-color: var(--lcd); color: #0d1712; font-weight:700; }
 
+  /* "Load from Route Log" quick-fill picker — a plain <select> (the
+     tracked-mons list is realistically small, unlike the 507-species
+     dex that justified attachTypeahead()) sitting above the Species
+     field. Selecting an option fires the quick-fill and immediately
+     resets back to the placeholder — it's an action trigger, not
+     persistent state, so there's nothing here to keep in sync. */
+  .calc-routelog-pick{ margin-bottom: 9px; }
+
   .calc-computed-stats{
     font-size: 12.5px; color: var(--lcd); font-weight:700; letter-spacing:0.2px;
     margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--line); line-height:1.5;
@@ -540,6 +552,9 @@
           <div class="calc-mon-card">
             <div class="calc-mon-title">Attacker</div>
             <div class="calc-team-chips" id="calcAtkTeamChips" style="display:none;"></div>
+            <div class="calc-routelog-pick" id="calcAtkRouteLogWrap" style="display:none;">
+              <select id="calcAtkRouteLogSelect"><option value="">Load from Route Log…</option></select>
+            </div>
             <label class="f">Species</label>
             <div class="calc-dd-wrap">
               <input type="text" id="calcAtkSpecies" autocomplete="off" placeholder="Start typing a species…">
@@ -580,6 +595,9 @@
           <div class="calc-mon-card">
             <div class="calc-mon-title">Defender</div>
             <div class="calc-team-chips" id="calcDefTeamChips" style="display:none;"></div>
+            <div class="calc-routelog-pick" id="calcDefRouteLogWrap" style="display:none;">
+              <select id="calcDefRouteLogSelect"><option value="">Load from Route Log…</option></select>
+            </div>
             <label class="f">Species</label>
             <div class="calc-dd-wrap">
               <input type="text" id="calcDefSpecies" autocomplete="off" placeholder="Start typing a species…">
@@ -4189,6 +4207,13 @@
     state.selectedGame = e.target.value;
     save();
     renderAll();
+    // The Calc tab's DOM is static (not re-rendered from state by
+    // renderAll() — see the comment above renderCalculator()), so if
+    // it's already open when the game switches, its own re-render has
+    // to be triggered explicitly — otherwise calcUnavailable/calcBody
+    // and the "Load from Route Log" picker would keep showing the
+    // previous game's state until the next tab click.
+    renderCalculator();
   });
 
   document.getElementById("rulesRow").addEventListener("change", function(e){
@@ -4200,6 +4225,7 @@
     tab.addEventListener("click", function(){
       document.querySelectorAll(".tab").forEach(function(t){ t.classList.remove("active"); });
       tab.classList.add("active");
+      tab.scrollIntoView({ block: "nearest", inline: "nearest" });
       var which = tab.getAttribute("data-tab");
       document.getElementById("panel-roster").style.display = which === "roster" ? "" : "none";
       document.getElementById("panel-checklist").style.display = which === "checklist" ? "" : "none";
@@ -4603,7 +4629,16 @@
   function populateAbilitySelect(selectEl, speciesName, keepValue){
     var sp = window.RPCalc.getSpecies(speciesName);
     var abilities = sp ? sp.abilities : ["No Ability"];
-    var prev = keepValue && abilities.indexOf(keepValue) !== -1 ? keepValue : abilities[0];
+    // RENEGADE_BOSSES marks a hack-changed (non-vanilla) ability with a
+    // trailing " (!)" flag, e.g. "Iron Fist (!)" — that flag is a display
+    // convention only, not part of the real ability name, so it must be
+    // stripped before matching against the RP dex's plain ability list.
+    // Without this, Simulating such a mon silently fell back to that
+    // species' first listed ability instead of its actual one (found
+    // 2026-09-04, real-world impact: any ability-dependent damage number
+    // — e.g. Iron Fist boosting punch moves — was silently wrong).
+    var cleanKeep = keepValue ? String(keepValue).replace(/\s*\(!\)\s*$/, "") : keepValue;
+    var prev = cleanKeep && abilities.indexOf(cleanKeep) !== -1 ? cleanKeep : abilities[0];
     selectEl.innerHTML = abilities.map(function(a){
       return '<option value="'+escapeHTML(a)+'"'+(a===prev?' selected':'')+'>'+escapeHTML(a)+'</option>';
     }).join("");
@@ -4741,6 +4776,19 @@
       });
     });
 
+    ["Atk","Def"].forEach(function(side){
+      var sel = document.getElementById("calc"+side+"RouteLogSelect");
+      if(!sel) return;
+      sel.addEventListener("change", function(){
+        var id = this.value;
+        this.value = ""; // action trigger, not persistent state — always snaps back
+        if(!id) return;
+        var mon = findMon(id);
+        if(!mon) return;
+        loadRouteLogMonIntoCalculator(mon, side);
+      });
+    });
+
     document.getElementById("calcRunBtn").addEventListener("click", runCalculator);
 
     document.getElementById("calcSwapBtn").addEventListener("click", function(){
@@ -4791,6 +4839,74 @@
     unavailable.style.display = "none";
     body.style.display = "";
     calcInitOnce();
+    populateRouteLogPicker("Atk");
+    populateRouteLogPicker("Def");
+  }
+
+  // ---------- "Load from Route Log" quick-fill ----------
+  // A tracked Route Log entry (currentRun().mons, see defaultRunState())
+  // only ever has {id, route, species, nick, level, status, cause,
+  // causeLevel, createdAt} — no ability/item/moves/nature/IVs/EVs. This
+  // is NOT the Simulate flow (applyMonToSide/loadTeamIntoCalculator),
+  // which loads a trainer/boss mon's exact known stats — it's a lighter
+  // quick-fill that pre-populates species+level only, same as if the
+  // player had typed that species by hand, and leaves every other field
+  // (nature/IVs/EVs/ability/item/moves) exactly as the form already has
+  // it. Only species RPCalc actually recognizes are offered, same
+  // filter monSimButtonHTML uses for Simulate, so picking an entry can
+  // never leave the calculator with an "Unknown species" error.
+  function calcEligibleRouteLogMons(){
+    if(state.selectedGame !== "renegade" || typeof window.RPCalc === "undefined") return [];
+    return currentRun().mons.filter(function(m){ return window.RPCalc.getSpecies(m.species); });
+  }
+
+  function routeLogMonOptionLabel(m){
+    var label = (m.nick ? m.nick + " the " : "") + m.species + " (Lv " + m.level + ")";
+    if(m.route) label += " · " + m.route;
+    if(m.status === "dead") label += " · Fainted";
+    else if(m.status === "boxed") label += " · Boxed";
+    return label;
+  }
+
+  // Re-run every time the Calc tab is (re)shown — see renderCalculator()
+  // above — so a game switch, a run switch, or logging/losing a mon
+  // elsewhere never leaves a stale list behind. Shows every tracked mon
+  // regardless of status (alive/boxed/fainted), labeled so it's clear
+  // which is which — checking a fainted mon's old matchup is a
+  // reasonable thing to want, so nothing is hidden, only labeled.
+  function populateRouteLogPicker(side){
+    var wrap = document.getElementById("calc"+side+"RouteLogWrap");
+    var sel = document.getElementById("calc"+side+"RouteLogSelect");
+    if(!wrap || !sel) return;
+    var mons = calcEligibleRouteLogMons();
+    if(!mons.length){
+      wrap.style.display = "none";
+      sel.innerHTML = '<option value="">Load from Route Log…</option>';
+      return;
+    }
+    wrap.style.display = "";
+    sel.innerHTML = '<option value="">Load from Route Log…</option>' + mons.map(function(m){
+      return '<option value="'+escapeHTML(m.id)+'">'+escapeHTML(routeLogMonOptionLabel(m))+'</option>';
+    }).join("");
+  }
+
+  // Sets species+level only; repopulates that side's ability select to
+  // the new species' default (abilities[0]) exactly like hand-typing a
+  // new species into the Species field does (see the field's own
+  // "change" listener above) — item/move fields are left untouched for
+  // the same reason. Drops any Simulated-in team on this side (a single
+  // quick-filled mon isn't a team to chip through) and any stats
+  // override (a Route Log mon has no known exact stats), so the
+  // calculator falls back to computing stats from the (untouched)
+  // nature/IV/EV fields, same as any hand-entered matchup.
+  function loadRouteLogMonIntoCalculator(mon, side){
+    document.getElementById("calc"+side+"Species").value = mon.species;
+    document.getElementById("calc"+side+"Level").value = mon.level;
+    populateAbilitySelect(document.getElementById("calc"+side+"Ability"), mon.species);
+    clearStatsOverrideOn(side);
+    calcTeamState[side] = null;
+    renderTeamChips(side);
+    refreshComputedStats(side);
   }
 
   // Set by applyMonToSide() when a trainer/boss mon is Simulated in —
@@ -5282,8 +5398,33 @@
 })();
 
 if("serviceWorker" in navigator){
+  // sw.js's own fetch handler is network-first, but that only covers
+  // already-cached app *content* -- the service worker SCRIPT itself is
+  // only auto-rechecked by the browser on its own internal schedule
+  // (spec'd to be throttled to roughly once per 24h), regardless of how
+  // often a new version is pushed. Without forcing a check ourselves,
+  // "just pushed an update" and "the installed app notices" can be a day
+  // apart, which is what made this look like the app wasn't
+  // auto-refreshing at all (found 2026-09-04) -- reinstalling worked
+  // only because it bypasses the stale registration, not because
+  // anything about the caching strategy was actually broken.
+  var swRefreshing = false;
+  navigator.serviceWorker.addEventListener("controllerchange", function(){
+    // sw.js already calls skipWaiting()+clients.claim(), so once an
+    // update IS detected the new worker takes over immediately -- reload
+    // once so this page actually runs the fresh index.html too, not just
+    // future network requests.
+    if(swRefreshing) return;
+    swRefreshing = true;
+    window.location.reload();
+  });
   window.addEventListener("load", function(){
-    navigator.serviceWorker.register("sw.js").catch(function(e){
+    navigator.serviceWorker.register("sw.js").then(function(reg){
+      reg.update();
+      document.addEventListener("visibilitychange", function(){
+        if(document.visibilityState === "visible") reg.update();
+      });
+    }).catch(function(e){
       console.warn("Service worker registration failed", e);
     });
   });
