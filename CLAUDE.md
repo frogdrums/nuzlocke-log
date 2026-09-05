@@ -5,49 +5,63 @@ Pokémon Emerald (complete) and Pokémon Renegade Platinum (in progress).
 
 ---
 
-## ⚠️ READ THIS FIRST: the source data is NOT in this repo
+## ⚠️ READ THIS FIRST: the source data lives in a SEPARATE repo
 
-The Renegade Platinum encounter/trainer data is extracted from:
+The Renegade Platinum encounter/trainer data is extracted from a
+spreadsheet that is **not in this repo**. It lives in
+**`frogdrums/poke-docs`**, along with the extraction tooling and the
+long-form workspace CLAUDE.md.
 
-    Pokemon Renegade Platinum - Documentation.xlsx
+If you are a cloud / web / fresh-clone session, attach and clone it
+before doing any data work:
 
-That spreadsheet, the extraction `tools/`, and the original long-form
-CLAUDE.md all live in the **parent directory of this repo** — the
-workspace folder that *contains* `nuzlocke-log/`. Source comments refer
-to them as `../CLAUDE.md` (see `index.html` around lines 1487 and 4098).
+```
+add_repo frogdrums/poke-docs
+git clone --depth 1 https://github.com/frogdrums/poke-docs /home/user/poke-docs
+```
 
-**None of it is tracked by git.** Verified on 2026-09-05:
+What you get:
 
-- `git ls-tree -r origin/main` → only `index.html`, `sw.js`,
-  `manifest.json`, three icons, and `calc/`. No `tools/`.
-- `git log --all --diff-filter=D --name-only` → `tools/` has never
-  existed on any branch, in any commit.
-- `find / -name "*.xlsx"` in a fresh clone → nothing.
+| Path in `poke-docs` | What it is |
+| --- | --- |
+| `Renegade Platinum References/Pokemon Renegade Platinum - Documentation.xlsx` | **The source of truth** for encounters, trainers, items, TMs, gifts. |
+| `tools/EXTRACTION_GUIDE.md` | **Read this in full before touching the sheet.** Column offsets, layout quirks, the date-mangling gotcha, target JSON shapes. |
+| `tools/dump_region.py` | Compact non-empty-cell dumper. `python3 dump_region.py "<xlsx>" ENCOUNTERS --find "ROUTE 208" --context 30` |
+| `tools/extract_with_ollama.py`, `Modelfile.qwen3.8-tuned`, `qwen3.8-experience-notes.md` | The local-LLM extraction pipeline and notes on how well it worked. |
+| `tools/output/` | Prior extraction attempts. Grade before trusting. |
+| `CLAUDE.md` (999 lines) | The full workspace onboarding doc. |
+| `nuzlocke-pwa/` | A **byte-identical copy of this repo's app**. See "Two copies of the app" below. |
 
-### What this means for you
+`openpyxl` is not preinstalled — `pip install openpyxl`.
 
-If you are a **cloud / web / fresh-clone session**, you do not have the
-spreadsheet and you cannot get it:
+### Things that will bite you
 
-- General outbound egress is blocked by the network proxy. `docs.google.com`,
-  `fredericdlugi.github.io` (the RP wiki) and `nuzlocke.app` all return
-  403 at CONNECT. Subagents run in the same container and hit the same wall.
-- `calc/rp-data.js` is **trainer sets only** — it contains no wild
+- **`calc/rp-data.js` is trainer sets only.** It contains no wild
   encounter tables. Don't go looking there for them.
+- **General outbound egress is blocked.** `docs.google.com`, the RP wiki
+  at `fredericdlugi.github.io`, and `nuzlocke.app` all 403 at CONNECT.
+  The xlsx in `poke-docs` is your only source; there is no web fallback.
+- **From the Fantina split sheet onward, cells are formulas, not
+  values.** `ROARK SPLiT` holds literal numbers, but later sheets use
+  custom functions (`=MONHP(F22)`, `=MONABILITY(...)`, `=MOVEBP(...)`).
+  Load with `openpyxl.load_workbook(path, data_only=True)` to get cached
+  results — and note the cached strings carry an invisible **U+180E**
+  (Mongolian vowel separator) that must be stripped: a raw read returns
+  `'65\u180e'`, not `'65'`. This affects trainer extraction, not
+  encounters.
+- **Never infer a species or level from stats.** This romhack rebalances
+  stats, abilities and movesets, so a stat block matching a vanilla
+  Pokémon is evidence of nothing. A past run hallucinated "Snubbull"
+  exactly this way. If a cell is not literally in the dump, emit `null`
+  and flag it — do not pattern-match from training knowledge.
 
-So: **do not write encounter data from model knowledge.** This is a
-rebalance romhack; recalled vanilla-Platinum tables are wrong, and wrong
-encounter data silently corrupts someone's actual Nuzlocke run. If you
-have no source, say so and stop — that is the correct outcome, not a
-failure.
+### Two copies of the app
 
-To unblock a fresh session, the human must do one of:
-
-1. **Commit the source into this repo** (preferred — it is the only fix
-   that makes the problem stop recurring). Add the xlsx and `tools/`,
-   or at minimum a text/CSV export of the `ENCOUNTERS` sheet.
-2. Paste the relevant raw sheet rows into the session.
-3. Add the RP wiki host to the environment's network egress allowlist.
+`poke-docs/nuzlocke-pwa/index.html` and this repo's `index.html` are
+currently **byte-identical**. Which one is canonical has not been
+confirmed with the human — check before editing, and if you change one,
+say plainly whether the other was updated too. Divergence here is a
+silent trap.
 
 ---
 
@@ -113,8 +127,8 @@ Two conventions worth not rediscovering:
 
 ### Reading the ENCOUNTERS sheet
 
-Recorded here from the source comments, since the sheet itself isn't
-committed:
+The authoritative reference is **`poke-docs/tools/EXTRACTION_GUIDE.md`**
+— read that, not this summary, before extracting. The headlines:
 
 - The sheet is **not one vertical list**. It's a grid of location blocks
   read top-to-bottom within a ~7-column band, then left-to-right to the
@@ -146,23 +160,40 @@ committed:
 
 ### Open work
 
-Extending the encounter guide to **gym 3 (Maylene, Veilstone)** needs
-roughly these locations, in story order, after Oreburgh Mine:
+**Gym order in this romhack is not vanilla.** The workbook's split sheets
+run **ROARK → GARDENiA → FANTINA → MAYLENE**: Fantina is the *third* gym
+(Hearthome), not Maylene. Level caps come straight off each split sheet:
 
-> Route 204 (North), Valley Windworks, Route 205 (South), Eterna Forest,
-> Old Chateau, Eterna City, Route 205 (North), Route 206, Wayward Cave,
-> Route 208, Mt. Coronet (South), Hearthome City, Route 209, Lost Tower,
-> Solaceon Town, Solaceon Ruins, Route 210 (South), Route 215,
-> Veilstone City
+| Split | Gym | Cap |
+| --- | --- | --- |
+| `ROARK SPLiT` | 1 — Oreburgh | 16 |
+| `GARDENiA SPLiT` | 2 — Eterna | 26 |
+| `FANTINA SPLiT ` | 3 — Hearthome | 33 |
+| `MAYLENE SPLiT ` | 4 — Veilstone | — |
 
-Route 207 is already done. **Blocked** on the source spreadsheet
-reaching the session — see the top of this file.
+(Note the trailing spaces in some sheet names, and the lowercase `i` in
+`SPLiT`, `TRAiNERS`, `GARDENiA` — they are literal.)
 
-Longer term the human wants a real **local-LLM extraction pipeline** for
-this (that's what the un-committed `tools/` is). For a job this size,
-dispatching Claude subagents per location block is the cheaper path;
-the pipeline is worth building for the remaining ~5 gyms, not for 18
-locations.
+Extending the encounter guide **through gym 3** means these locations
+after Oreburgh Mine, in the story order the split sheets themselves give:
+
+*Gardenia split* — Route 204 (North), Floaroma Town, Floaroma Meadow,
+Valley Windworks, Route 205 (South), Eterna Forest, Route 205 (North),
+Eterna City, Route 211 (West), Route 211 (East), Mt. Coronet (Route 216
+Entry), Route 216. Old Chateau is not on the split sheet but may have its
+own ENCOUNTERS table — check.
+
+*Fantina split* — Route 206 (Cycling Road), Route 206 (Lower Path),
+Wayward Cave, Route 208, Hearthome City. Route 207 is already shipped
+from the Roark split at levels 9–10; check for a later-state clone.
+
+Locations that are towns/buildings with no grass or water tiles get
+omitted from the guide entirely rather than shown empty.
+
+Longer term the human wants a real **local-LLM extraction pipeline**
+(`poke-docs/tools/extract_with_ollama.py`). For a ~18-location job,
+dispatching Claude subagents per split is cheaper; the pipeline is worth
+building for the remaining five gyms, not for this.
 
 ---
 
