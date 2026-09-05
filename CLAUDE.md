@@ -55,13 +55,17 @@ What you get:
   exactly this way. If a cell is not literally in the dump, emit `null`
   and flag it — do not pattern-match from training knowledge.
 
-### Two copies of the app
+### Two copies of the app — poke-docs is where you work
 
 `poke-docs/nuzlocke-pwa/index.html` and this repo's `index.html` are
-currently **byte-identical**. Which one is canonical has not been
-confirmed with the human — check before editing, and if you change one,
-say plainly whether the other was updated too. Divergence here is a
-silent trap.
+**byte-identical, and must stay that way.**
+
+Per the human (2026-09-05): **do the work in `poke-docs`.** This
+`nuzlocke-log` repo is the publishing target and isn't really used until
+something ships. So: edit `poke-docs/nuzlocke-pwa/index.html`, then copy
+it verbatim over `nuzlocke-log/index.html` and commit both. Verify with
+`diff -q` before you push — silent divergence between the two is the
+trap this note exists to prevent.
 
 ---
 
@@ -152,11 +156,12 @@ The authoritative reference is **`poke-docs/tools/EXTRACTION_GUIDE.md`**
 ## Current status (2026-09-05)
 
 - **Emerald** — complete. 88 locations, `guideComplete: true`.
-- **Renegade Platinum** — `RENEGADE_GUIDE` has **10 locations**,
-  Twinleaf Town → Oreburgh Mine. That is the **Roark split only**
-  (gym 1). `guideComplete: false`.
+- **Renegade Platinum** — `RENEGADE_GUIDE` has **27 locations** /
+  322 encounters, Twinleaf Town → Route 208. That covers the **Roark,
+  Gardenia and Fantina splits — through gym 3**. `guideComplete: false`
+  (Maylene onward still to do).
 - `RENEGADE_BOSSES` is filled in well past that point; the *encounter
-  guide* is the part that stops at Roark.
+  guide* is the part that now stops at gym 3.
 
 ### Open work
 
@@ -174,18 +179,11 @@ run **ROARK → GARDENiA → FANTINA → MAYLENE**: Fantina is the *third* gym
 (Note the trailing spaces in some sheet names, and the lowercase `i` in
 `SPLiT`, `TRAiNERS`, `GARDENiA` — they are literal.)
 
-Extending the encounter guide **through gym 3** means these locations
-after Oreburgh Mine, in the story order the split sheets themselves give:
-
-*Gardenia split* — Route 204 (North), Floaroma Town, Floaroma Meadow,
-Valley Windworks, Route 205 (South), Eterna Forest, Route 205 (North),
-Eterna City, Route 211 (West), Route 211 (East), Mt. Coronet (Route 216
-Entry), Route 216. Old Chateau is not on the split sheet but may have its
-own ENCOUNTERS table — check.
-
-*Fantina split* — Route 206 (Cycling Road), Route 206 (Lower Path),
-Wayward Cave, Route 208, Hearthome City. Route 207 is already shipped
-from the Roark split at levels 9–10; check for a later-state clone.
+Gyms 1–3 are **done** (see the Current status section). The next
+increment is the **Maylene split** (Veilstone): Route 212 North,
+Pokémon Mansion, Route 209, Lost Tower, Solaceon Town, Solaceon Ruins,
+Route 210 (South), Route 215, Veilstone City — read the split sheet
+itself for the authoritative order rather than trusting this list.
 
 Locations that are towns/buildings with no grass or water tiles get
 omitted from the guide entirely rather than shown empty.
