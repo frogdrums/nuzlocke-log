@@ -4935,8 +4935,13 @@
   }
   function monSimButtonHTML(m, team){
     if(state.selectedGame !== "renegade") return "";
-    if(typeof window.RPCalc === "undefined" || !window.RPCalc.getSpecies(m.name)) return "";
-    var roster = (team || [m]).filter(function(t){ return window.RPCalc.getSpecies(t.name); });
+    // Resolve through dexSpeciesName(), NOT the raw m.name: a possessive
+    // display prefix ("Mars's Crobat") misses the dex, and this guard runs
+    // BEFORE applyMonToSide() ever gets a chance to strip it — so keying
+    // off the raw name here suppressed the button entirely and made the
+    // 2026-09-05 prefix fix unreachable for the 12 mons it was written for.
+    if(typeof window.RPCalc === "undefined" || !window.RPCalc.getSpecies(dexSpeciesName(m.name))) return "";
+    var roster = (team || [m]).filter(function(t){ return window.RPCalc.getSpecies(dexSpeciesName(t.name)); });
     var index = roster.indexOf(m);
     if(index === -1) index = 0;
     var payload = JSON.stringify({
