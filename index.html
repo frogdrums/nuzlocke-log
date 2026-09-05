@@ -2081,12 +2081,19 @@
   //     layout the xlsx column-block parser here couldn't align 1:1, so
   //     those specific mons kept formatted_sets' move order instead of
   //     the xlsx's (order only — species/stats/ability/item unaffected).
-  //   - Two "Wormadam (Trash, glitched)" mons (Wake's Beauty Devon,
-  //     Byron's Ace Trainer Breanna) reference a hack-specific glitched
-  //     forme with no base-stat entry in the source data at all, so
-  //     those two omit `stats` — the UI already renders a mon with no
-  //     stats gracefully (see statLineHTML below), same as an
-  //     unconfirmed Emerald estimate with no BASE_STATS row.
+  //   - FIXED 2026-09-05. Three Wormadam were previously mishandled as a
+  //     "glitched forme with no base stats." They are not glitched: they
+  //     are the three ordinary cloak formes, which the RP dex carries all
+  //     along under the form-suffixed names `Wormadam` (Plant, Bug/Grass),
+  //     `Wormadam-Sandy` (Bug/Ground) and `Wormadam-Trash` (Bug/Steel).
+  //     The original pull looked up the bare name "Wormadam" only, so the
+  //     two non-Plant formes found nothing. Worse, Beauty Devon's Sandy
+  //     was silently given a byte-identical COPY of her Plant's stat line
+  //     rather than being flagged as missing — a duplicated wrong stat
+  //     block is far more dangerous than an absent one, because nothing
+  //     renders as unknown. All four now use their own forme's real base
+  //     stats. If a species lookup ever fails here, prefer omitting stats
+  //     over copying a neighbouring mon's.
   //   - Ability "(!)" flagging (used elsewhere in this file to mark a
   //     hacked/non-vanilla ability) was not carried over — the source
   //     data doesn't distinguish vanilla vs. changed abilities
@@ -3003,8 +3010,8 @@
       { location: "Route 214", trainerClass: "Beauty", name: "Devon",
         mons: [
           { name: "Wormadam", level: 33, stats: [82,34,70,77,77,24], ability: "Battle Armor", item: "—", moves: "Confusion, Bug Buzz, Growth, Energy Ball", sourceKey: "Lvl 33 Beauty Devon 1" },
-          { name: "Wormadam", level: 33, stats: [82,34,70,77,77,24], ability: "Battle Armor", item: "—", moves: "Confusion, Bug Buzz, Growth, Energy Ball", sourceKey: "Lvl 33 Beauty Devon 1" },
-          { name: "Wormadam Trash (glitched form — stats unavailable)", level: 33, ability: "Battle Armor", item: "—", moves: "Confusion, Bug Buzz, Growth, Energy Ball", sourceKey: "Lvl 33 Beauty Devon" }
+          { name: "Wormadam-Sandy", level: 33, stats: [82,34,84,77,64,24], ability: "Battle Armor", item: "—", moves: "Confusion, Bug Buzz, Growth, Energy Ball", sourceKey: "Lvl 33 Beauty Devon 1" },
+          { name: "Wormadam-Trash", level: 33, stats: [82,34,78,77,71,24], ability: "Battle Armor", item: "—", moves: "Confusion, Bug Buzz, Growth, Energy Ball", sourceKey: "Lvl 33 Beauty Devon" }
         ] },
       { location: "Route 214", trainerClass: "Psychic", name: "Mitchell",
         mons: [
@@ -3604,7 +3611,7 @@
         mons: [
           { name: "Skarmory", level: 50, stats: [140,100,144,66,90,90], ability: "Keen Eye", item: "—", moves: "Iron Head, Drill Peck, X-Scissor, Rock Slide", sourceKey: "Lvl 50 Ace Trainer Breanna" },
           { name: "Mawile", level: 50, stats: [125,115,135,75,105,70], ability: "Huge Power", item: "—", moves: "Play Rough (!), Iron Head, Fire Fang, Crunch", sourceKey: "Lvl 50 Ace Trainer Breanna" },
-          { name: "Wormadam Trash (glitched form — stats unavailable)", level: 50, ability: "Battle Armor", item: "—", moves: "Flash Cannon, Bug Buzz, Attract, Psychic", sourceKey: "Lvl 50 Ace Trainer Breanna" }
+          { name: "Wormadam-Trash", level: 50, stats: [135,77,120,130,108,50], ability: "Battle Armor", item: "—", moves: "Flash Cannon, Bug Buzz, Attract, Psychic", sourceKey: "Lvl 50 Ace Trainer Breanna" }
         ] }
     ] },
     { split: "Candice", levelCap: 56, fights: [
