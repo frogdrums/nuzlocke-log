@@ -244,6 +244,22 @@
 
   .empty{ text-align:center; color: var(--cream-dim); font-size: 15px; padding: 30px 10px; border: 1px dashed var(--line); border-radius: var(--radius); }
 
+  /* ---------- filter box (Checklist/Bosses/Trainers tabs) ----------
+     Static markup, not re-rendered by any render*() call — see the big
+     comment on the Calc tab's DOM above for why: an <input> inside a
+     container that gets its innerHTML replaced every render loses
+     whatever the user was mid-typing on every keystroke. These three
+     boxes live directly in the panel markup, outside #checklistList/
+     #bossesList/#trainersList, and the render functions just read
+     .value off them at render time. */
+  .filter-box{ position:relative; margin-bottom: 12px; }
+  .filter-box input[type=text]{ padding-right: 34px; font-size: 16px; }
+  .filter-box .filter-clear{
+    position:absolute; right:4px; top:50%; transform:translateY(-50%);
+    border:none; background:transparent; color: var(--cream-dim); font-size:18px;
+    padding: 4px 8px; line-height:1;
+  }
+
   /* ---------- checklist ---------- */
   .checklist-note{
     font-size: 14px; color: var(--cream-dim); background: var(--panel);
@@ -543,15 +559,27 @@
 
     <div id="panel-checklist" style="display:none;">
       <div class="checklist-note" id="checklistNote"></div>
+      <div class="filter-box">
+        <input type="text" id="checklistFilter" placeholder="Filter by location or species (e.g. &quot;Route 208&quot; or &quot;Budew&quot;)…" autocomplete="off">
+        <button type="button" class="filter-clear" id="checklistFilterClear">×</button>
+      </div>
       <div id="checklistList"></div>
     </div>
 
     <div id="panel-bosses" style="display:none;">
+      <div class="filter-box">
+        <input type="text" id="bossesFilter" placeholder="Filter by name, location, or mon…" autocomplete="off">
+        <button type="button" class="filter-clear" id="bossesFilterClear">×</button>
+      </div>
       <div id="bossesList"></div>
     </div>
 
     <div id="panel-trainers" style="display:none;">
       <div class="checklist-note" id="trainersNote"></div>
+      <div class="filter-box">
+        <input type="text" id="trainersFilter" placeholder="Filter by trainer, class, location, split, or mon…" autocomplete="off">
+        <button type="button" class="filter-clear" id="trainersFilterClear">×</button>
+      </div>
       <div id="trainersList"></div>
     </div>
 
@@ -4577,6 +4605,28 @@
     currentRun().runName = e.target.value; save();
   });
 
+  // ---------- Checklist/Bosses/Trainers filter boxes ----------
+  // Purely ephemeral UI state — NOT part of `state`/localStorage/Export
+  // Backup (see CLAUDE.md: filter state must never be persisted or land
+  // in normalizeRun()). Plain module-level vars, reset on reload, which
+  // is exactly what's wanted here. The <input> elements themselves are
+  // static markup outside #checklistList/#bossesList/#trainersList (see
+  // the .filter-box CSS comment) so typing never gets wiped by a
+  // render*() call — render*() just reads .value off them.
+  function wireFilterBox(inputId, clearId, onChange){
+    var input = document.getElementById(inputId);
+    var clearBtn = document.getElementById(clearId);
+    input.addEventListener("input", onChange);
+    clearBtn.addEventListener("click", function(){
+      input.value = "";
+      onChange();
+      input.focus();
+    });
+  }
+  wireFilterBox("checklistFilter", "checklistFilterClear", renderChecklist);
+  wireFilterBox("bossesFilter", "bossesFilterClear", renderBosses);
+  wireFilterBox("trainersFilter", "trainersFilterClear", renderTrainers);
+
   function populateGameSelect(){
     var sel = document.getElementById("gameSelect");
     sel.innerHTML = GAME_ORDER.map(function(id){
@@ -4700,7 +4750,34 @@
       el.innerHTML = '<div class="empty">No guide data loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
       return;
     }
-    el.innerHTML = game.guide.map(function(loc){
+
+    // Filter box: dual-mode match, per CLAUDE.md — a single text box must
+    // serve both "find this location" (e.g. "Route 208") AND "where can I
+    // catch this species" (e.g. "Budew", showing every location it can
+    // appear in). A location is kept if ITS OWN NAME matches, in which
+    // case all of its species chips show as normal — OR if any of its
+    // encounters' species match, in which case ONLY those matching chips
+    // are shown (everything else in that location's table is hidden, since
+    // the user asked about the species, not the rest of the location).
+    // Empty query = old unfiltered behavior exactly (no encounters array
+    // is ever mutated — `visibleEncounters` is a filtered copy per
+    // location, loc.encounters itself is left alone).
+    var filterInput = document.getElementById("checklistFilter");
+    var q = filterInput ? filterInput.value.trim().toLowerCase() : "";
+
+    var cards = game.guide.map(function(loc){
+      var visibleEncounters = loc.encounters;
+      if(q){
+        var locNameMatch = loc.name.toLowerCase().indexOf(q) !== -1;
+        if(!locNameMatch){
+          visibleEncounters = loc.encounters.filter(function(e){
+            return e.sp.toLowerCase().indexOf(q) !== -1;
+          });
+          if(visibleEncounters.length === 0) return ""; // no match at all — drop this location
+        }
+        // else: location name itself matched — show every chip, unfiltered.
+      }
+
       var loggedMons = findLoggedMonsForRoute(loc.name);
       var logged = loggedMons.length > 0;
       var collapsed = logged && !!currentRun().collapsedRoutes[loc.name];
@@ -4723,7 +4800,7 @@
 
       var groups = {};
       var order = [];
-      loc.encounters.forEach(function(e){
+      visibleEncounters.forEach(function(e){
         if(!groups[e.m]){ groups[e.m] = []; order.push(e.m); }
         groups[e.m].push(e);
       });
@@ -4749,7 +4826,11 @@
           (logged ? '<button type="button" class="cl-toggle" data-act="toggle-collapse-route" data-route="'+escapeHTML(loc.name)+'">Collapse</button>' : '') +
         '</div>'
       );
-    }).join("");
+    }).filter(function(html){ return html !== ""; });
+
+    el.innerHTML = cards.length
+      ? cards.join("")
+      : '<div class="empty">No locations or species match "' + escapeHTML(filterInput ? filterInput.value.trim() : "") + '".</div>';
   }
 
   // Gen 3 base stats [HP, Atk, Def, SpA, SpD, Spe] for species appearing in
@@ -4898,34 +4979,57 @@
     );
   }
 
+  // Filter-box match test shared by Bosses/Trainers: substring match
+  // (case-insensitive) against a name, a location, and every mon's name
+  // on the team. Empty query always matches (unfiltered behavior).
+  function nameLocMonsMatch(q, name, location, mons){
+    if(!q) return true;
+    if(name && name.toLowerCase().indexOf(q) !== -1) return true;
+    if(location && location.toLowerCase().indexOf(q) !== -1) return true;
+    if(mons){
+      for(var i=0; i<mons.length; i++){
+        if(mons[i].name && mons[i].name.toLowerCase().indexOf(q) !== -1) return true;
+      }
+    }
+    return false;
+  }
+
   function renderBosses(){
     var el = document.getElementById("bossesList");
     var game = currentGame();
     var bosses = game.bosses || {};
     var html = "";
+    var filterInput = document.getElementById("bossesFilter");
+    var q = filterInput ? filterInput.value.trim().toLowerCase() : "";
 
     if(bosses.gymLeaders && bosses.gymLeaders.length){
-      html += '<div class="boss-section-title">Gym Leaders &amp; Level Caps</div>';
-      bosses.gymLeaders.forEach(function(b){
-        var body =
-          (b.battleItems ? '<div class="boss-items">Battle items: '+escapeHTML(b.battleItems)+'</div>' : "") +
-          (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>') +
-          (b.tip ? '<div class="boss-note">'+escapeHTML(b.tip)+'</div>' : "");
-        html += bossCardHTML("gym-"+b.name, escapeHTML(b.name), '<div class="boss-cap">Cap Lv '+b.cap+'</div>', escapeHTML(b.location)+' · '+escapeHTML(b.type)+'-type', body);
-      });
+      var gymLeaders = bosses.gymLeaders.filter(function(b){ return nameLocMonsMatch(q, b.name, b.location, b.mons); });
+      if(gymLeaders.length){
+        html += '<div class="boss-section-title">Gym Leaders &amp; Level Caps</div>';
+        gymLeaders.forEach(function(b){
+          var body =
+            (b.battleItems ? '<div class="boss-items">Battle items: '+escapeHTML(b.battleItems)+'</div>' : "") +
+            (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>') +
+            (b.tip ? '<div class="boss-note">'+escapeHTML(b.tip)+'</div>' : "");
+          html += bossCardHTML("gym-"+b.name, escapeHTML(b.name), '<div class="boss-cap">Cap Lv '+b.cap+'</div>', escapeHTML(b.location)+' · '+escapeHTML(b.type)+'-type', body);
+        });
+      }
     }
 
     if(bosses.eliteFour && bosses.eliteFour.length){
-      html += '<div class="boss-section-title">Elite Four</div>';
-      bosses.eliteFour.forEach(function(b){
-        var body =
-          (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : "") +
-          (b.tip ? '<div class="boss-note">'+escapeHTML(b.tip)+'</div>' : "");
-        html += bossCardHTML("elite-"+b.name, escapeHTML(b.name), "", escapeHTML(b.type)+'-type specialist', body);
-      });
+      var eliteFour = bosses.eliteFour.filter(function(b){ return nameLocMonsMatch(q, b.name, null, b.mons); });
+      if(eliteFour.length){
+        html += '<div class="boss-section-title">Elite Four</div>';
+        eliteFour.forEach(function(b){
+          var body =
+            (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : "") +
+            (b.tip ? '<div class="boss-note">'+escapeHTML(b.tip)+'</div>' : "");
+          html += bossCardHTML("elite-"+b.name, escapeHTML(b.name), "", escapeHTML(b.type)+'-type specialist', body);
+        });
+      }
     }
 
-    if(bosses.champion && bosses.champion.name){
+    if(bosses.champion && bosses.champion.name && nameLocMonsMatch(q, bosses.champion.name, bosses.champion.location, bosses.champion.mons)){
       html += '<div class="boss-section-title">Champion</div>';
       (function(){
         var c = bosses.champion;
@@ -4938,37 +5042,48 @@
     }
 
     if(bosses.rival && bosses.rival.length){
-      html += '<div class="boss-section-title">'+escapeHTML(game.rivalLabel)+'</div>';
-      bosses.rival.forEach(function(b){
-        var body =
-          '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
-          (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
-        html += bossCardHTML("rival-"+b.stage, escapeHTML(b.stage), "", escapeHTML(b.location), body);
-      });
+      var rival = bosses.rival.filter(function(b){ return nameLocMonsMatch(q, b.stage, b.location, b.mons); });
+      if(rival.length){
+        html += '<div class="boss-section-title">'+escapeHTML(game.rivalLabel)+'</div>';
+        rival.forEach(function(b){
+          var body =
+            '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
+            (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
+          html += bossCardHTML("rival-"+b.stage, escapeHTML(b.stage), "", escapeHTML(b.location), body);
+        });
+      }
     }
 
     if(bosses.otherBattles && bosses.otherBattles.length){
-      html += '<div class="boss-section-title">'+escapeHTML(game.otherBattlesLabel)+'</div>';
-      bosses.otherBattles.forEach(function(b){
-        var body =
-          '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
-          (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
-        html += bossCardHTML("other-"+b.name+"-"+b.location, escapeHTML(b.name), "", escapeHTML(b.location), body);
-      });
+      var otherBattles = bosses.otherBattles.filter(function(b){ return nameLocMonsMatch(q, b.name, b.location, b.mons); });
+      if(otherBattles.length){
+        html += '<div class="boss-section-title">'+escapeHTML(game.otherBattlesLabel)+'</div>';
+        otherBattles.forEach(function(b){
+          var body =
+            '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
+            (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
+          html += bossCardHTML("other-"+b.name+"-"+b.location, escapeHTML(b.name), "", escapeHTML(b.location), body);
+        });
+      }
     }
 
     if(bosses.evilTeam && bosses.evilTeam.length){
-      html += '<div class="boss-section-title">'+escapeHTML(game.evilTeamLabel)+'</div>';
-      bosses.evilTeam.forEach(function(b){
-        var body =
-          '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
-          (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
-        html += bossCardHTML("evil-"+b.name+"-"+b.location, escapeHTML(b.name), "", escapeHTML(b.location), body);
-      });
+      var evilTeam = bosses.evilTeam.filter(function(b){ return nameLocMonsMatch(q, b.name, b.location, b.mons); });
+      if(evilTeam.length){
+        html += '<div class="boss-section-title">'+escapeHTML(game.evilTeamLabel)+'</div>';
+        evilTeam.forEach(function(b){
+          var body =
+            '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
+            (b.mons ? b.mons.map(function(m){ return monBlockHTML(m, b.mons); }).join("") : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
+          html += bossCardHTML("evil-"+b.name+"-"+b.location, escapeHTML(b.name), "", escapeHTML(b.location), body);
+        });
+      }
     }
 
     if(!html){
-      html = '<div class="empty">No boss data loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
+      html = q
+        ? '<div class="empty">No bosses match "' + escapeHTML(filterInput.value.trim()) + '".</div>'
+        : '<div class="empty">No boss data loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
     }
 
     el.innerHTML = html;
@@ -4989,16 +5104,44 @@
     note.textContent = "Regular route and gym trainer battles, split by story checkpoint. Rival, gym leader, and evil-team fights live in the Bosses tab instead.";
 
     var run = currentRun();
+    var filterInput = document.getElementById("trainersFilter");
+    var q = filterInput ? filterInput.value.trim().toLowerCase() : "";
+
     var html = "";
+    var anyVisible = false;
     groups.forEach(function(g){
+      // Same dual-mode idea as the Checklist filter: if the SPLIT NAME
+      // itself matches the query, show every fight in the split
+      // unfiltered; otherwise show only the individual fights that match
+      // (name/class/location/mon). Matching is computed against the full
+      // (unfiltered) fight list regardless of collapse state, so a
+      // collapsed split's header count/visibility is correct even before
+      // it's expanded. `idx` on each entry is the fight's ORIGINAL index
+      // within g.fights — preserved through the filter so the boss-card
+      // key (and therefore its `beatenBosses` collapse state) stays
+      // stable no matter what's currently typed in the filter box; using
+      // a post-filter position index here would silently reassign a
+      // different fight's "beaten" flag onto this one whenever the
+      // filtered list's order/length changed.
+      var splitMatch = !q || g.split.toLowerCase().indexOf(q) !== -1;
+      var visibleFights = g.fights
+        .map(function(f, idx){ return { f: f, idx: idx }; })
+        .filter(function(entry){
+          return splitMatch || nameLocMonsMatch(q, entry.f.trainerClass + " " + entry.f.name, entry.f.location, entry.f.mons);
+        });
+
+      if(visibleFights.length === 0) return; // nothing in this split matches — skip the whole split, header included
+
+      anyVisible = true;
       var collapsed = !!run.collapsedSplits[g.split];
       html += '<div class="split-header' + (collapsed ? ' split-collapsed' : '') + '" data-act="toggle-collapse-split" data-split="' + escapeHTML(g.split) + '">' +
         '<span>' + escapeHTML(g.split) + ' Split' + (g.levelCap ? ' · Level Cap ' + g.levelCap : '') + '</span>' +
-        '<span class="split-caret">' + (collapsed ? '▸ ' + g.fights.length + ' fights' : '▾') + '</span>' +
+        '<span class="split-caret">' + (collapsed ? '▸ ' + visibleFights.length + ' fights' : '▾') + '</span>' +
       '</div>';
       if(collapsed) return;
       var lastLoc = null;
-      g.fights.forEach(function(f, idx){
+      visibleFights.forEach(function(entry){
+        var f = entry.f, idx = entry.idx;
         if(f.location !== lastLoc){
           html += '<div class="trainer-location">' + escapeHTML(f.location) + '</div>';
           lastLoc = f.location;
@@ -5009,7 +5152,9 @@
       });
     });
 
-    el.innerHTML = html;
+    el.innerHTML = anyVisible
+      ? html
+      : '<div class="empty">No trainers match "' + escapeHTML(filterInput ? filterInput.value.trim() : "") + '".</div>';
   }
 
   // ---------- Calculator tab (Renegade Platinum only) ----------
@@ -5492,11 +5637,36 @@
   // Stats are set from the real computed values already on that mon
   // (exact, from Phase 1's data pull) via calcStatsOverride, rather than
   // re-derived from a guessed nature/IV spread. `side` is "Atk"/"Def".
+  // A few trainer mons carry a possessive display prefix naming which
+  // trainer owns them — "Mars's Crobat", "Jupiter's Skuntank" — used in
+  // double battles so the Bosses card can show whose mon is whose. That
+  // prefix is a display convention, not part of the species name, so it
+  // must be stripped before any RP-dex lookup, exactly like the " (!)"
+  // ability flag handled in populateAbilitySelect() below.
+  //
+  // Found 2026-09-05: without this, Simulate was silently broken for all
+  // 12 mons in the Mars & Jupiter double battle (Spear Pillar) — the
+  // species field got "Mars's Crobat", matched nothing, and the damage
+  // result came back errored rather than wrong, so it read as the app
+  // just not working. Every other Galactic battle uses plain names and
+  // was unaffected, which is why it survived a casual spot-check.
+  //
+  // Deliberately tries the verbatim name FIRST and only strips on a
+  // miss, so a real species whose name contains an apostrophe (Farfetch'd)
+  // is never mangled. A name that already resolves is returned untouched,
+  // so this cannot change behavior for anything that works today.
+  function dexSpeciesName(name){
+    if(!name) return name;
+    if(window.RPCalc && window.RPCalc.getSpecies(name)) return name;
+    return String(name).replace(/^[^']+'s\s+/, "");
+  }
+
   function applyMonToSide(mon, side){
-    document.getElementById("calc"+side+"Species").value = mon.name;
+    var speciesName = dexSpeciesName(mon.name);
+    document.getElementById("calc"+side+"Species").value = speciesName;
     document.getElementById("calc"+side+"Level").value = mon.level;
     document.getElementById("calc"+side+"Item").value = (mon.item && mon.item !== "—") ? mon.item : "";
-    populateAbilitySelect(document.getElementById("calc"+side+"Ability"), mon.name, mon.ability);
+    populateAbilitySelect(document.getElementById("calc"+side+"Ability"), speciesName, mon.ability);
     var moveList = mon.moves ? String(mon.moves).split(",").map(function(s){ return s.trim(); }).filter(Boolean) : [];
     MOVE_SLOTS.forEach(function(i){
       var el = document.getElementById("calc"+side+"Move"+i);
