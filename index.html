@@ -1595,32 +1595,271 @@
   var RENEGADE_BOSSES = {
     gymLeaders: [
       { name: "Roark", cap: 16, location: "Oreburgh Gym", type: "Rock", mons: [
-        { name: "Nosepass", level: 15, stats: [30,35,135,55,90,30], ability: "Sturdy", item: "Smooth Rock", moves: "Stealth Rock, Sandstorm, Thunder Wave, Shock Wave" },
-        { name: "Bonsly", level: 15, stats: [60,85,95,10,55,10], ability: "Rock Head", item: "Rindo Berry", moves: "Stealth Rock, Brick Break, Rollout, Defense Curl" },
-        { name: "Geodude", level: 15, stats: [40,80,100,30,30,20], ability: "Rock Head", item: "Expert Belt", moves: "Bulldoze (!), Rock Tomb, Fire Punch, Thunder Punch" },
-        { name: "Onix", level: 15, stats: [35,75,160,30,45,80], ability: "Rock Head", item: "Muscle Band", moves: "Stealth Rock, Rock Tomb, Bulldoze (!), Sandstorm" },
-        { name: "Larvitar", level: 15, stats: [50,64,50,45,50,41], ability: "Guts", item: "Flame Orb", moves: "Rock Tomb, Bulldoze (!), Bite, Protect" },
-        { name: "Cranidos", level: 16, stats: [67,125,40,30,30,58], ability: "Rock Head (!)", item: "Sitrus Berry", moves: "Zen Headbutt, Rock Tomb, Thunder Punch, Scary Face" }
+        { name: "Nosepass", level: 15, stats: [38,18,50,28,36,18], ability: "Sturdy", item: "Smooth Rock", moves: "Stealth Rock, Sandstorm, Thunder Wave, Shock Wave", sourceKey: "Lvl 15 Leader Roark " },
+        { name: "Bonsly", level: 15, stats: [47,35,41,10,26,12], ability: "Rock Head", item: "Rindo Berry", moves: "Stealth Rock, Brick Break, Rollout, Defense Curl", sourceKey: "Lvl 15 Leader Roark " },
+        { name: "Geodude", level: 15, stats: [41,36,39,16,18,15], ability: "Rock Head", item: "Expert Belt", moves: "Bulldoze (!), Rock Tomb, Fire Punch, Thunder Punch", sourceKey: "Lvl 15 Leader Roark " },
+        { name: "Onix", level: 15, stats: [39,31,57,16,22,36], ability: "Rock Head", item: "Muscle Band", moves: "Stealth Rock, Rock Tomb, Bulldoze (!), Sandstorm", sourceKey: "Lvl 15 Leader Roark " },
+        { name: "Larvitar", level: 15, stats: [44,28,24,20,24,23], ability: "Guts", item: "Flame Orb", moves: "Rock Tomb, Bulldoze (!), Bite, Protect", sourceKey: "Lvl 15 Leader Roark " },
+        { name: "Cranidos", level: 16, stats: [52,49,19,19,19,30], ability: "Rock Head (!)", item: "Sitrus Berry", moves: "Zen Headbutt, Rock Tomb, Thunder Punch, Scary Face", sourceKey: "Lvl 16 Leader Roark " }
+      ] },
+      { name: "Gardenia", cap: 26, location: "Eterna Gym", type: "Grass", mons: [
+        { name: "Bellossom", level: 25, stats: [79,52,64,57,62,33], ability: "Chlorophyll", item: "Wide Lens", moves: "Grass Knot, Teeter Dance, Dazzling Gleam (!), Stun Spore", sourceKey: "Lvl 25 Leader Gardenia " },
+        { name: "Tangela", level: 25, stats: [75,40,70,68,28,42], ability: "Chlorophyll", item: "Coba Berry", moves: "Grass Knot, Shock Wave, Ancient Power, Stun Spore", sourceKey: "Lvl 25 Leader Gardenia " },
+        { name: "Cherrim", level: 25, stats: [77,35,42,66,54,62], ability: "Flower Gift", item: "Focus Sash", moves: "Grass Knot, Sunny Day, Weather Ball, Morning Sun", sourceKey: "Lvl 25 Leader Gardenia " },
+        { name: "Grotle", level: 25, stats: [80,62,55,36,45,30], ability: "Overgrow", item: "Leftovers", moves: "Seed Bomb, Protect, Leech Seed, Bulldoze (!)", sourceKey: "Lvl 25 Leader Gardenia " },
+        { name: "Breloom", level: 25, stats: [72,84,52,42,37,47], ability: "Technician (!)", item: "Muscle Band", moves: "Bullet Seed, Mach Punch, Thunder Punch, Spore", sourceKey: "Lvl 25 Leader Gardenia " },
+        { name: "Roserade", level: 26, stats: [75,44,46,77,67,64], ability: "Technician (!)", item: "Sitrus Berry", moves: "Magical Leaf, Sludge, Dazzling Gleam (!), Extrasensory", sourceKey: "Lvl 26 Leader Gardenia " }
+      ] },
+      { name: "Fantina", cap: 33, location: "Hearthome City Gym", type: "Ghost", mons: [
+        { name: "Drifblim", level: 32, stats: [147,65,42,72,44,71], ability: "Unburden", item: "Starf Berry", moves: "Shadow Ball, Air Slash, Baton Pass, Calm Mind", sourceKey: "Lvl 32 Leader Fantina " },
+        { name: "Dusclops", level: 32, stats: [77,59,106,47,97,30], ability: "Frisk (!)", item: "Leftovers", moves: "Shadow Punch, Will-O-Wisp, Protect, Pain Split", sourceKey: "Lvl 32 Leader Fantina " },
+        { name: "Banette", level: 32, stats: [92,103,56,66,54,56], ability: "Insomnia", item: "Muscle Band", moves: "Shadow Claw, Will-O-Wisp, Sucker Punch, Disable", sourceKey: "Lvl 32 Leader Fantina " },
+        { name: "Spiritomb", level: 32, stats: [83,73,91,73,83,33], ability: "Pressure", item: "Zoom Lens", moves: "Shadow Ball, Will-O-Wisp, Dark Pulse, Disable", sourceKey: "Lvl 32 Leader Fantina " },
+        { name: "Gengar", level: 32, stats: [90,56,53,97,55,93], ability: "Levitate", item: "Wise Glasses", moves: "Shadow Ball, Will-O-Wisp, Sludge Bomb, Dazzling Gleam (!)", sourceKey: "Lvl 32 Leader Fantina " },
+        { name: "Mismagius", level: 33, stats: [92,54,54,83,74,91], ability: "Levitate", item: "Sitrus Berry", moves: "Shadow Ball, Power Gem, Calm Mind, Dazzling Gleam (!)", sourceKey: "Lvl 33 Leader Fantina " }
+      ] },
+      { name: "Maylene", cap: 39, location: "Veilstone City Gym", type: "Fighting", mons: [
+        { name: "Medicham", level: 38, stats: [105,62,77,77,69,92], ability: "Pure Power", item: "Sitrus Berry", moves: "High Jump Kick, Zen Headbutt, Ice Punch, Fake Out", sourceKey: "Lvl 38 Leader Maylene " },
+        { name: "Machamp", level: 38, stats: [127,115,84,65,81,52], ability: "Guts", item: "Toxic Orb", moves: "Close Combat, Payback, Thunder Punch, Protect", sourceKey: "Lvl 38 Leader Maylene " },
+        { name: "Infernape", level: 38, stats: [117,95,63,95,70,108], ability: "Iron Fist (!)", item: "Life Orb", moves: "Close Combat, Rock Slide, Fire Punch, Mach Punch", sourceKey: "Lvl 38 Leader Maylene " },
+        { name: "Toxicroak", level: 38, stats: [122,105,58,81,65,81], ability: "Dry Skin", item: "Big Root", moves: "Drain Punch, Poison Jab, Ice Punch, Sucker Punch", sourceKey: "Lvl 38 Leader Maylene " },
+        { name: "Gallade", level: 38, stats: [111,122,65,65,103,69], ability: "Steadfast", item: "Light Clay", moves: "Drain Punch, Zen Headbutt, Light Screen, Reflect", sourceKey: "Lvl 38 Leader Maylene " },
+        { name: "Lucario", level: 39, stats: [114,91,70,106,70,94], ability: "Adaptability (!)", item: "Focus Sash", moves: "Aura Sphere, Flash Cannon, Dark Pulse, Agility", sourceKey: "Lvl 39 Leader Maylene " }
+      ] },
+      { name: "Crasher Wake", cap: 44, location: "Pastoria City Gym", type: "Water", mons: [
+        { name: "Quagsire", level: 43, stats: [147,108,99,65,73,48], ability: "Water Absorb", item: "Rindo Berry", moves: "Aqua Tail, Earthquake, Recover, Ice Punch", sourceKey: "Lvl 43 Leader Wake " },
+        { name: "Gyarados", level: 43, stats: [147,125,85,62,103,95], ability: "Intimidate", item: "Wacan Berry", moves: "Aqua Tail, Ice Fang, Crunch, Dragon Dance", sourceKey: "Lvl 43 Leader Wake " },
+        { name: "Poliwrath", level: 43, stats: [142,99,99,69,103,77], ability: "Water Absorb", item: "Sitrus Berry", moves: "Waterfall, Drain Punch, Ice Punch, Hypnosis", sourceKey: "Lvl 43 Leader Wake " },
+        { name: "Ludicolo", level: 43, stats: [134,69,77,103,103,77], ability: "Swift Swim", item: "Life Orb", moves: "Hydro Pump, Ice Beam, Energy Ball, Fake Out", sourceKey: "Lvl 43 Leader Wake " },
+        { name: "Sharpedo", level: 43, stats: [126,121,52,99,46,108], ability: "Speed Boost (!)", item: "Focus Sash", moves: "Waterfall, Crunch, Ice Fang, Zen Headbutt", sourceKey: "Lvl 43 Leader Wake " },
+        { name: "Floatzel", level: 44, stats: [142,110,66,93,55,130], ability: "Swift Swim", item: "Life Orb", moves: "Aqua Tail, Crunch, Ice Punch, Aqua Jet", sourceKey: "Lvl 44 Leader Wake " }
+      ] },
+      { name: "Byron", cap: 53, location: "Canalave City Gym", type: "Steel", mons: [
+        { name: "Bronzong", level: 52, stats: [147,113,155,91,141,54], ability: "Levitate", item: "Light Clay", moves: "Gyro Ball, Stealth Rock, Reflect, Light Screen", sourceKey: "Lvl 52 Leader Byron " },
+        { name: "Magnezone", level: 52, stats: [150,93,140,170,114,74], ability: "Magnet Pull", item: "Wise Glasses", moves: "Thunderbolt, Flash Cannon, Signal Beam, Thunder Wave", sourceKey: "Lvl 52 Leader Byron " },
+        { name: "Steelix", level: 52, stats: [155,141,228,60,88,51], ability: "Rock Head", item: "Muscle Band", moves: "Gyro Ball, Earthquake, Stone Edge, Explosion", sourceKey: "Lvl 52 Leader Byron " },
+        { name: "Forretress", level: 52, stats: [155,114,182,74,83,62], ability: "Sturdy", item: "Sitrus Berry", moves: "Gyro Ball, Spikes, Toxic Spikes, Explosion", sourceKey: "Lvl 52 Leader Byron " },
+        { name: "Aggron", level: 52, stats: [150,148,208,83,74,73], ability: "Rock Head", item: "Focus Sash", moves: "Head Smash, Iron Head, Aqua Tail, Low Kick", sourceKey: "Lvl 52 Leader Byron " },
+        { name: "Bastiodon", level: 53, stats: [143,97,199,50,183,47], ability: "Soundproof (!)", item: "Leftovers", moves: "Iron Head, Toxic, Protect, Metal Burst", sourceKey: "Lvl 53 Leader Byron " }
+      ] },
+      { name: "Candice", cap: 56, location: "Snowpoint City Gym", type: "Ice", mons: [
+        { name: "Abomasnow", level: 55, stats: [180,134,104,122,115,78], ability: "Snow Warning", item: "Expert Belt", moves: "Wood Hammer, Earthquake, Blizzard, Ice Shard", sourceKey: "Lvl 55 Leader Candice " },
+        { name: "Weavile", level: 55, stats: [157,167,92,70,102,158], ability: "Technician (!)", item: "Focus Sash", moves: "Crunch, Icicle Crash (!), Aerial Ace, Swords Dance", sourceKey: "Lvl 55 Leader Candice " },
+        { name: "Glaceon", level: 55, stats: [153,78,156,164,93,126], ability: "Snow Cloak", item: "Bright Powder", moves: "Blizzard, Shadow Ball, Earth Power, Double Team", sourceKey: "Lvl 55 Leader Candice " },
+        { name: "Walrein", level: 55, stats: [201,108,119,137,119,82], ability: "Thick Fat", item: "Chople Berry", moves: "Blizzard, Surf, Yawn, Aqua Ring", sourceKey: "Lvl 55 Leader Candice " },
+        { name: "Mamoswine", level: 55, stats: [201,163,108,97,77,118], ability: "Thick Fat (!)", item: "Passho Berry", moves: "Earthquake, Avalanche, Stone Edge, Ice Shard", sourceKey: "Lvl 55 Leader Candice " },
+        { name: "Froslass", level: 56, stats: [161,90,100,159,100,145], ability: "Levitate (!)", item: "Life Orb", moves: "Blizzard, Shadow Ball, Thunderbolt, Attract", sourceKey: "Lvl 56 Leader Candice " }
+      ] },
+      { name: "Volkner", cap: 62, location: "Sunyshore City Gym", type: "Electric", mons: [
+        { name: "Jolteon", level: 61, stats: [168,102,96,157,125,199], ability: "Volt Absorb", item: "Focus Sash", moves: "Thunderbolt, Shadow Ball, Grass Knot, Thunder Wave", sourceKey: "Lvl 61 Leader Volkner " },
+        { name: "Raichu", level: 61, stats: [162,125,90,139,120,172], ability: "Static", item: "Expert Belt", moves: "Thunderbolt, Grass Knot, Focus Blast, Surf", sourceKey: "Lvl 61 Leader Volkner " },
+        { name: "Rotom-Wash", level: 61, stats: [149,90,153,165,153,127], ability: "Levitate", item: "Sitrus Berry", moves: "Thunderbolt, Hydro Pump, Shadow Ball, Thunder Wave", sourceKey: "Lvl 61 Leader Volkner " },
+        { name: "Rotom-Heat", level: 61, stats: [149,90,153,165,153,127], ability: "Levitate", item: "White Herb", moves: "Thunderbolt, Overheat, Shadow Ball, Will-O-Wisp", sourceKey: "Lvl 61 Leader Volkner " },
+        { name: "Luxray", level: 61, stats: [186,185,119,139,107,108], ability: "Intimidate", item: "Choice Band", moves: "Wild Charge (!), Crunch, Ice Fang, Fire Fang", sourceKey: "Lvl 61 Leader Volkner " },
+        { name: "Electivire", level: 62, stats: [183,176,106,126,129,155], ability: "Motor Drive", item: "Life Orb", moves: "Wild Charge (!), Close Combat, Ice Punch, Earthquake", sourceKey: "Lvl 62 Leader Volkner " }
       ] }
     ],
-    eliteFour: [],
-    champion: null,
+    eliteFour: [
+      { name: "Aaron", type: "Bug", mons: [
+        { name: "Yanmega", level: 71, stats: [224,120,148,191,105,177], ability: "Speed Boost", item: "Wise Glasses", moves: "Bug Buzz, Hurricane (!), Giga Drain, Protect", sourceKey: "Lvl 71 Elite Four Aaron " },
+        { name: "Scizor", level: 71, stats: [202,232,169,94,140,119], ability: "Technician", item: "Life Orb", moves: "Bug Bite, Iron Head, Bullet Punch, U-turn", sourceKey: "Lvl 71 Elite Four Aaron " },
+        { name: "Heracross", level: 71, stats: [215,223,132,74,161,147], ability: "Guts", item: "Choice Scarf", moves: "Megahorn, Close Combat, Stone Edge, Night Slash", sourceKey: "Lvl 71 Elite Four Aaron " },
+        { name: "Vespiquen", level: 71, stats: [200,152,170,139,170,73], ability: "Intimidate (!)", item: "Leftovers", moves: "Attack Order, Defend Order, Heal Order, Hurricane (!)", sourceKey: "Lvl 71 Elite Four Aaron " },
+        { name: "Armaldo", level: 71, stats: [208,223,167,124,125,89], ability: "Battle Armor", item: "Choice Band", moves: "X-Scissor, Stone Edge, Earthquake, Aqua Tail", sourceKey: "Lvl 71 Elite Four Aaron " },
+        { name: "Drapion", level: 72, stats: [205,156,185,101,135,180], ability: "Sniper", item: "Scope Lens", moves: "Cross Poison, Night Slash, X-Scissor, Earthquake", sourceKey: "Lvl 72 Elite Four Aaron " }
+      ] },
+      { name: "Bertha", type: "Ground", mons: [
+        { name: "Hippowdon", level: 72, stats: [259,205,196,111,130,94], ability: "Sand Stream", item: "Leftovers", moves: "Earthquake, Crunch, Stealth Rock, Slack Off", sourceKey: "Lvl 72 Elite Four Bertha " },
+        { name: "Whiscash", level: 72, stats: [262,138,131,122,140,113], ability: "Oblivious", item: "Life Orb", moves: "Aqua Tail, Earthquake, Bounce, Dragon Dance", sourceKey: "Lvl 72 Elite Four Bertha " },
+        { name: "Gliscor", level: 72, stats: [211,163,206,91,120,179], ability: "Poison Heal (!)", item: "Toxic Orb", moves: "Earthquake, Wing Attack, Protect, Roost", sourceKey: "Lvl 72 Elite Four Bertha " },
+        { name: "Golem", level: 72, stats: [218,218,213,105,108,91], ability: "Rock Head", item: "Focus Sash", moves: "Earthquake, Stone Edge, Thunder Punch, Explosion", sourceKey: "Lvl 72 Elite Four Bertha " },
+        { name: "Donphan", level: 72, stats: [233,199,218,101,113,98], ability: "Sand Veil (!)", item: "Rindo Berry", moves: "Earthquake, Play Rough (!), Head Smash, Superpower", sourceKey: "Lvl 72 Elite Four Bertha " },
+        { name: "Rhyperior", level: 73, stats: [273,255,217,107,107,77], ability: "Solid Rock", item: "Choice Band", moves: "Earthquake, Stone Edge, Megahorn, Ice Punch", sourceKey: "Lvl 73 Elite Four Bertha " }
+      ] },
+      { name: "Flint", type: "Fire", mons: [
+        { name: "Ninetales", level: 73, stats: [211,111,136,145,172,204], ability: "Drought (!)", item: "White Herb", moves: "Overheat, Solar Beam, Moonblast (!), Confuse Ray", sourceKey: "Lvl 73 Elite Four Flint " },
+        { name: "Houndoom", level: 73, stats: [212,156,88,186,142,180], ability: "Intimidate (!)", item: "Choice Scarf", moves: "Fire Blast, Dark Pulse, Solar Beam, Sludge Bomb", sourceKey: "Lvl 73 Elite Four Flint " },
+        { name: "Flareon", level: 73, stats: [264,236,101,121,121,164], ability: "Flash Fire", item: "Choice Band", moves: "Flare Blitz, Play Rough (!), Wild Charge (!), Close Combat", sourceKey: "Lvl 73 Elite Four Flint " },
+        { name: "Rapidash", level: 73, stats: [199,172,116,143,143,198], ability: "Flame Body (!)", item: "Power Herb", moves: "Flare Blitz, Wild Charge (!), Megahorn, Drill Run (!)", sourceKey: "Lvl 73 Elite Four Flint " },
+        { name: "Infernape", level: 73, stats: [216,179,117,179,131,204], ability: "Iron Fist (!)", item: "Expert Belt", moves: "Flare Blitz, Close Combat, Thunder Punch, Grass Knot", sourceKey: "Lvl 73 Elite Four Flint " },
+        { name: "Magmortar", level: 74, stats: [217,150,126,212,167,165], ability: "Flame Body", item: "Life Orb", moves: "Fire Blast, Thunderbolt, Aura Sphere, Solar Beam", sourceKey: "Lvl 74 Elite Four Flint " }
+      ] },
+      { name: "Lucian", type: "Psychic", mons: [
+        { name: "Mr. Mime", level: 74, stats: [164,78,122,189,183,183], ability: "Filter", item: "Light Clay", moves: "Psychic, Dazzling Gleam (!), Reflect, Light Screen", sourceKey: "Lvl 74 Elite Four Lucian |Oreburgh Gate| " },
+        { name: "Espeon", level: 74, stats: [203,124,116,220,151,209], ability: "Synchronize", item: "Wise Glasses", moves: "Psychic, Dazzling Gleam (!), Aura Sphere, Power Gem", sourceKey: "Lvl 74 Elite Four Lucian |Oreburgh Gate| " },
+        { name: "Bronzong", level: 74, stats: [205,158,217,129,198,76], ability: "Levitate", item: "Leftovers", moves: "Zen Headbutt, Gyro Ball, Reflect, Light Screen", sourceKey: "Lvl 74 Elite Four Lucian |Oreburgh Gate| " },
+        { name: "Alakazam", level: 74, stats: [186,89,92,225,166,223], ability: "Magic Guard (!)", item: "Life Orb", moves: "Psychic, Shadow Ball, Energy Ball, Aura Sphere", sourceKey: "Lvl 74 Elite Four Lucian |Oreburgh Gate| " },
+        { name: "Metagross", level: 74, stats: [223,248,218,167,143,130], ability: "Iron Fist (!)", item: "Muscle Band", moves: "Zen Headbutt, Meteor Mash, Earthquake, Explosion", sourceKey: "Lvl 74 Elite Four Lucian |Oreburgh Gate| " },
+        { name: "Gallade", level: 75, stats: [209,236,112,125,200,147], ability: "Steadfast", item: "Scope Lens", moves: "Psycho Cut, Close Combat, Leaf Blade, Night Slash", sourceKey: "Lvl 75 Elite Four Lucian |Oreburgh Gate| " }
+      ] }
+    ],
+    champion: {
+      name: "Cynthia", location: "Pokemon League", battleItems: "\u2014",
+      mons: [
+        { name: "Spiritomb", level: 77, stats: [186,169,193,169,212,72], ability: "Pressure", item: "Lum Berry", moves: "Dark Pulse, Will-O-Wisp, Confuse Ray, Rest", sourceKey: "Lvl 77 Champion Cynthia |Snowpoint City| " },
+        { name: "Roserade", level: 77, stats: [203,122,128,221,190,183], ability: "Technician (!)", item: "White Herb", moves: "Leaf Storm, Sludge Bomb, Dazzling Gleam (!), Sleep Powder", sourceKey: "Lvl 77 Champion Cynthia |Snowpoint City| " },
+        { name: "Togekiss", level: 77, stats: [240,93,190,212,204,150], ability: "Serene Grace", item: "Sitrus Berry", moves: "Air Slash, Thunder Wave, Roost, Moonblast (!)", sourceKey: "Lvl 77 Champion Cynthia |Snowpoint City| " },
+        { name: "Lucario", level: 77, stats: [218,198,136,184,136,183], ability: "Adaptability (!)", item: "Life Orb", moves: "High Jump Kick, Meteor Mash, Extreme Speed, Ice Punch", sourceKey: "Lvl 77 Champion Cynthia |Snowpoint City| " },
+        { name: "Milotic", level: 77, stats: [254,106,148,180,240,151], ability: "Marvel Scale", item: "Leftovers", moves: "Surf, Ice Beam, Recover, Hypnosis", sourceKey: "Lvl 77 Champion Cynthia |Snowpoint City| " },
+        { name: "Garchomp", level: 78, stats: [279,230,175,136,160,204], ability: "Rough Skin (!)", item: "Yache Berry", moves: "Earthquake, Outrage, Stone Edge, Swords Dance", sourceKey: "Lvl 78 Champion Cynthia |Snowpoint City| " }
+      ]
+    },
     rival: [
       { stage: "Route 201 (starter reveal)", location: "Route 201",
         note: "Starter-locked to the Turtwig path — Barry gets the type-advantaged starter (Chimchar).",
         mons: [
-          { name: "Chimchar", level: 5, stats: [44,58,44,58,44,61], ability: "Iron Fist (!)", item: "—", moves: "Scratch, Leer" }
+          { name: "Chimchar", level: 5, stats: [20,10,10,12,10,13], ability: "Iron Fist (!)", item: "—", moves: "Scratch, Leer", sourceKey: "Lvl 5 Pkmn Trainer Cedric19 " }
         ] },
       { stage: "Route 203", location: "Route 203",
         note: "Starter-locked to the Turtwig path — Barry gets the type-advantaged starter (Chimchar).",
         mons: [
-          { name: "Starly", level: 10, stats: [40,55,30,30,30,60], ability: "Reckless (!)", item: "—", moves: "Wing Attack, Quick Attack, Growl" },
-          { name: "Munchlax", level: 10, stats: [135,85,40,40,85,5], ability: "Thick Fat", item: "—", moves: "Metronome, Tackle, Amnesia, Rock Tomb" },
-          { name: "Chimchar", level: 11, stats: [44,58,44,58,44,61], ability: "Iron Fist (!)", item: "Oran Berry", moves: "Fury Swipes, Ember, Taunt" }
+          { name: "Starly", level: 10, stats: [31,19,14,14,14,20], ability: "Reckless (!)", item: "—", moves: "Wing Attack, Quick Attack, Growl", sourceKey: "Lvl 10 Pkmn Trainer Cedric2 " },
+          { name: "Munchlax", level: 10, stats: [50,25,14,17,25,9], ability: "Thick Fat", item: "—", moves: "Metronome, Tackle, Amnesia, Rock Tomb", sourceKey: "Lvl 10 Pkmn Trainer Cedric2 " },
+          { name: "Chimchar", level: 11, stats: [33,21,17,23,17,18], ability: "Iron Fist (!)", item: "Oran Berry", moves: "Fury Swipes, Ember, Taunt", sourceKey: "Lvl 11 Pkmn Trainer Cedric2 " }
+        ] },
+      { stage: "Route 209 (Hearthome City gate)", location: "Hearthome City Gate East",
+        note: "Starter-locked to the Turtwig path — Barry's team is Chimchar-line. Fights you when you walk through the gate between Route 209 and Hearthome City; beating him sends a Maid from the Pokémon Mansion to ask for help.",
+        mons: [
+          { name: "Heracross", level: 32, stats: [102,94,55,44,75,69], ability: "Guts", item: "Coba Berry", moves: "Bug Bite, Brick Break, Aerial Ace, Knock Off", sourceKey: "Lvl 32 Pkmn Trainer Cedric5 " },
+          { name: "Staravia", level: 32, stats: [86,62,46,36,44,65], ability: "Reckless", item: "Muscle Band", moves: "Facade, Aerial Ace, Double Team, Endeavor", sourceKey: "Lvl 32 Pkmn Trainer Cedric5 " },
+          { name: "Snorlax", level: 32, stats: [154,93,56,56,76,33], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Yawn, Amnesia, Rock Slide", sourceKey: "Lvl 32 Pkmn Trainer Cedric5 " },
+          { name: "Monferno", level: 33, stats: [95,66,49,66,49,68], ability: "Iron Fist", item: "Sitrus Berry", moves: "Flamethrower, Low Kick, Grass Knot, Fake Out", sourceKey: "Lvl 33 Pkmn Trainer Cedric5 " }
+        ] },
+      { stage: "Pastoria City (gym door)", location: "Pastoria City",
+        note: "Starter-locked to the Turtwig path — Barry's team is Chimchar-line. Fights you when you walk to the door of the Pastoria Gym.",
+        mons: [
+          { name: "Heracross", level: 41, stats: [129,120,79,50,85,95], ability: "Guts", item: "Coba Berry", moves: "Megahorn, Brick Break, Bullet Seed, Night Slash", sourceKey: "Lvl 41 Pkmn Trainer Cedric8 " },
+          { name: "Azumarill", level: 41, stats: [153,58,74,91,83,58], ability: "Huge Power", item: "Life Orb", moves: "Aqua Tail, Play Rough (!), Body Slam, Aqua Jet", sourceKey: "Lvl 41 Pkmn Trainer Cedric8 " },
+          { name: "Staraptor", level: 41, stats: [133,104,75,63,66,99], ability: "Reckless", item: "Muscle Band", moves: "Double-Edge, Close Combat, Aerial Ace, Roost", sourceKey: "Lvl 41 Pkmn Trainer Cedric8 " },
+          { name: "Infernape", level: 42, stats: [128,105,77,115,77,98], ability: "Iron Fist", item: "Sitrus Berry", moves: "Flamethrower, Close Combat, Fake Out, Thunder Punch", sourceKey: "Lvl 42 Pkmn Trainer Cedric8 " },
+          { name: "Breloom", level: 41, stats: [112,111,91,66,66,75], ability: "Technician", item: "Focus Sash", moves: "Bullet Seed, Force Palm, Spore, Rock Tomb", sourceKey: "Lvl 41 Pkmn Trainer Cedric8 " },
+          { name: "Snorlax", level: 41, stats: [194,117,71,71,107,37], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Crunch, Rest, Sleep Talk", sourceKey: "Lvl 41 Pkmn Trainer Cedric8 " }
+        ] },
+      { stage: "Canalave City (bridge)", location: "Canalave City",
+        note: "Starter-locked to the Turtwig path — Barry's team is Chimchar-line. Fights you when you try to cross the Canalave bridge — mandatory, no item to prepare for it.",
+        mons: [
+          { name: "Heracross", level: 48, stats: [149,125,91,58,122,101], ability: "Guts", item: "Muscle Band", moves: "Megahorn, Close Combat, Rock Slide, Night Slash", sourceKey: "Lvl 48 Pkmn Trainer Cedric11 " },
+          { name: "Azumarill", level: 48, stats: [178,67,96,96,96,67], ability: "Huge Power", item: "Life Orb", moves: "Aqua Tail, Play Rough (!), Ice Punch, Aqua Jet", sourceKey: "Lvl 48 Pkmn Trainer Cedric11 " },
+          { name: "Staraptor", level: 48, stats: [154,148,87,67,77,103], ability: "Reckless", item: "Choice Band", moves: "Double-Edge, Close Combat, Brave Bird, U-turn", sourceKey: "Lvl 48 Pkmn Trainer Cedric11 " },
+          { name: "Infernape", level: 49, stats: [148,134,89,122,80,127], ability: "Iron Fist", item: "Sitrus Berry", moves: "Fire Blast, Close Combat, Fake Out, Thunder Punch", sourceKey: "Lvl 49 Pkmn Trainer Cedric11 " },
+          { name: "Breloom", level: 48, stats: [130,158,86,77,77,87], ability: "Technician", item: "Focus Sash", moves: "Bullet Seed, Force Palm, Spore, Stone Edge", sourceKey: "Lvl 48 Pkmn Trainer Cedric11 " },
+          { name: "Snorlax", level: 48, stats: [226,125,82,82,112,52], ability: "Thick Fat", item: "Leftovers", moves: "Curse, Body Slam, Crunch, Slack Off", sourceKey: "Lvl 48 Pkmn Trainer Cedric11 " }
+        ] },
+      { stage: "Mt. Coronet, Spear Pillar", location: "Mt. Coronet, Spear Pillar",
+        note: "Starter-locked to the Turtwig path — Barry's team is Chimchar-line. He heals your team after this fight, right before the Commander Mars & Jupiter double battle.",
+        mons: [
+          { name: "Heracross", level: 58, stats: [178,167,109,69,133,121], ability: "Guts", item: "Muscle Band", moves: "Megahorn, Close Combat, Rock Blast, Bullet Seed", sourceKey: "Lvl 58 Pkmn Trainer Cedric16 " },
+          { name: "Azumarill", level: 58, stats: [213,80,103,115,115,88], ability: "Huge Power", item: "Life Orb", moves: "Aqua Tail, Play Rough (!), Superpower, Aqua Ring", sourceKey: "Lvl 58 Pkmn Trainer Cedric16 " },
+          { name: "Staraptor", level: 58, stats: [184,178,93,80,92,138], ability: "Reckless", item: "Sharp Beak", moves: "Double-Edge, Brave Bird, Close Combat, U-turn", sourceKey: "Lvl 58 Pkmn Trainer Cedric16 " },
+          { name: "Infernape", level: 59, stats: [176,160,107,131,107,151], ability: "Iron Fist", item: "Sitrus Berry", moves: "Flare Blitz, Close Combat, Thunder Punch, Stone Edge", sourceKey: "Lvl 59 Pkmn Trainer Cedric16 " },
+          { name: "Breloom", level: 58, stats: [155,173,115,92,92,104], ability: "Technician", item: "Focus Sash", moves: "Bullet Seed, Force Palm, Rock Tomb, Spore", sourceKey: "Lvl 58 Pkmn Trainer Cedric16 " },
+          { name: "Snorlax", level: 58, stats: [271,150,98,88,150,62], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Crunch, Zen Headbutt, Slack Off", sourceKey: "Lvl 58 Pkmn Trainer Cedric16 " }
+        ] },
+      { stage: "Pokémon League (first room)", location: "Pokémon League — Inside",
+        note: "Starter-locked to the Turtwig path — Barry's team is Chimchar-line. Fights you when you walk onto the tile in front of the Ace Trainer guarding the League's first room — mandatory, no way to decline. Can use 2 Full Restores.",
+        mons: [
+          { name: "Heracross", level: 70, stats: [213,180,131,82,174,145], ability: "Guts", item: "Toxic Orb", moves: "Megahorn, Close Combat, Stone Edge, Protect", sourceKey: "Lvl 70 Pkmn Trainer Cedric14 " },
+          { name: "Azumarill", level: 70, stats: [255,96,138,138,151,86], ability: "Huge Power", item: "Life Orb", moves: "Aqua Tail, Play Rough (!), Ice Punch, Aqua Jet", sourceKey: "Lvl 70 Pkmn Trainer Cedric14 " },
+          { name: "Staraptor", level: 70, stats: [220,194,111,96,121,166], ability: "Reckless", item: "Choice Scarf", moves: "Double-Edge, Brave Bird, Close Combat, U-turn", sourceKey: "Lvl 70 Pkmn Trainer Cedric14 " },
+          { name: "Infernape", level: 71, stats: [210,174,127,156,139,181], ability: "Iron Fist", item: "Sitrus Berry", moves: "Flare Blitz, Close Combat, Stone Edge, Grass Knot", sourceKey: "Lvl 71 Pkmn Trainer Cedric14 " },
+          { name: "Breloom", level: 70, stats: [185,208,138,121,110,111], ability: "Technician", item: "Life Orb", moves: "Bullet Seed, Force Palm, Stone Edge, Spore", sourceKey: "Lvl 70 Pkmn Trainer Cedric14 " },
+          { name: "Snorlax", level: 70, stats: [325,180,128,105,180,68], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Earthquake, Curse, Slack Off", sourceKey: "Lvl 70 Pkmn Trainer Cedric14 " }
         ] }
     ],
     otherBattles: [],
-    evilTeam: []
+    evilTeam: [
+      { name: "Team Galactic Grunts", location: "Various (Valley Windworks, Route 218/202, Eterna Building, the Lakes, Veilstone HQ, Pokémon Mansion, Galactic Warehouse, Spear Pillar approach, ...)", note: "Scattered grunt battles guarding routes and every Galactic-controlled building — teams vary, generally low-level single/double Pokémon (Zubat, Glameow, Stunky, Croagunk, Golbat, etc.)." },
+      { name: "Commander Mars", location: "Valley Windworks Inside", note: "Blocks the machine controlling the Valley Windworks.",
+        mons: [
+          { name: "Zubat", level: 18, stats: [47,26,23,21,21,33], ability: "Inner Focus", item: "—", moves: "Poison Fang, Wing Attack, Toxic, Confuse Ray", sourceKey: "Lvl 18 Commander Mars " },
+          { name: "Bronzor", level: 18, stats: [53,20,41,19,41,16], ability: "Levitate", item: "Sitrus Berry", moves: "Hypnosis, Extrasensory, Gyro Ball, Confuse Ray", sourceKey: "Lvl 18 Commander Mars " },
+          { name: "Yanma", level: 18, stats: [56,29,26,37,26,48], ability: "Speed Boost", item: "—", moves: "Silver Wind, Air Cutter, Detect, Sonic Boom", sourceKey: "Lvl 18 Commander Mars " },
+          { name: "Purugly", level: 19, stats: [68,46,37,31,33,59], ability: "Thick Fat", item: "Sitrus Berry", moves: "Fake Out, Hypnosis, Facade, Feint Attack", sourceKey: "Lvl 19 Commander Mars " }
+        ] },
+      { name: "Commander Jupiter", location: "Team Galactic Eterna Building", note: "Guards the top floor of the Team Galactic Eterna Building; drops a Secret Key on defeat.",
+        mons: [
+          { name: "Golbat", level: 26, stats: [82,54,49,41,51,64], ability: "Inner Focus", item: "—", moves: "Wing Attack, Giga Drain, Leech Life, Confuse Ray", sourceKey: "Lvl 26 Commander Jupiter " },
+          { name: "Sableye", level: 26, stats: [69,62,62,51,57,38], ability: "Magic Guard (!)", item: "Sitrus Berry", moves: "Fake Out, Shadow Claw, Knock Off, Shadow Sneak", sourceKey: "Lvl 26 Commander Jupiter " },
+          { name: "Tangela", level: 26, stats: [77,36,72,70,33,44], ability: "Chlorophyll", item: "—", moves: "Giga Drain, Shock Wave, Leech Seed, Sleep Powder", sourceKey: "Lvl 26 Commander Jupiter " },
+          { name: "Skuntank", level: 27, stats: [106,70,50,45,45,58], ability: "Aftermath", item: "Sitrus Berry", moves: "Poison Jab, Night Slash, Focus Energy, Torment", sourceKey: "Lvl 27 Commander Jupiter " }
+        ] },
+      { name: "Commander Saturn", location: "Pokémon Mansion", note: "Fought (alongside Barry as a partner vs. a Gentleman ally) after clearing the Galactic-occupied Pokémon Mansion.",
+        mons: [
+          { name: "Bronzong", level: 33, stats: [97,73,91,73,91,33], ability: "Levitate", item: "Leftovers", moves: "Hypnosis, Gyro Ball, Zen Headbutt, Confuse Ray", sourceKey: "Lvl 33 Commander Saturn2 " },
+          { name: "Octillery", level: 33, stats: [102,84,64,84,64,44], ability: "Suction Cups", item: "Wise Glasses", moves: "Octazooka, Signal Beam, Ice Beam, Flamethrower", sourceKey: "Lvl 33 Commander Saturn2 " },
+          { name: "Toxicroak", level: 34, stats: [110,87,59,74,59,73], ability: "Dry Skin", item: "Muscle Band", moves: "Drain Punch, Poison Jab, Fake Out, Vacuum Wave", sourceKey: "Lvl 34 Commander Saturn2 " }
+        ] },
+      { name: "Commander Saturn", location: "Lake Valor", note: "Guards Lake Valor during the legendary-capture attempt.",
+        mons: [
+          { name: "Alakazam", level: 52, stats: [135,73,73,144,119,145], ability: "Magic Guard (!)", item: "Wise Glasses", moves: "Psychic, Calm Mind, Recover, Focus Blast", sourceKey: "Lvl 52 Commander Saturn " },
+          { name: "Octillery", level: 52, stats: [156,143,99,130,99,60], ability: "Suction Cups", item: "Expert Belt", moves: "Hydro Pump, Seed Bomb, Flamethrower, Flash Cannon", sourceKey: "Lvl 52 Commander Saturn " },
+          { name: "Bronzong", level: 52, stats: [147,113,126,113,141,55], ability: "Levitate", item: "Bright Powder", moves: "Iron Head, Zen Headbutt, Shadow Ball, Explosion", sourceKey: "Lvl 52 Commander Saturn " },
+          { name: "Rhydon", level: 52, stats: [187,156,145,73,60,62], ability: "Rock Head", item: "Muscle Band", moves: "Stone Edge, Hammer Arm, Earthquake, Megahorn", sourceKey: "Lvl 52 Commander Saturn " },
+          { name: "Toxicroak", level: 53, stats: [167,133,81,112,90,122], ability: "Dry Skin", item: "Life Orb", moves: "Gunk Shot, Cross Chop, Fake Out, Sucker Punch", sourceKey: "Lvl 53 Commander Saturn " }
+        ] },
+      { name: "Commander Mars", location: "Lake Verity", note: "Guards Lake Verity during the legendary-capture attempt.",
+        mons: [
+          { name: "Crobat", level: 52, stats: [166,102,104,102,104,156], ability: "Inner Focus", item: "Bright Powder", moves: "Brave Bird, Hypnosis, Double Team, Giga Drain", sourceKey: "Lvl 52 Commander Mars2 " },
+          { name: "Yanmega", level: 52, stats: [167,100,110,155,71,119], ability: "Speed Boost", item: "Wise Glasses", moves: "Bug Buzz, Air Slash, Psychic, Detect", sourceKey: "Lvl 52 Commander Mars2 " },
+          { name: "Bronzong", level: 52, stats: [147,124,141,103,126,55], ability: "Levitate", item: "Leftovers", moves: "Stealth Rock, Gyro Ball, Payback, Explosion", sourceKey: "Lvl 52 Commander Mars2 " },
+          { name: "Kangaskhan", level: 52, stats: [187,119,114,55,104,114], ability: "Scrappy", item: "Muscle Band", moves: "Double-Edge, Hammer Arm, Crunch, Fake Out", sourceKey: "Lvl 52 Commander Mars2 " },
+          { name: "Purugly", level: 53, stats: [174,134,85,90,85,143], ability: "Thick Fat", item: "Sitrus Berry", moves: "Body Slam, Play Rough (!), Hypnosis, Fake Out", sourceKey: "Lvl 53 Commander Mars2 " }
+        ] },
+      { name: "Galactic Boss Cyrus", location: "Celestic Town Ruins", note: "First direct confrontation with Cyrus himself, at the Celestic Town ruins.",
+        mons: [
+          { name: "Crobat", level: 45, stats: [145,99,90,81,90,135], ability: "Inner Focus", item: "Wise Glasses", moves: "Sludge Bomb, Air Slash, Giga Drain, Hypnosis", sourceKey: "Lvl 45 Galactic Boss Cyrus3 " },
+          { name: "Honchkrow", level: 45, stats: [158,131,65,113,71,73], ability: "Super Luck", item: "Scope Lens", moves: "Brave Bird, Night Slash, Swagger, Torment", sourceKey: "Lvl 45 Galactic Boss Cyrus3 " },
+          { name: "Magnezone", level: 45, stats: [131,89,122,121,99,72], ability: "Magnet Pull", item: "Life Orb", moves: "Thunderbolt, Flash Cannon, Thunder Wave, Mirror Coat", sourceKey: "Lvl 45 Galactic Boss Cyrus3 " },
+          { name: "Weavile", level: 46, stats: [134,141,79,54,97,134], ability: "Technician (!)", item: "Expert Belt", moves: "Feint Attack, Icicle Crash (!), Ice Shard, Swords Dance", sourceKey: "Lvl 46 Galactic Boss Cyrus3 " }
+        ] },
+      { name: "Galactic Boss Cyrus", location: "Galactic HQ", note: "Fought on the top floor of the real Team Galactic HQ in Veilstone.",
+        mons: [
+          { name: "Crobat", level: 57, stats: [181,125,113,102,124,153], ability: "Inner Focus", item: "Choice Band", moves: "Brave Bird, U-turn, Cross Poison, Zen Headbutt", sourceKey: "Lvl 57 Galactic Boss Cyrus " },
+          { name: "Honchkrow", level: 57, stats: [198,165,81,127,81,113], ability: "Super Luck", item: "Scope Lens", moves: "Brave Bird, Night Slash, Thunder Wave, Heat Wave", sourceKey: "Lvl 57 Galactic Boss Cyrus " },
+          { name: "Houndoom", level: 57, stats: [170,125,79,148,113,130], ability: "Intimidate (!)", item: "Life Orb", moves: "Dark Pulse, Flamethrower, Sludge Bomb, Nasty Plot", sourceKey: "Lvl 57 Galactic Boss Cyrus " },
+          { name: "Magnezone", level: 57, stats: [164,91,153,170,125,100], ability: "Magnet Pull", item: "Wise Glasses", moves: "Thunderbolt, Flash Cannon, Signal Beam, Mirror Coat", sourceKey: "Lvl 57 Galactic Boss Cyrus " },
+          { name: "Weavile", level: 58, stats: [167,145,98,75,121,183], ability: "Technician (!)", item: "Expert Belt", moves: "Crunch, Ice Shard, Aerial Ace, X-Scissor", sourceKey: "Lvl 58 Galactic Boss Cyrus " }
+        ] },
+      { name: "Commander Saturn", location: "Galactic HQ", note: "Fought on the HQ laboratory floor, guarding Cyrus's real research.",
+        mons: [
+          { name: "Bronzong", level: 56, stats: [158,122,152,121,152,53], ability: "Levitate", item: "Light Clay", moves: "Zen Headbutt, Gyro Ball, Reflect, Light Screen", sourceKey: "Lvl 56 Commander Saturn |T.G. Eterna Bldg| " },
+          { name: "Octillery", level: 56, stats: [167,139,106,139,106,72], ability: "Suction Cups", item: "Expert Belt", moves: "Hydro Pump, Blizzard, Fire Blast, Energy Ball", sourceKey: "Lvl 56 Commander Saturn |T.G. Eterna Bldg| " },
+          { name: "Alakazam", level: 56, stats: [144,78,79,173,115,156], ability: "Magic Guard (!)", item: "Life Orb", moves: "Psychic, Shadow Ball, Dazzling Gleam (!), Focus Blast", sourceKey: "Lvl 56 Commander Saturn |T.G. Eterna Bldg| " },
+          { name: "Rhyperior", level: 56, stats: [212,161,183,83,83,67], ability: "Solid Rock", item: "Choice Band", moves: "Stone Edge, Earthquake, Megahorn, Hammer Arm", sourceKey: "Lvl 56 Commander Saturn |T.G. Eterna Bldg| " },
+          { name: "Magmortar", level: 56, stats: [167,128,106,162,128,103], ability: "Flame Body", item: "Choice Specs", moves: "Fire Blast, Thunderbolt, Aura Sphere, Psychic", sourceKey: "Lvl 56 Commander Saturn |T.G. Eterna Bldg| " },
+          { name: "Toxicroak", level: 57, stats: [179,143,96,120,96,119], ability: "Dry Skin", item: "Focus Sash", moves: "Cross Chop, Gunk Shot, Ice Punch, Fake Out", sourceKey: "Lvl 57 Commander Saturn |T.G. Eterna Bldg| " }
+        ] },
+      { name: "Mars & Jupiter (double battle)", location: "Mt. Coronet, Spear Pillar", note: "Multi battle at Spear Pillar — you and Barry vs. both commanders together.",
+        mons: [
+          { name: "Mars's Crobat", level: 57, stats: [181,125,113,102,113,170], ability: "Inner Focus", item: "Life Orb", moves: "Brave Bird, Sludge Bomb, Confuse Ray, Torment", sourceKey: "Lvl 57 Commander Mars |Route 209| " },
+          { name: "Mars's Yanmega", level: 57, stats: [182,98,120,154,94,130], ability: "Speed Boost", item: "Wise Glasses", moves: "Bug Buzz, Hurricane (!), Shadow Ball, Detect", sourceKey: "Lvl 57 Commander Mars |Route 209| " },
+          { name: "Mars's Bronzong", level: 57, stats: [161,111,169,112,154,60], ability: "Levitate", item: "Leftovers", moves: "Stealth Rock, Zen Headbutt, Gyro Ball, Earthquake", sourceKey: "Lvl 57 Commander Mars |Route 209| " },
+          { name: "Mars's Electivire", level: 57, stats: [170,178,99,130,119,117], ability: "Motor Drive", item: "Expert Belt", moves: "Thunder Punch, Ice Punch, Cross Chop, Fire Punch", sourceKey: "Lvl 57 Commander Mars |Route 209| " },
+          { name: "Mars's Kangaskhan", level: 57, stats: [204,130,124,68,101,125], ability: "Scrappy", item: "Muscle Band", moves: "Body Slam, Crunch, Hammer Arm, Fake Out", sourceKey: "Lvl 57 Commander Mars |Route 209| " },
+          { name: "Mars's Purugly", level: 58, stats: [190,146,104,98,92,140], ability: "Thick Fat", item: "Sitrus Berry", moves: "Body Slam, Play Rough (!), Fake Out, Hypnosis", sourceKey: "Lvl 58 Commander Mars |Route 209| " },
+          { name: "Jupiter's Crobat", level: 57, stats: [181,125,113,102,124,153], ability: "Inner Focus", item: "Bright Powder", moves: "Brave Bird, Sludge Bomb, Double Team, Hypnosis", sourceKey: "Lvl 57 Commander Jupiter2 " },
+          { name: "Jupiter's Sableye", level: 57, stats: [141,119,117,119,130,79], ability: "Magic Guard (!)", item: "Muscle Band", moves: "Shadow Claw, Sucker Punch, Zen Headbutt, Fake Out", sourceKey: "Lvl 57 Commander Jupiter2 " },
+          { name: "Jupiter's Bronzong", level: 57, stats: [161,124,154,123,154,54], ability: "Levitate", item: "Leftovers", moves: "Swagger, Psychic, Flash Cannon, Grass Knot", sourceKey: "Lvl 57 Commander Jupiter2 " },
+          { name: "Jupiter's Tangrowth", level: 57, stats: [198,122,181,148,79,79], ability: "Chlorophyll", item: "Big Root", moves: "Giga Drain, Leech Seed, Focus Blast, Sludge Bomb", sourceKey: "Lvl 57 Commander Jupiter2 " },
+          { name: "Jupiter's Gastrodon", level: 57, stats: [211,105,100,127,127,67], ability: "Sticky Hold", item: "Wise Glasses", moves: "Muddy Water, Earth Power, Ice Beam, Recover", sourceKey: "Lvl 57 Commander Jupiter2 " },
+          { name: "Jupiter's Skuntank", level: 58, stats: [219,133,114,104,82,121], ability: "Aftermath", item: "Sitrus Berry", moves: "Gunk Shot, Crunch, Play Rough (!), Toxic", sourceKey: "Lvl 58 Commander Jupiter2 " }
+        ] },
+      { name: "Galactic Boss Cyrus (with Dialga & Palkia)", location: "Mt. Coronet, Distortion World", note: "The Distortion World climax — Cyrus fights with the two captured legendaries themselves, not his own team. Immediately followed by one more single battle against his real team.",
+        mons: [
+          { name: "Dialga", level: 70, stats: [220,190,173,215,130,131], ability: "Pressure", item: "—", moves: "Aura Sphere, Earth Power, Flash Cannon, Roar of Time", sourceKey: "Lvl 70 Galactic Boss Cyrus4 " },
+          { name: "Palkia", level: 70, stats: [206,190,145,215,173,130], ability: "Pressure", item: "—", moves: "Aura Sphere, Earth Power, Hydro Pump, Spacial Rend", sourceKey: "Lvl 70 Galactic Boss Cyrus4 " }
+        ] },
+      { name: "Galactic Boss Cyrus (final)", location: "Mt. Coronet, Distortion World", note: "Fought back-to-back with the Dialga/Palkia battle above (healed in between) — his real team, right before Giratina intervenes.",
+        mons: [
+          { name: "Crobat", level: 59, stats: [187,128,117,94,117,193], ability: "Inner Focus", item: "Choice Band", moves: "Brave Bird, U-turn, Cross Poison, Zen Headbutt", sourceKey: "Lvl 59 Galactic Boss Cyrus2 " },
+          { name: "Honchkrow", level: 59, stats: [204,187,84,146,75,106], ability: "Super Luck", item: "White Herb", moves: "Brave Bird, Sucker Punch, Thunder Wave, Superpower", sourceKey: "Lvl 59 Galactic Boss Cyrus2 " },
+          { name: "Houndoom", level: 59, stats: [175,128,72,152,117,147], ability: "Intimidate (!)", item: "Life Orb", moves: "Dark Pulse, Flamethrower, Sludge Bomb, Nasty Plot", sourceKey: "Lvl 59 Galactic Boss Cyrus2 " },
+          { name: "Gyarados", level: 59, stats: [198,169,115,82,140,128], ability: "Intimidate", item: "Muscle Band", moves: "Aqua Tail, Stone Edge, Ice Fang, Dragon Dance", sourceKey: "Lvl 59 Galactic Boss Cyrus2 " },
+          { name: "Magnezone", level: 59, stats: [169,94,158,193,128,93], ability: "Magnet Pull", item: "Wise Glasses", moves: "Thunderbolt, Flash Cannon, Signal Beam, Mirror Coat", sourceKey: "Lvl 59 Galactic Boss Cyrus2 " },
+          { name: "Weavile", level: 60, stats: [172,167,101,69,125,190], ability: "Technician (!)", item: "Focus Sash", moves: "Feint Attack, Icicle Crash (!), Aerial Ace, Swords Dance", sourceKey: "Lvl 60 Galactic Boss Cyrus2 " }
+        ] }
+    ]
+
   };
   // Renegade Platinum's Guide tab is shaped differently from Emerald's —
   // see GAMES.renegade.guideSections below. Items/TMs are stubs pending a
