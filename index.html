@@ -160,8 +160,19 @@
   .tabs{
     display:flex; overflow-x:auto; -webkit-overflow-scrolling:touch;
     scrollbar-width:none; border-bottom: 2px solid var(--line);
+    /* overflow-y must be pinned: once one axis is non-visible the other
+       computes to `auto`, so the .tab margin-bottom:-2px below became 2px
+       of vertical scroll slop you could drag the bar around in. */
+    overflow-y: hidden; overscroll-behavior-x: contain;
   }
   .tabs::-webkit-scrollbar{ display:none; }
+  /* Pixel-art tab icons: monochrome, drawn on a 12x12 grid and filled with
+     currentColor so they inherit the tab's own themed color (dim cream ->
+     LCD green/teal when active) with no per-theme icon variants. Injected
+     by JS from PIXEL_ICONS; if that ever fails the original text labels
+     stay in place, so the tab bar degrades gracefully rather than emptying. */
+  .tab svg{ display:block; width:22px; height:22px; }
+  .tab.tab-icon{ padding: 9px 16px; }
   .tab{
     flex:0 0 auto; white-space:nowrap; text-align:center; padding: 11px 14px; font-size: 14px;
     background: var(--bg); color: var(--cream-dim); cursor:pointer;
@@ -4458,6 +4469,64 @@
   document.getElementById("rulesRow").addEventListener("change", function(e){
     var rule = e.target.getAttribute("data-rule");
     if(rule){ currentRun().rules[rule] = e.target.checked; save(); }
+  });
+
+  // ---------- pixel-art tab icons ----------
+  // Each icon is 12 rows of 12 chars; "1" = filled cell. Kept as strings
+  // rather than hand-written <rect> soup so they're editable by eye here.
+  var PIXEL_ICONS = {
+    roster: [            // paper / log page
+      "..11111111..","..1......1..","..1.1111.1..","..1......1..",
+      "..1.1111.1..","..1......1..","..1.1111.1..","..1......1..",
+      "..1..111.1..","..1......1..","..11111111..","............"],
+    checklist: [         // bush
+      "............","....111.....","..1111111...",".111111111..",
+      "11111111111.","11111111111.",".111111111..","..1111111...",
+      ".....1......",".....1......","....111.....","............"],
+    bosses: [            // horned devil head
+      "............",".1.......1..",".11.....11..","..1111111...",
+      ".111111111..",".11.111.11..",".111111111..",".1.11111.1..",
+      "..1111111...","...11111....","............","............"],
+    trainers: [          // person: head + shoulders
+      "............","....111.....","...11111....","...11111....",
+      "....111.....","............","..1111111...",".111111111..",
+      "11111111111.","11111111111.","11111111111.","............"],
+    calculator: [        // the four operators: + - x /
+      "..1.........","..1.........","11111.11111.","..1.........",
+      "..1.........","............","1...1...1...",".1.1........",
+      "..1...11111.",".1.1........","1...1...1...","............"],
+    guide: [             // magnifying lens
+      "...11111....","..1.....1...",".1.......1..",".1.......1..",
+      ".1.......1..","..1.....1...","...11111....","......11....",
+      ".......11...","........11..",".........11.","............"],
+    graveyard: [         // tombstone with a carved cross
+      "............","...11111....","..1111111...","..1111111...",
+      "..111.111...","..11...11...","..111.111...","..111.111...",
+      "..1111111...","..1111111...",".111111111..","............"]
+  };
+  // Run-length encode each row into as few <rect>s as possible.
+  function pixelIconSVG(rows){
+    var out = "";
+    for(var y=0; y<rows.length; y++){
+      var row = rows[y], x = 0;
+      while(x < row.length){
+        if(row.charAt(x) === "1"){
+          var w = 1;
+          while(row.charAt(x+w) === "1") w++;
+          out += '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="1"/>';
+          x += w;
+        } else { x++; }
+      }
+    }
+    return '<svg viewBox="0 0 12 12" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true" focusable="false">'+out+'</svg>';
+  }
+  document.querySelectorAll(".tab").forEach(function(tab){
+    var rows = PIXEL_ICONS[tab.getAttribute("data-tab")];
+    if(!rows) return;                       // unknown tab keeps its text label
+    var label = (tab.textContent || "").trim();
+    if(label){ tab.setAttribute("title", label); tab.setAttribute("aria-label", label); }
+    tab.innerHTML = pixelIconSVG(rows);
+    tab.classList.add("tab-icon");
   });
 
   document.querySelectorAll(".tab").forEach(function(tab){
