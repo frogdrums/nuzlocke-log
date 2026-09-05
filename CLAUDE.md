@@ -41,14 +41,12 @@ What you get:
 - **General outbound egress is blocked.** `docs.google.com`, the RP wiki
   at `fredericdlugi.github.io`, and `nuzlocke.app` all 403 at CONNECT.
   The xlsx in `poke-docs` is your only source; there is no web fallback.
-- **From the Fantina split sheet onward, cells are formulas, not
-  values.** `ROARK SPLiT` holds literal numbers, but later sheets use
-  custom functions (`=MONHP(F22)`, `=MONABILITY(...)`, `=MOVEBP(...)`).
-  Load with `openpyxl.load_workbook(path, data_only=True)` to get cached
-  results — and note the cached strings carry an invisible **U+180E**
-  (Mongolian vowel separator) that must be stripped: a raw read returns
-  `'65\u180e'`, not `'65'`. This affects trainer extraction, not
-  encounters.
+- **Read `poke-docs/tools/EXTRACTION_GUIDE.md` before touching the
+  spreadsheet.** It is the authoritative reference and is kept current;
+  do not duplicate its contents here. In particular §2b (later split
+  sheets are formulas needing `data_only=True`, with an invisible U+180E
+  in the cached values) and §4b (location names differ between the split
+  sheets and `ENCOUNTERS`, and scope must come from `ENCOUNTERS`).
 - **Never infer a species or level from stats.** This romhack rebalances
   stats, abilities and movesets, so a stat block matching a vanilla
   Pokémon is evidence of nothing. A past run hallucinated "Snubbull"
