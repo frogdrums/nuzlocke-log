@@ -1,4 +1,4 @@
-var CACHE_NAME = "nuzlocke-log-v9";
+var CACHE_NAME = "nuzlocke-log-v14";
 var PRECACHE = [
   "./",
   "./index.html",
@@ -64,12 +64,49 @@ self.addEventListener("activate", function(event){
   );
 });
 
-// Network-first: always try to fetch the latest version. Only fall back
-// to the cached copy if the network is unavailable (offline). This means
-// GitHub updates show up the next time you open the app with a connection,
-// instead of getting stuck on whatever was cached the first time.
+// 2026-09-09: the vendored calc/ engine files (see PRECACHE above) get
+// their own cache-first handling, split out from the app-shell handling
+// below. They're third-party and effectively immutable between deploys —
+// any real change to them bumps CACHE_NAME (see "Deploy" in CLAUDE.md),
+// which forces a full fresh precache on activate regardless of this
+// runtime path. Network-first for them bought nothing but ~30 extra
+// round trips per launch (one of them for a ~4.9MB file), which is what
+// made "switching back to the installed PWA" feel slow — the app-shell
+// files (index.html, manifest.json, navigations) still need to be
+// network-first exactly as before, so don't fold this into that handler.
+function isCalcAsset(url){
+  return url.pathname.indexOf("/calc/") !== -1;
+}
+
 self.addEventListener("fetch", function(event){
   if(event.request.method !== "GET") return;
+  var url = new URL(event.request.url);
+
+  if(isCalcAsset(url)){
+    // Cache-first, with a background revalidate as a hedge (e.g. a
+    // precache that didn't fully complete) rather than a strict
+    // cache-only — this is "stale-while-revalidate" in spirit: a cache
+    // hit resolves immediately with no network wait at all, and the
+    // network response (if any) still updates the cache for next time.
+    event.respondWith(
+      caches.match(event.request).then(function(cached){
+        var networkFetch = fetch(event.request).then(function(response){
+          if(response && response.status === 200){
+            var copy = response.clone();
+            caches.open(CACHE_NAME).then(function(cache){ cache.put(event.request, copy); });
+          }
+          return response;
+        }).catch(function(){ return null; });
+        return cached || networkFetch;
+      })
+    );
+    return;
+  }
+
+  // Network-first: always try to fetch the latest version. Only fall back
+  // to the cached copy if the network is unavailable (offline). This means
+  // GitHub updates show up the next time you open the app with a connection,
+  // instead of getting stuck on whatever was cached the first time.
   event.respondWith(
     fetch(event.request).then(function(response){
       if(response && response.status === 200){

@@ -78,7 +78,17 @@
     border-radius: 10px;
     background: linear-gradient(180deg, var(--bezel-top) 0%, var(--bg) 40px, var(--bg) 100%);
     box-shadow: 0 0 0 1px var(--frame-ring), 0 10px 30px rgba(0,0,0,0.5);
-    overflow: hidden;
+    /* Was `overflow: hidden` (still just for rounding these corners — see
+       the .calc-dd-list comment below for why nothing here relies on it
+       actually clipping content). Switched to clip-path so it purely
+       trims corners without also making .device a scroll container/sticky
+       boundary, which is what silently broke `.tabs`'s position:sticky
+       (see .tabs below) — an ancestor with any non-visible overflow
+       becomes the containing block for sticky descendants' scroll
+       positioning, and .device's height auto-grows to its content with
+       no separate scroll of its own, so no root-level stick was ever
+       possible under overflow:hidden. clip-path has no such effect. */
+    clip-path: inset(0 round 10px);
   }
   .screen-header{
     padding: 16px 16px 10px;
@@ -164,6 +174,14 @@
        computes to `auto`, so the .tab margin-bottom:-2px below became 2px
        of vertical scroll slop you could drag the bar around in. */
     overflow-y: hidden; overscroll-behavior-x: contain;
+    /* Pinned to the top of the viewport while scrolling, so tabs can be
+       switched without scrolling back up. Needs an opaque background
+       (matching .device's own flat body color, since that's what's
+       behind it once stuck) so page content doesn't show through behind
+       it, plus a z-index above ordinary content. See .device above for
+       why this only works with overflow:hidden removed from that
+       ancestor. */
+    position: sticky; top: 0; z-index: 5; background: var(--bg);
   }
   .tabs::-webkit-scrollbar{ display:none; }
   /* Pixel-art tab icons: monochrome, drawn on a 12x12 grid and filled with
@@ -261,11 +279,6 @@
   }
 
   /* ---------- checklist ---------- */
-  .checklist-note{
-    font-size: 14px; color: var(--cream-dim); background: var(--panel);
-    border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; margin-bottom: 12px;
-    line-height: 1.5;
-  }
   .cl-card{
     background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
     padding: 10px 12px; margin-bottom: 8px;
@@ -338,6 +351,88 @@
     background: transparent; border: 1px solid var(--lcd-dim); color: var(--lcd);
   }
   .boss-mon-sim:hover{ background: var(--lcd-dim); color: #0d1712; }
+
+  /* ---------- pokédex tab ----------
+     Collapsed-by-default rows (see pokedexExpanded's JS comment for why
+     that's transient, not persisted) — same visual family as .cl-card/
+     .boss-card (panel + accent left-border + tap-to-toggle row) rather
+     than a new pattern, per CLAUDE.md's "match the app's existing visual
+     language" guidance. */
+  .dex-card{
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 10px 12px; margin-bottom: 8px; border-left: 3px solid var(--line);
+  }
+  .dex-card.dex-expanded{ border-left-color: var(--lcd); }
+  .dex-top{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    cursor:pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .dex-name{ font-weight:700; font-size: 16px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dex-types{ display:flex; gap:4px; flex-shrink:0; }
+  .dex-type{
+    font-size: 11px; text-transform:uppercase; letter-spacing:0.3px; padding: 2px 7px;
+    border-radius: 10px; border: 1px solid var(--line); color: var(--cream-dim);
+  }
+  .dex-total{ font-size: 13px; color: var(--lcd); font-weight:700; flex-shrink:0; min-width: 28px; text-align:right; }
+  .dex-body{ margin-top: 9px; border-top: 1px dashed var(--line); padding-top: 8px; }
+  .dex-stat-row{ display:flex; align-items:center; gap:7px; font-size: 12px; margin-bottom: 3px; }
+  .dex-stat-label{ width: 30px; color: var(--cream-dim); text-transform:uppercase; flex-shrink:0; }
+  .dex-stat-bar{ flex:1; height: 8px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; overflow:hidden; }
+  .dex-stat-bar-fill{ height:100%; background: var(--lcd); }
+  .dex-stat-val{ width: 26px; text-align:right; flex-shrink:0; }
+  .dex-stat-total{ font-size: 12px; color: var(--cream-dim); text-align:right; margin-top: 2px; }
+  .dex-section-title{
+    font-size: 12px; color: var(--gold); text-transform:uppercase; letter-spacing:0.4px;
+    margin-top: 9px;
+  }
+  .dex-abilities{ font-size: 13px; margin-top: 3px; }
+  /* Two-line-per-move layout — see pokedexMoveRowHTML's comment for why
+     this replaced the old single flex row (justify-content:space-between
+     let each side's width float with its own content, which is what
+     made the type label "squiggle" left/right from row to row instead
+     of forming a column). Line 1 is a normal flex row (name needs to
+     flex/ellipsis, category needs to just be as wide as its own text).
+     Line 2 is a real CSS grid with a FIXED column template, so type/
+     power/PP/accuracy start at the same x on every row regardless of
+     that row's own content width — that fixed template is the actual
+     fix, not anything about using flex vs. grid in the abstract. */
+  .dex-move-row{ padding: 4px 0; border-bottom: 1px solid var(--line); }
+  .dex-move-row:last-child{ border-bottom:none; }
+  /* A same-level continuation row (see the `grouped` param): no top
+     border/gap from the row above so a level's moves read as one
+     cluster rather than N separately-bordered rows that all happen to
+     say "Lv 5". */
+  .dex-move-row.dex-move-row-grouped{ border-top:none; padding-top:0; margin-top:-2px; }
+  .dex-move-row-empty{ font-size: 12.5px; color: var(--cream-dim); font-style: italic; padding: 3px 0; }
+  .dex-move-line1{ display:flex; align-items:baseline; gap:6px; }
+  /* min-width (not a fixed width) + nowrap: a fixed width was narrower
+     than "Lv 100" (this game's level cap needs 3 digits), which made
+     the level text itself wrap onto 2 lines inside its own box — nowrap
+     stops that, min-width keeps single-digit levels visually aligned
+     with the rest without clipping the 3-digit case. */
+  .dex-move-lv{ font-size: 12px; color: var(--cream-dim); flex-shrink:0; min-width: 34px; white-space:nowrap; }
+  .dex-move-name{ font-size: 13px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  /* Category: solid-fill pill, not another grey label — see
+     CATEGORY_CLASS's JS comment for why these three specific tokens. */
+  .dex-cat{
+    font-size: 10px; font-weight:800; text-transform:uppercase; letter-spacing:0.3px;
+    padding: 2px 6px; border-radius: 4px; flex-shrink:0; color: var(--frame-border);
+  }
+  .dex-cat-phys{ background: var(--dead); }
+  .dex-cat-spec{ background: var(--lcd); }
+  .dex-cat-status{ background: var(--gold); }
+  /* Type/power/PP/accuracy are the most decision-relevant facts on the
+     row, so this line is NOT styled as a subordinate note: it sits at
+     the same size as the move name and in the full-strength foreground
+     color, not the dimmed one. Columns widened to match the larger
+     text. */
+  .dex-move-line2{
+    display:grid; grid-template-columns: 62px 50px 46px 46px 1fr; gap:6px;
+    margin-top: 3px; font-size: 13px; color: var(--cream); font-weight:600;
+  }
+  .dex-move-type{ text-transform:uppercase; }
+  .dex-move-stat{ text-align:right; }
+  .dex-move-contact{ color: var(--lcd); font-weight:700; text-align:right; }
 
   /* ---------- calculator tab ---------- */
   .calc-grid{ display:grid; grid-template-columns: 1fr; gap: 12px; }
@@ -523,6 +618,7 @@
     <div class="tab" data-tab="bosses">Bosses</div>
     <div class="tab" data-tab="trainers">Trainers</div>
     <div class="tab" data-tab="calculator">Calc</div>
+    <div class="tab" data-tab="pokedex">Pokédex</div>
     <div class="tab" data-tab="guide">Guide</div>
     <div class="tab" data-tab="graveyard">Graveyard</div>
   </div>
@@ -558,7 +654,6 @@
     </div>
 
     <div id="panel-checklist" style="display:none;">
-      <div class="checklist-note" id="checklistNote"></div>
       <div class="filter-box">
         <input type="text" id="checklistFilter" placeholder="Filter by location or species (e.g. &quot;Route 208&quot; or &quot;Budew&quot;)…" autocomplete="off">
         <button type="button" class="filter-clear" id="checklistFilterClear">×</button>
@@ -575,7 +670,6 @@
     </div>
 
     <div id="panel-trainers" style="display:none;">
-      <div class="checklist-note" id="trainersNote"></div>
       <div class="filter-box">
         <input type="text" id="trainersFilter" placeholder="Filter by trainer, class, location, split, or mon…" autocomplete="off">
         <button type="button" class="filter-clear" id="trainersFilterClear">×</button>
@@ -584,8 +678,14 @@
     </div>
 
     <div id="panel-calculator" style="display:none;">
-      <div class="checklist-note" id="calcNote">Renegade Platinum damage calculator — arbitrary Pokémon vs. Pokémon, using this romhack's rebalanced stats/moves and its exact mechanics (Gen 4 damage formula, Gen 5 crit chance, Gen 6 type chart). Not available for Emerald, which uses different mechanics entirely.</div>
       <div id="calcUnavailable" class="empty" style="display:none;">The Calculator only supports Renegade Platinum right now — switch games above to use it.</div>
+      <!-- Shown while the vendored calc/ engine bundle (~4.9MB, see the
+           lazy-loader comment near loadCalcBundle()) is still being
+           fetched/parsed. Only reachable via renderCalculator(), never
+           left visible if the bundle was already loaded by an earlier
+           background/idle load. -->
+      <div id="calcLoading" class="empty" style="display:none;">Loading calculator…</div>
+      <div id="calcLoadError" class="empty" style="display:none;">Couldn't load the calculator (network error). <button type="button" id="calcLoadRetry">Retry</button></div>
       <div id="calcBody" style="display:none;">
         <div class="calc-grid">
           <div class="calc-mon-card">
@@ -700,6 +800,24 @@
       </div>
     </div>
 
+    <div id="panel-pokedex" style="display:none;">
+      <div id="pokedexUnavailable" class="empty" style="display:none;">The Pokédex only supports Renegade Platinum right now — switch games above to use it.</div>
+      <!-- Same 4-panel loading pattern as the Calc tab (see renderCalculator()'s
+           comment) — the Pokédex reads window.RP_BACKUP_DATA.poks from the
+           same lazily-loaded ~4.9MB calc/ bundle, so it goes through
+           loadCalcBundle() exactly like the Calc tab rather than assuming
+           the data already exists. -->
+      <div id="pokedexLoading" class="empty" style="display:none;">Loading Pokédex…</div>
+      <div id="pokedexLoadError" class="empty" style="display:none;">Couldn't load the Pokédex (network error). <button type="button" id="pokedexLoadRetry">Retry</button></div>
+      <div id="pokedexBody" style="display:none;">
+        <div class="filter-box">
+          <input type="text" id="pokedexFilter" placeholder="Filter by species or type (e.g. &quot;Charmander&quot; or &quot;Fire&quot;)…" autocomplete="off">
+          <button type="button" class="filter-clear" id="pokedexFilterClear">×</button>
+        </div>
+        <div id="pokedexList"></div>
+      </div>
+    </div>
+
     <div id="panel-guide" style="display:none;">
       <div class="guide-subtabs" id="guideSubtabs"></div>
       <div id="guideContent"></div>
@@ -738,59 +856,26 @@
   "Damage calculator & trainer data" section for how/why. Pure
   calculation logic, no DOM/window/document dependence of its own; each
   file is a plain CommonJS-style module (require()/exports) concatenated
-  via a tiny shim below rather than a bundler, matching this project's
-  no-build-step approach. calc/rp-data.js (the rebalanced species/move
-  dex) and calc/rp-adapter.js (which exposes it to the engine and to the
-  app as window.RPCalc) must load after all engine files. Load order
-  among the engine files matters (later files read what earlier ones
-  defined on the shared `exports` object) — don't reorder without reading
-  the comment at the top of rp-adapter.js.
+  via a tiny shim rather than a bundler, matching this project's
+  no-build-step approach.
+
+  2026-09-09 perf fix: these 30 files (one of them, rp-data.js, is a
+  ~4.9MB object literal) used to be loaded right here as 30 blocking
+  script tags, so every single app launch paid to fetch+parse+execute
+  all of them before the app's own script even started, even though
+  most visits never open the Calculator tab. Measured on a phone this
+  showed up as "the installed PWA takes ~2s to render on resume." They
+  are now loaded lazily by loadCalcBundle(), a function defined further
+  down in the app's own script, near renderCalculator() — see that
+  function's comment for the load-order requirements and the
+  require()/exports shim, both unchanged from before, just moved from
+  static markup into JS so they run on demand instead of
+  unconditionally. Nothing under calc/ itself was touched. (Deliberately
+  not writing the literal tag text for "script src" in this comment —
+  see CLAUDE.md's node-vm verification note about a stray script-path
+  literal inside a comment once being picked up by naive tooling as a
+  real 31st file; same hazard here with a naive `<script` scan.)
 -->
-<script>
-  // Every calc/*.js file below is a script (not an ES module) written
-  // against CommonJS require()/exports; this shim gives them a shared
-  // namespace object without a bundler. require() intentionally ignores
-  // its argument and always returns the same `exports` — every file's
-  // `exports.Foo = ...` piles onto that one object, which is why
-  // calc/adaptable.js and calc/index.js (whose only job is re-exporting
-  // those same symbols under an indirection layer) are deliberately NOT
-  // vendored: under this shim their TS-emitted re-export helper defines
-  // a getter whose target is itself, and reading it infinite-loops.
-  // Everything they would have re-exported is already a plain property
-  // on `calc` from its origin file (calc.js, pokemon.js, move.js, etc).
-  var calc = window.calc = window.exports = {};
-  function require() { return window.exports; }
-</script>
-<script src="./calc/util.js"></script>
-<script src="./calc/stats.js"></script>
-<script src="./calc/data/types.js"></script>
-<script src="./calc/data/natures.js"></script>
-<script src="./calc/data/abilities.js"></script>
-<script src="./calc/data/moves.js"></script>
-<script src="./calc/data/items.js"></script>
-<script src="./calc/move.js"></script>
-<script src="./calc/pokemon.js"></script>
-<script src="./calc/field.js"></script>
-<script src="./calc/items.js"></script>
-<script src="./calc/mechanics/util.js"></script>
-<script src="./calc/mechanics/boostModifiers.js"></script>
-<script src="./calc/mechanics/romhacks/helpers.js"></script>
-<script src="./calc/mechanics/romhacks/profiles/cascade-white.js"></script>
-<script src="./calc/mechanics/romhacks/profiles/little-emerald.js"></script>
-<script src="./calc/mechanics/romhacks/profiles/platinum-kaizo.js"></script>
-<script src="./calc/mechanics/romhacks/profiles/platinum-redux.js"></script>
-<script src="./calc/mechanics/romhacks/index.js"></script>
-<script src="./calc/mechanics/gen789.js"></script>
-<script src="./calc/mechanics/vanilla/gen789.js"></script>
-<script src="./calc/mechanics/gen56.js"></script>
-<script src="./calc/mechanics/gen4.js"></script>
-<script src="./calc/mechanics/gen3.js"></script>
-<script src="./calc/mechanics/gen12.js"></script>
-<script src="./calc/calc.js"></script>
-<script src="./calc/desc.js"></script>
-<script src="./calc/result.js"></script>
-<script src="./calc/rp-data.js"></script>
-<script src="./calc/rp-adapter.js"></script>
 
 <script>
 (function(){
@@ -1577,6 +1662,10 @@
       {sp:"Doduo",m:"Poké Radar",lv:"5"},
       {sp:"Mew",m:"Static (event)",lv:"40"}
     ]},
+    { name: "Sandgem Town", encounters: [
+      {sp:"Turtwig",m:"Gift (Rowan's briefcase)",lv:"5"},{sp:"Chimchar",m:"Gift (Rowan's briefcase)",lv:"5"},
+      {sp:"Piplup",m:"Gift (Rowan's briefcase)",lv:"5"}
+    ]},
     { name: "Lake Verity", encounters: [
       {sp:"Starly",m:"Grass",lv:"4-5"},{sp:"Bidoof",m:"Grass",lv:"4"},{sp:"Surskit",m:"Grass",lv:"4-5"},
       {sp:"Azurill",m:"Grass",lv:"5"},{sp:"Psyduck",m:"Grass",lv:"5"},{sp:"Wingull",m:"Grass",lv:"4-5"},
@@ -1590,6 +1679,26 @@
       {sp:"Burmy",m:"Grass",lv:"5"},{sp:"Hoothoot",m:"Grass",lv:"5",t:"N"},
       {sp:"Houndour",m:"Poké Radar",lv:"5-6"}
     ]},
+    { name: "Jubilife City", encounters: [
+      {sp:"Bulbasaur",m:"Gift (Interviewer)",lv:"5"},{sp:"Charmander",m:"Gift (Interviewer)",lv:"5"},
+      {sp:"Squirtle",m:"Gift (Interviewer)",lv:"5"}
+    ]},
+    { name: "Trainer School", encounters: [
+      {sp:"Pichu",m:"Gift (Egg)",lv:"1"},{sp:"Cleffa",m:"Gift (Egg)",lv:"1"},{sp:"Igglybuff",m:"Gift (Egg)",lv:"1"},
+      {sp:"Togepi",m:"Gift (Egg)",lv:"1"},{sp:"Tyrogue",m:"Gift (Egg)",lv:"1"},{sp:"Smoochum",m:"Gift (Egg)",lv:"1"},
+      {sp:"Elekid",m:"Gift (Egg)",lv:"1"},{sp:"Magby",m:"Gift (Egg)",lv:"1"},{sp:"Azurill",m:"Gift (Egg)",lv:"1"},
+      {sp:"Wynaut",m:"Gift (Egg)",lv:"1"},{sp:"Budew",m:"Gift (Egg)",lv:"1"},{sp:"Chingling",m:"Gift (Egg)",lv:"1"},
+      {sp:"Bonsly",m:"Gift (Egg)",lv:"1"},{sp:"Mime Jr.",m:"Gift (Egg)",lv:"1"},{sp:"Happiny",m:"Gift (Egg)",lv:"1"},
+      {sp:"Munchlax",m:"Gift (Egg)",lv:"1"},{sp:"Riolu",m:"Gift (Egg)",lv:"1"},{sp:"Mantyke",m:"Gift (Egg)",lv:"1"}
+    ]},
+    { name: "Route 218", encounters: [
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"O"},{sp:"Finneon",m:"Rod",lv:"—",tier:"O"},
+      {sp:"Staryu",m:"Rod",lv:"—",tier:"O"}
+    ]},
+    { name: "Route 219", encounters: [
+      {sp:"Krabby",m:"Rod",lv:"—",tier:"O"},{sp:"Horsea",m:"Rod",lv:"—",tier:"O"},
+      {sp:"Clamperl",m:"Rod",lv:"—",tier:"O"}
+    ]},
     { name: "Ravaged Path", encounters: [
       {sp:"Zubat",m:"Cave",lv:"6-8"},{sp:"Geodude",m:"Cave",lv:"6-8"},{sp:"Wooper",m:"Cave",lv:"6"},
       {sp:"Psyduck",m:"Cave",lv:"6"},{sp:"Sandshrew",m:"Cave",lv:"6"},{sp:"Makuhita",m:"Cave",lv:"6"},
@@ -1600,7 +1709,13 @@
     { name: "Route 204 (South)", encounters: [
       {sp:"Starly",m:"Grass",lv:"6"},{sp:"Budew",m:"Grass",lv:"6"},{sp:"Bellsprout",m:"Grass",lv:"6-7"},
       {sp:"Ralts",m:"Grass",lv:"6-7"},{sp:"Caterpie",m:"Grass",lv:"6"},{sp:"Weedle",m:"Grass",lv:"6"},
-      {sp:"Wurmple",m:"Grass",lv:"6",t:"MD"},{sp:"Ledyba",m:"Grass",lv:"6",t:"M"},{sp:"Sunkern",m:"Grass",lv:"6",t:"D"}
+      {sp:"Wurmple",m:"Grass",lv:"6",t:"MD"},{sp:"Ledyba",m:"Grass",lv:"6",t:"M"},{sp:"Sunkern",m:"Grass",lv:"6",t:"D"},
+      {sp:"Oddish",m:"Grass",lv:"6",t:"N"},{sp:"Spinarak",m:"Grass",lv:"6",t:"N"},
+      {sp:"Roselia",m:"Poké Radar",lv:"6-7"},
+      {sp:"Marill",m:"Surf",lv:"20-30"},{sp:"Azumarill",m:"Surf",lv:"20-40"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Goldeen",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Corphish",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Seaking",m:"Rod",lv:"—",tier:"S"},{sp:"Crawdaunt",m:"Rod",lv:"—",tier:"S"}
     ]},
     { name: "Route 203", encounters: [
       {sp:"Starly",m:"Grass",lv:"7-8"},{sp:"Bidoof",m:"Grass",lv:"7"},{sp:"Spearow",m:"Grass",lv:"7-8"},
@@ -1615,7 +1730,14 @@
       {sp:"Zubat",m:"Cave (1F)",lv:"7-9"},{sp:"Geodude",m:"Cave (1F)",lv:"7-9"},{sp:"Diglett",m:"Cave (1F)",lv:"7-9"},{sp:"Riolu",m:"Cave (1F)",lv:"8"},
       {sp:"Zubat",m:"Cave (B1F)",lv:"8-10"},{sp:"Geodude",m:"Cave (B1F)",lv:"8-10"},{sp:"Diglett",m:"Cave (B1F)",lv:"8-10"},{sp:"Riolu",m:"Cave (B1F)",lv:"9"},
       {sp:"Zubat",m:"Surf",lv:"20-30"},{sp:"Golbat",m:"Surf",lv:"20-40"},
-      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Barboach",m:"Rod",lv:"—",tier:"OGS"}
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Barboach",m:"Rod",lv:"—",tier:"OGS"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Whiscash",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Oreburgh City", encounters: [
+      {sp:"Treecko",m:"Gift (Interviewer)",lv:"10"},{sp:"Torchic",m:"Gift (Interviewer)",lv:"10"},
+      {sp:"Mudkip",m:"Gift (Interviewer)",lv:"10"},
+      {sp:"Beldum",m:"Gift (from Steven)",lv:"10"},
+      {sp:"Spheal",m:"Trade — give a Ponyta",lv:"—"}
     ]},
     { name: "Route 207", encounters: [
       {sp:"Machop",m:"Grass",lv:"9-10"},{sp:"Rhyhorn",m:"Grass",lv:"9-10"},{sp:"Ponyta",m:"Grass",lv:"9-10"},
@@ -1638,7 +1760,8 @@
       {sp:"Spinarak",m:"Grass",lv:"11",t:"N"},{sp:"Roselia",m:"Poké Radar",lv:"11-12"}
     ]},
     { name: "Floaroma Town", encounters: [
-      {sp:"Chikorita",m:"Gift",lv:"15"},{sp:"Cyndaquil",m:"Gift",lv:"15"},{sp:"Totodile",m:"Gift",lv:"15"}
+      {sp:"Chikorita",m:"Gift",lv:"15"},{sp:"Cyndaquil",m:"Gift",lv:"15"},{sp:"Totodile",m:"Gift",lv:"15"},
+      {sp:"Skorupi",m:"Trade — give a Cherubi",lv:"—"}
     ]},
     { name: "Floaroma Meadow", encounters: [
       {sp:"Cherubi",m:"Honey Tree",lv:"—"},{sp:"Shroomish",m:"Honey Tree",lv:"—"},
@@ -1697,12 +1820,18 @@
       {sp:"Psyduck",m:"Surf",lv:"20-30"},{sp:"Golduck",m:"Surf",lv:"20-40"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
       {sp:"Poliwag",m:"Rod",lv:"—",tier:"OG"},{sp:"Dratini",m:"Rod",lv:"—",tier:"OG"},
       {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Poliwhirl",m:"Rod",lv:"—",tier:"S"},
-      {sp:"Dragonair",m:"Rod",lv:"—",tier:"S"},{sp:"Togepi",m:"Gift",lv:"1"}
+      {sp:"Dragonair",m:"Rod",lv:"—",tier:"S"},{sp:"Togepi",m:"Gift",lv:"1"},
+      {sp:"Chatot",m:"Trade — give a Snorunt",lv:"—"}
     ]},
     { name: "Route 211 (West)", encounters: [
       {sp:"Meditite",m:"Grass",lv:"16-18"},{sp:"Machop",m:"Grass",lv:"17"},{sp:"Swablu",m:"Grass",lv:"16-18"},
       {sp:"Teddiursa",m:"Grass",lv:"17"},{sp:"Natu",m:"Grass",lv:"17"},{sp:"Chingling",m:"Grass",lv:"16"},
       {sp:"Tyrogue",m:"Poké Radar",lv:"16-18"}
+    ]},
+    { name: "Mt. Coronet (Route 211 Entry)", encounters: [
+      {sp:"Geodude",m:"Cave",lv:"17"},{sp:"Bronzor",m:"Cave",lv:"17"},{sp:"Cleffa",m:"Cave",lv:"16"},
+      {sp:"Nosepass",m:"Cave",lv:"17-18"},{sp:"Chingling",m:"Cave",lv:"16"},{sp:"Zubat",m:"Cave",lv:"17"},
+      {sp:"Beldum",m:"Cave",lv:"17"},{sp:"Solrock",m:"Cave",lv:"18"},{sp:"Lunatone",m:"Cave",lv:"18"}
     ]},
     { name: "Route 211 (East)", encounters: [
       {sp:"Meditite",m:"Grass",lv:"18-19"},{sp:"Machop",m:"Grass",lv:"18"},{sp:"Swablu",m:"Grass",lv:"18"},
@@ -1710,6 +1839,13 @@
       {sp:"Tyrogue",m:"Poké Radar",lv:"18-19"},{sp:"Aipom",m:"Honey Tree",lv:"—"},
       {sp:"Slakoth",m:"Honey Tree",lv:"—"},{sp:"Metapod",m:"Honey Tree",lv:"—"},{sp:"Kakuna",m:"Honey Tree",lv:"—"},
       {sp:"Munchlax",m:"Honey Tree",lv:"—"},{sp:"Entei",m:"Static (event)",lv:"60"}
+    ]},
+    { name: "Mt. Coronet (B1F)", encounters: [
+      {sp:"Geodude",m:"Cave",lv:"19"},{sp:"Bronzor",m:"Cave",lv:"19"},{sp:"Clefairy",m:"Cave",lv:"19"},
+      {sp:"Nosepass",m:"Cave",lv:"19"},{sp:"Chimecho",m:"Cave",lv:"20"},{sp:"Zubat",m:"Cave",lv:"19"},
+      {sp:"Metang",m:"Cave",lv:"20"},{sp:"Solrock",m:"Cave",lv:"20"},{sp:"Lunatone",m:"Cave",lv:"20"},
+      {sp:"Spheal",m:"Surf",lv:"30-45"},{sp:"Seel",m:"Surf",lv:"30-45"},{sp:"Sealeo",m:"Surf",lv:"30-45"},
+      {sp:"Feebas",m:"Rod",lv:"—",tier:"OGS"}
     ]},
     { name: "Mt. Coronet (Route 216 Entry)", encounters: [
       {sp:"Geodude",m:"Cave",lv:"18"},{sp:"Bronzor",m:"Cave",lv:"18"},{sp:"Clefairy",m:"Cave",lv:"18"},
@@ -1720,6 +1856,15 @@
       {sp:"Snover",m:"Grass",lv:"18-19"},{sp:"Swinub",m:"Grass",lv:"18-19"},{sp:"Smoochum",m:"Grass",lv:"18-19"},
       {sp:"Snorunt",m:"Grass",lv:"18-19"},{sp:"Sneasel",m:"Grass",lv:"18-20"},
       {sp:"Delibird",m:"Poké Radar",lv:"19-20"}
+    ]},
+    { name: "Team Galactic Eterna Building", encounters: [
+      {sp:"Porygon",m:"Gift (after beating Jupiter)",lv:"22"}
+    ]},
+    { name: "Mining Museum", encounters: [
+      {sp:"Omanyte",m:"Gift (revived fossil)",lv:"20"},{sp:"Kabuto",m:"Gift (revived fossil)",lv:"20"},
+      {sp:"Aerodactyl",m:"Gift (revived fossil)",lv:"20"},{sp:"Lileep",m:"Gift (revived fossil)",lv:"20"},
+      {sp:"Anorith",m:"Gift (revived fossil)",lv:"20"},{sp:"Cranidos",m:"Gift (revived fossil)",lv:"20"},
+      {sp:"Shieldon",m:"Gift (revived fossil)",lv:"20"}
     ]},
     { name: "Route 206", encounters: [
       {sp:"Stunky",m:"Grass",lv:"21"},{sp:"Slugma",m:"Grass",lv:"21"},{sp:"Mankey",m:"Grass",lv:"20-21"},
@@ -2033,6 +2178,50 @@
   // regular trainer fights, hence Guide rather than the Trainers tab).
   var RENEGADE_ITEMS = [];
   var RENEGADE_TMS = [];
+  var RENEGADE_TIPS = [
+    { title: "Move Deleter — Oreburgh City",
+      body: "Found in Oreburgh City — visit if you need to forget an HM move or clear a move slot without waiting for a level-up relearn." }
+  ];
+  // Moves whose TYPE or EFFECT differs from vanilla Gen 4. Power/PP/
+  // accuracy changes are deliberately NOT listed: the Pokedex tab reads
+  // Renegade's own move data, so it already shows the corrected numbers
+  // and a note would be redundant. These six are the cases where an
+  // outside vanilla reference (or memory of vanilla) actively misleads,
+  // which is the whole point of the section. Sourced from the MOVE
+  // CHANGES / MOVE MODIFICATIONS blocks of the EVOLUTiONTYPEMOVES sheet
+  // in the Renegade Platinum documentation workbook; the sheet writes
+  // "Strength:" with a stray trailing colon, corrected here.
+  var RENEGADE_CHANGED_MOVES = [
+    { title: "Cut",
+      body: "Type: Normal → Grass. Effect: none → high critical-hit ratio. Also Power 50 → 60, Accuracy 95% → 100%, PP 30 → 25." },
+    { title: "Rock Climb",
+      body: "Type: Normal → Rock. Also Power 90 → 80, Accuracy 85% → 95%, PP 20 → 10." },
+    { title: "Strength",
+      body: "Effect: none → may raise Attack (10%). Also Power 80 → 100." },
+    { title: "Hurricane",
+      body: "Effect: confusion (30%) → no effect. Dropped because the Gen 4 engine can't replicate it." },
+    { title: "Scald",
+      body: "Effect: burn (30%) + self-thaw + thaws a frozen target → burn (30%) + self-thaw only. The thaw-the-target half is a Gen 4 engine limitation." },
+    { title: "Draining Kiss",
+      body: "Recovery: 75% of damage dealt → 50%, a Gen 4 engine limitation. Also Power 50 → 75." }
+  ];
+
+  // The four in-game trades, all reworked in Renegade Platinum. Each
+  // traded Pokemon has a fixed nature, held item and IV spread, which is
+  // why they're worth more than a normal wild catch. The Pokemon you
+  // receive also appear in RENEGADE_GUIDE as a "Trade" encounter on the
+  // relevant location, so they can be logged like any other catch.
+  var RENEGADE_TRADES = [
+    { title: "Oreburgh City — give a Ponyta, receive Gaia the Spheal",
+      body: "Quiet nature, holding a Never-Melt Ice. IVs 31 HP / 31 Atk / 15 Def / 31 SpA / 15 SpD / 15 Spe." },
+    { title: "Floaroma Town — give a Cherubi, receive Spike the Skorupi",
+      body: "Jolly nature, holding a Poison Barb. IVs 15 HP / 31 Atk / 31 Def / 15 SpA / 15 SpD / 31 Spe. This is the trade that sat in Snowpoint City in vanilla." },
+    { title: "Eterna City — give a Snorunt, receive Macaw the Chatot",
+      body: "Modest nature, holding a Sharp Beak. IVs 15 HP / 15 Atk / 15 Def / 31 SpA / 31 SpD / 31 Spe." },
+    { title: "Route 226 — give a Magikarp, receive Foppa the Magikarp",
+      body: "Adamant nature, holding a Starf Berry, and flawless 31s across all six stats. Late-game location, listed here for completeness." }
+  ];
+
   var RENEGADE_GIFTS = [
     { title: "Kanto Starters — Reporter Kayla (Jubilife City Pokémon Center)",
       body: "Answer her yes/no quiz correctly, then beat her Lv5 Bulbasaur/Charmander/Squirtle team — she gifts you all three Kanto starters." },
@@ -4298,6 +4487,9 @@
       // extracted for it yet; add one later the same way if it turns out
       // useful for a rebalance romhack where EV yields may differ.
       guideSections: [
+        { key: "tips", label: "Tips", type: "cards", data: RENEGADE_TIPS },
+        { key: "changedmoves", label: "Changed Moves", type: "cards", data: RENEGADE_CHANGED_MOVES },
+        { key: "trades", label: "Trades", type: "cards", data: RENEGADE_TRADES },
         { key: "items", label: "Items", type: "cards", data: RENEGADE_ITEMS },
         { key: "tms", label: "TMs", type: "cards", data: RENEGADE_TMS },
         { key: "gifts", label: "Gifts/Events", type: "cards", data: RENEGADE_GIFTS }
@@ -4626,6 +4818,20 @@
   wireFilterBox("checklistFilter", "checklistFilterClear", renderChecklist);
   wireFilterBox("bossesFilter", "bossesFilterClear", renderBosses);
   wireFilterBox("trainersFilter", "trainersFilterClear", renderTrainers);
+  // Pokédex's filter box only ever needs to re-run the list-building half
+  // of the render (renderPokedexList), not the full four-panel
+  // renderPokedex() — the bundle is already loaded by the time the filter
+  // box is even visible (it lives inside #pokedexBody), and routing
+  // through renderPokedex() on every keystroke would re-check
+  // window.RPCalc and re-branch for nothing.
+  wireFilterBox("pokedexFilter", "pokedexFilterClear", renderPokedexList);
+
+  document.getElementById("calcLoadRetry").addEventListener("click", function(){
+    renderCalculator();   // calcBundlePromise was already cleared on failure
+  });
+  document.getElementById("pokedexLoadRetry").addEventListener("click", function(){
+    renderPokedex();   // calcBundlePromise was already cleared on failure
+  });
 
   function populateGameSelect(){
     var sel = document.getElementById("gameSelect");
@@ -4646,6 +4852,8 @@
     // and the "Load from Route Log" picker would keep showing the
     // previous game's state until the next tab click.
     renderCalculator();
+    renderPokedex();   // same reasoning — the Pokédex panel is also static
+    scheduleBackgroundCalcLoad();
   });
 
   document.getElementById("rulesRow").addEventListener("change", function(e){
@@ -4677,6 +4885,14 @@
       "..1.........","..1.........","11111.11111.","..1.........",
       "..1.........","............","1...1...1...",".1.1........",
       "..1...11111.",".1.1........","1...1...1...","............"],
+    pokedex: [           // handheld gadget: screen over two buttons —
+                         // a Pokédex-style device rather than the old
+                         // pokéball, which read as an unidentifiable
+                         // blob at tab-icon size next to the similarly
+                         // round bosses/checklist icons
+      "..111111....",".1........1.",".1.111111.1.",".1.1....1.1.",
+      ".1.1....1.1.",".1.111111.1.",".1........1.",".1...11...1.",
+      ".1........1.",".1........1.",".1111111111.","............"],
     guide: [             // magnifying lens
       "...11111....","..1.....1...",".1.......1..",".1.......1..",
       ".1.......1..","..1.....1...","...11111....","......11....",
@@ -4722,9 +4938,11 @@
       document.getElementById("panel-bosses").style.display = which === "bosses" ? "" : "none";
       document.getElementById("panel-trainers").style.display = which === "trainers" ? "" : "none";
       document.getElementById("panel-calculator").style.display = which === "calculator" ? "" : "none";
+      document.getElementById("panel-pokedex").style.display = which === "pokedex" ? "" : "none";
       document.getElementById("panel-guide").style.display = which === "guide" ? "" : "none";
       document.getElementById("panel-graveyard").style.display = which === "graveyard" ? "" : "none";
       if(which === "calculator") renderCalculator();
+      if(which === "pokedex") renderPokedex();
     });
   });
 
@@ -4739,11 +4957,6 @@
 
   function renderChecklist(){
     var game = currentGame();
-    var note = document.getElementById("checklistNote");
-    var coverage = game.guideComplete
-      ? "All " + game.guide.length + " " + game.shortLabel + " locations"
-      : game.guide.length + " " + game.shortLabel + " locations extracted so far — more added as later splits are done";
-    note.textContent = coverage + ", grouped by method. A badge shows level, or rod tier (O/G/S) and, when a species isn't available all day, time of day (M/D/N). Tap to log a catch — tap again to undo. A location can hold more than one catch (e.g. a gift plus a wild encounter). Logged locations auto-collapse; tap to reopen.";
 
     var el = document.getElementById("checklistList");
     if(game.guide.length === 0){
@@ -4999,6 +5212,18 @@
     return false;
   }
 
+  // Like nameLocMonsMatch, but ORs in a match against the section's own
+  // heading first — so typing e.g. "barry"/"rival" or "galactic" surfaces
+  // every entry in that section even though the trainer's own name never
+  // appears in any per-entry field (a rival entry's `stage` is a route
+  // name, not "Barry"). Section headings here are either fixed literals
+  // ("Elite Four") or per-game labels off `currentGame()` (rivalLabel,
+  // otherBattlesLabel, evilTeamLabel).
+  function bossSectionMatch(q, sectionLabel, name, location, mons){
+    if(q && sectionLabel && sectionLabel.toLowerCase().indexOf(q) !== -1) return true;
+    return nameLocMonsMatch(q, name, location, mons);
+  }
+
   function renderBosses(){
     var el = document.getElementById("bossesList");
     var game = currentGame();
@@ -5008,7 +5233,7 @@
     var q = filterInput ? filterInput.value.trim().toLowerCase() : "";
 
     if(bosses.gymLeaders && bosses.gymLeaders.length){
-      var gymLeaders = bosses.gymLeaders.filter(function(b){ return nameLocMonsMatch(q, b.name, b.location, b.mons); });
+      var gymLeaders = bosses.gymLeaders.filter(function(b){ return bossSectionMatch(q, "Gym Leaders & Level Caps", b.name, b.location, b.mons); });
       if(gymLeaders.length){
         html += '<div class="boss-section-title">Gym Leaders &amp; Level Caps</div>';
         gymLeaders.forEach(function(b){
@@ -5022,7 +5247,7 @@
     }
 
     if(bosses.eliteFour && bosses.eliteFour.length){
-      var eliteFour = bosses.eliteFour.filter(function(b){ return nameLocMonsMatch(q, b.name, null, b.mons); });
+      var eliteFour = bosses.eliteFour.filter(function(b){ return bossSectionMatch(q, "Elite Four", b.name, null, b.mons); });
       if(eliteFour.length){
         html += '<div class="boss-section-title">Elite Four</div>';
         eliteFour.forEach(function(b){
@@ -5034,7 +5259,7 @@
       }
     }
 
-    if(bosses.champion && bosses.champion.name && nameLocMonsMatch(q, bosses.champion.name, bosses.champion.location, bosses.champion.mons)){
+    if(bosses.champion && bosses.champion.name && bossSectionMatch(q, "Champion", bosses.champion.name, bosses.champion.location, bosses.champion.mons)){
       html += '<div class="boss-section-title">Champion</div>';
       (function(){
         var c = bosses.champion;
@@ -5047,7 +5272,7 @@
     }
 
     if(bosses.rival && bosses.rival.length){
-      var rival = bosses.rival.filter(function(b){ return nameLocMonsMatch(q, b.stage, b.location, b.mons); });
+      var rival = bosses.rival.filter(function(b){ return bossSectionMatch(q, game.rivalLabel, b.stage, b.location, b.mons); });
       if(rival.length){
         html += '<div class="boss-section-title">'+escapeHTML(game.rivalLabel)+'</div>';
         rival.forEach(function(b){
@@ -5060,7 +5285,7 @@
     }
 
     if(bosses.otherBattles && bosses.otherBattles.length){
-      var otherBattles = bosses.otherBattles.filter(function(b){ return nameLocMonsMatch(q, b.name, b.location, b.mons); });
+      var otherBattles = bosses.otherBattles.filter(function(b){ return bossSectionMatch(q, game.otherBattlesLabel, b.name, b.location, b.mons); });
       if(otherBattles.length){
         html += '<div class="boss-section-title">'+escapeHTML(game.otherBattlesLabel)+'</div>';
         otherBattles.forEach(function(b){
@@ -5073,7 +5298,7 @@
     }
 
     if(bosses.evilTeam && bosses.evilTeam.length){
-      var evilTeam = bosses.evilTeam.filter(function(b){ return nameLocMonsMatch(q, b.name, b.location, b.mons); });
+      var evilTeam = bosses.evilTeam.filter(function(b){ return bossSectionMatch(q, game.evilTeamLabel, b.name, b.location, b.mons); });
       if(evilTeam.length){
         html += '<div class="boss-section-title">'+escapeHTML(game.evilTeamLabel)+'</div>';
         evilTeam.forEach(function(b){
@@ -5096,17 +5321,13 @@
 
   function renderTrainers(){
     var el = document.getElementById("trainersList");
-    var note = document.getElementById("trainersNote");
     var game = currentGame();
     var groups = game.trainerFights || [];
 
     if(!groups.length){
-      note.textContent = "";
       el.innerHTML = '<div class="empty">No trainer fight data loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
       return;
     }
-
-    note.textContent = "Regular route and gym trainer battles, split by story checkpoint. Rival, gym leader, and evil-team fights live in the Bosses tab instead.";
 
     var run = currentRun();
     var filterInput = document.getElementById("trainersFilter");
@@ -5284,6 +5505,134 @@
     });
   }
 
+  // ---------- lazy-loading the vendored calc/ engine bundle ----------
+  // See the big comment where the <script src> tags used to live (just
+  // above the app's own <script> block) for the "why" — this replaces
+  // 30 blocking script tags (one of them, rp-data.js, ~4.9MB) with an
+  // on-demand loader. calcBundlePromise is the idempotent/shared-load
+  // guard: the first caller kicks off the load, every other caller
+  // (concurrent or later) gets the SAME promise back rather than
+  // re-fetching or re-executing anything. Anything touching window.calc,
+  // window.RPCalc, or window.RP_BACKUP_DATA — renderCalculator(),
+  // calcInitOnce(), loadTeamIntoCalculator(), and (planned next) a
+  // Pokédex tab reading RP_BACKUP_DATA.poks — must go through
+  // loadCalcBundle().then(...) rather than assuming any of that is
+  // already loaded.
+  var calcBundlePromise = null;
+
+  // Exact same 30 files, exact same order, as the old static <script>
+  // tags — load order among the engine files matters (later files read
+  // what earlier ones defined on the shared `exports` object), see
+  // rp-adapter.js's own top comment before ever reordering this list.
+  var CALC_BUNDLE_FILES = [
+    "./calc/util.js",
+    "./calc/stats.js",
+    "./calc/data/types.js",
+    "./calc/data/natures.js",
+    "./calc/data/abilities.js",
+    "./calc/data/moves.js",
+    "./calc/data/items.js",
+    "./calc/move.js",
+    "./calc/pokemon.js",
+    "./calc/field.js",
+    "./calc/items.js",
+    "./calc/mechanics/util.js",
+    "./calc/mechanics/boostModifiers.js",
+    "./calc/mechanics/romhacks/helpers.js",
+    "./calc/mechanics/romhacks/profiles/cascade-white.js",
+    "./calc/mechanics/romhacks/profiles/little-emerald.js",
+    "./calc/mechanics/romhacks/profiles/platinum-kaizo.js",
+    "./calc/mechanics/romhacks/profiles/platinum-redux.js",
+    "./calc/mechanics/romhacks/index.js",
+    "./calc/mechanics/gen789.js",
+    "./calc/mechanics/vanilla/gen789.js",
+    "./calc/mechanics/gen56.js",
+    "./calc/mechanics/gen4.js",
+    "./calc/mechanics/gen3.js",
+    "./calc/mechanics/gen12.js",
+    "./calc/calc.js",
+    "./calc/desc.js",
+    "./calc/result.js",
+    "./calc/rp-data.js",
+    "./calc/rp-adapter.js"
+  ];
+
+  function loadCalcBundle(){
+    if(calcBundlePromise) return calcBundlePromise;   // idempotent/shared
+
+    // Same require()/exports shim that used to sit in a static <script>
+    // block above the (now-removed) <script src> tags — see that spot's
+    // comment for why require() ignores its argument and always returns
+    // the same object, and why calc/adaptable.js + calc/index.js are
+    // deliberately not vendored.
+    var calc = window.calc = window.exports = {};
+    window.require = function(){ return window.exports; };
+
+    calcBundlePromise = new Promise(function(resolve, reject){
+      var remaining = CALC_BUNDLE_FILES.length;
+      var failed = false;
+      CALC_BUNDLE_FILES.forEach(function(src){
+        var s = document.createElement("script");
+        s.src = src;
+        // async=false on a set of dynamically-created scripts preserves
+        // *execution* order (document order) even though the browser is
+        // free to fetch them in parallel — this is the standard way to
+        // get "classic scripts, but in order" without turning 30 fetches
+        // into 30 serial round trips. Correctness here depends on that
+        // ordering exactly the same way the old static tags did.
+        s.async = false;
+        s.onload = function(){
+          remaining--;
+          if(remaining === 0 && !failed) resolve();
+        };
+        s.onerror = function(){
+          if(failed) return;
+          failed = true;
+          reject(new Error("Failed to load " + src));
+        };
+        document.head.appendChild(s);
+      });
+    });
+    return calcBundlePromise;
+  }
+
+  // Kicks off loadCalcBundle() in the background, off the critical
+  // rendering path, so the "Simulate Team" button on Bosses/Trainers
+  // (monSimButtonHTML, gated on window.RPCalc already existing) shows up
+  // shortly after launch without the user having to open the Calc tab
+  // first — without this, a Renegade Platinum run would render Bosses/
+  // Trainers once at startup with every Simulate button silently missing
+  // until the Calc tab happened to be opened. Deliberately NOT run for
+  // Emerald saves (the calc engine has no Emerald data — see CLAUDE.md —
+  // so there's nothing for it to unlock there). Idempotent via
+  // loadCalcBundle()'s own shared promise, so calling this more than
+  // once (init + every game-switch into Renegade) is harmless.
+  function scheduleBackgroundCalcLoad(){
+    if(state.selectedGame !== "renegade") return;
+    if(typeof window.RPCalc !== "undefined") return;   // already loaded
+    var run = function(){
+      loadCalcBundle().then(function(){
+        // Only Bosses/Trainers render Simulate buttons (monBlockHTML);
+        // re-render just those two rather than a full renderAll(). If
+        // the Calc tab is already open (e.g. the user tabbed there
+        // before this background load finished), refresh it too.
+        renderBosses();
+        renderTrainers();
+        var calcTab = document.querySelector('.tab[data-tab="calculator"]');
+        if(calcTab && calcTab.classList.contains("active")) renderCalculator();
+        var pokedexTab = document.querySelector('.tab[data-tab="pokedex"]');
+        if(pokedexTab && pokedexTab.classList.contains("active")) renderPokedex();
+      }).catch(function(err){
+        // Silent here on purpose — this is a background prefetch, not a
+        // user-initiated action. A real attempt (with a visible error)
+        // still happens if/when the user opens the Calc tab themselves.
+        console.warn("Background calc bundle prefetch failed", err);
+      });
+    };
+    if(typeof requestIdleCallback === "function") requestIdleCallback(run, { timeout: 3000 });
+    else setTimeout(run, 300);
+  }
+
   function calcInitOnce(){
     if(calcInitialized) return;
     calcInitialized = true;
@@ -5418,19 +5767,348 @@
     refreshComputedStats("Def");
   }
 
+  // Renders the Calc tab. Unlike most render*() functions this one is
+  // asynchronous under the hood — the vendored engine bundle may still
+  // need to be fetched (see loadCalcBundle()) — so it juggles four
+  // panels (#calcUnavailable / #calcLoading / #calcLoadError /
+  // #calcBody) instead of the usual two-state show/hide.
   function renderCalculator(){
     var unavailable = document.getElementById("calcUnavailable");
+    var loading = document.getElementById("calcLoading");
+    var loadError = document.getElementById("calcLoadError");
     var body = document.getElementById("calcBody");
-    if(state.selectedGame !== "renegade" || typeof window.RPCalc === "undefined"){
+
+    if(state.selectedGame !== "renegade"){
       unavailable.style.display = "";
+      loading.style.display = "none";
+      loadError.style.display = "none";
       body.style.display = "none";
       return;
     }
+
+    if(typeof window.RPCalc !== "undefined"){
+      // Already loaded (either a prior visit to this tab, or the
+      // background idle-load kicked off at startup already finished) —
+      // show the real calculator immediately, no loading flash.
+      unavailable.style.display = "none";
+      loading.style.display = "none";
+      loadError.style.display = "none";
+      body.style.display = "";
+      calcInitOnce();
+      populateRouteLogPicker("Atk");
+      populateRouteLogPicker("Def");
+      return;
+    }
+
     unavailable.style.display = "none";
-    body.style.display = "";
-    calcInitOnce();
-    populateRouteLogPicker("Atk");
-    populateRouteLogPicker("Def");
+    loadError.style.display = "none";
+    body.style.display = "none";
+    loading.style.display = "";
+    loadCalcBundle().then(function(){
+      // The user may have switched away from Renegade (or off this tab)
+      // while the bundle was still loading — re-run renderCalculator()
+      // rather than assuming the panels we hid above are still the ones
+      // that should show.
+      renderCalculator();
+    }).catch(function(err){
+      console.warn("Calc bundle failed to load", err);
+      calcBundlePromise = null;   // allow Retry to actually try again
+      loading.style.display = "none";
+      loadError.style.display = "";
+    });
+  }
+
+  // ---------- Pokédex tab (Renegade Platinum only) ----------
+  // Reads window.RP_BACKUP_DATA.poks/.moves from the same lazily-loaded
+  // calc/ bundle the Calc tab uses — see loadCalcBundle()'s big comment.
+  // Real per-entry shapes (verified against nuzlocke-pwa/calc/rp-data.js
+  // directly, not assumed):
+  //   poks[name] = {
+  //     bs: {hp,at,df,sa,sd,sp},         <- short keys, NOT atk/def/spa/...
+  //     types: ["Fire"] or ["Grass","Poison"],   <- 1 or 2 entries
+  //     abilities: {"0":"...", "1":"..."},       <- OBJECT keyed by index,
+  //                                                  string, not an array;
+  //                                                  count varies (0-2 seen)
+  //     learnset_info: { learnset: [[level,"MoveName"], ...], tms: [...] }
+  //   }
+  //   moves[name] = { basePower, pp, acc, type, category, priority, e_id }
+  // "Egg"/"Bad Egg" are non-species placeholder entries in `poks` (base
+  // 10/10/10/10/10/10, Normal, only move Splash) — filtered out below,
+  // they're not real Pokémon and would be pure noise in a species list.
+
+  // Cached once per bundle load rather than recomputed on every keystroke
+  // of the filter box — Object.keys+filter+sort over 507 entries is cheap
+  // once, but doing it on every "input" event was measurable jank (see
+  // CLAUDE.md/session notes on the render-timing pass for this tab).
+  var pokedexSpeciesList = null;
+  function getPokedexSpeciesList(){
+    if(pokedexSpeciesList) return pokedexSpeciesList;
+    var poks = window.RP_BACKUP_DATA.poks;
+    pokedexSpeciesList = Object.keys(poks).filter(function(n){
+      return n !== "Egg" && n !== "Bad Egg";
+    }).sort();
+    return pokedexSpeciesList;
+  }
+
+  // Which species rows are expanded. Deliberately NOT part of `state`/
+  // localStorage/Export Backup, unlike collapsedRoutes/beatenBosses —
+  // those persist because "which routes/bosses are done" is meaningful
+  // run progress worth keeping across sessions. Which Pokédex entries
+  // happen to be expanded right now is not: it's browsing state for a
+  // 507-entry reference list, no different in kind from the filter-box
+  // text (also transient, see wireFilterBox's comment) or the Guide tab's
+  // activeGuideKey. Resets to all-collapsed on reload, which is the
+  // correct default for a list this size regardless of what was open
+  // before.
+  var pokedexExpanded = {};
+
+  function pokedexStatBarHTML(label, value){
+    // 255 is the practical ceiling for a single base stat across every
+    // mainline Pokémon (Blissey's HP) — used as the bar's 100% reference
+    // so bars are comparable across every species rather than each row
+    // scaling to its own max.
+    var pct = Math.max(2, Math.round((value / 255) * 100));
+    return (
+      '<div class="dex-stat-row">' +
+        '<div class="dex-stat-label">'+label+'</div>' +
+        '<div class="dex-stat-bar"><div class="dex-stat-bar-fill" style="width:'+pct+'%;"></div></div>' +
+        '<div class="dex-stat-val">'+value+'</div>' +
+      '</div>'
+    );
+  }
+
+  // Category is one of the most decision-relevant facts on a move (a
+  // physical Attacker cares about Atk/opposing Def, special about SpA/
+  // SpD, status about neither) so it gets a solid-fill chip rather than
+  // another small grey label — same "borrow an existing accent color"
+  // trick as .boss-beaten .boss-toggle (dark text on a bright fill).
+  // Only 3 categories exist and the theme only has 3 non-neutral accent
+  // tokens (--dead, --lcd, --gold), so each gets its own rather than
+  // introducing new hard-coded colors that wouldn't adapt between the
+  // Emerald/Renegade palettes (see the two `:root` blocks up top).
+  var CATEGORY_CLASS = { "Physical": "dex-cat-phys", "Special": "dex-cat-spec", "Status": "dex-cat-status" };
+
+  // moveName -> "makesContact" (true/false/undefined), sourced from the
+  // vanilla movedex the same way rp-adapter.js's own `target` merge
+  // works (see that file's "---- Moves ----" section) — rp.js's slim
+  // movedex has no contact flag at all, only the vendored vanilla dex
+  // does. Uses RPCalc.getMove() rather than re-deriving a second copy of
+  // that merge here: RPCalc.getMove(name).flags is already exactly
+  // `Object.assign({}, vanillaMove.flags)` when a vanilla match exists,
+  // and `{}` (so `.contact` reads undefined) when it doesn't — so a
+  // move present in rp.js but absent from (or spelled differently in,
+  // see "Vice Grip"/"Vise Grip" below) the vanilla dex degrades to
+  // undefined here rather than silently reporting "no contact" as if it
+  // were confirmed. Verified 2026: 466/470 rp.js moves resolve a vanilla
+  // match; the 4 that don't are "Vice Grip" (vanilla spells it "Vise
+  // Grip" — a genuine name mismatch, not a bug) and three unused
+  // "MOVE_468/469/470" placeholder entries.
+  function pokedexMoveContact(moveName){
+    var mv = window.RPCalc && window.RPCalc.getMove(moveName);
+    return !!(mv && mv.flags && mv.flags.contact);
+  }
+
+  // Renders one move as a two-line row: name/level/category on line 1
+  // (category gets full width to stay a real chip, not squeezed into a
+  // fixed grid column), type/power/PP/accuracy/contact as a fixed-width
+  // CSS grid on line 2 so those five columns line up vertically down
+  // the whole list — this is the fix for the reported "type labels
+  // squiggle across rows" bug, which was a flex `justify-content:
+  // space-between` (each side's width depended on its own content)
+  // rather than real columns. Chosen over cramming everything into one
+  // row because at a 375px mobile viewport (the primary target) there
+  // isn't room for name + 5 more columns on one line without truncating
+  // the name harder than a two-line layout requires — see CLAUDE.md
+  // dispatch notes for this task.
+  // `levelLabel` is "Lv N" for a learnset row, "" for a TM row (no level
+  // concept) — passed as "" rather than omitting the column so the type/
+  // power/PP/accuracy grid on line 2 starts at the same x position in
+  // both sections. `grouped` is true for a learnset row that shares its
+  // level with the row above it (see the level-grouping comment at the
+  // call site) — it suppresses the label and border so same-level moves
+  // read as one visual group instead of N identical-looking "Lv 5" rows.
+  function pokedexMoveRowHTML(moveName, levelLabel, grouped){
+    var mv = window.RP_BACKUP_DATA.moves[moveName];
+    if(!mv) return "";   // defensive only — verified 0/507 species reference an unknown move
+
+    var bp = mv.basePower ? mv.basePower + " BP" : "—";
+    // rp.js uses acc:0 to mean "never misses" (same convention
+    // rp-adapter.js's `raw.acc ? raw.acc : true` relies on) — rendering
+    // that as "0%" would be actively misleading, so it gets its own
+    // marker instead, distinct from the "—" used above for "no base
+    // power" (a status move genuinely has none; that's a different kind
+    // of absence than "this stat doesn't apply to accuracy at all").
+    var acc = mv.acc ? mv.acc + "%" : "∞";
+    var catClass = CATEGORY_CLASS[mv.category] || "";
+    var contactHtml = pokedexMoveContact(moveName) ? '<span class="dex-move-contact">Contact</span>' : "";
+
+    return (
+      '<div class="dex-move-row'+(grouped ? " dex-move-row-grouped" : "")+'">' +
+        '<div class="dex-move-line1">' +
+          (levelLabel ? '<span class="dex-move-lv">'+escapeHTML(levelLabel)+'</span>' : (grouped ? '<span class="dex-move-lv"></span>' : "")) +
+          '<span class="dex-move-name">'+escapeHTML(moveName)+'</span>' +
+          '<span class="dex-cat '+catClass+'">'+escapeHTML(mv.category || "?")+'</span>' +
+        '</div>' +
+        '<div class="dex-move-line2">' +
+          '<span class="dex-move-type">'+escapeHTML(mv.type)+'</span>' +
+          '<span class="dex-move-stat">'+bp+'</span>' +
+          '<span class="dex-move-stat">'+mv.pp+' PP</span>' +
+          '<span class="dex-move-stat">'+acc+'</span>' +
+          contactHtml +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function pokedexCardHTML(name){
+    var p = window.RP_BACKUP_DATA.poks[name];
+    var bs = p.bs;
+    var total = bs.hp + bs.at + bs.df + bs.sa + bs.sd + bs.sp;
+    var typesHtml = p.types.map(function(t){ return '<span class="dex-type">'+escapeHTML(t)+'</span>'; }).join("");
+    var expanded = !!pokedexExpanded[name];
+
+    var body = "";
+    if(expanded){
+      var abilities = p.abilities ? Object.keys(p.abilities).map(function(k){ return p.abilities[k]; }) : [];
+      var statsHtml =
+        pokedexStatBarHTML("HP", bs.hp) +
+        pokedexStatBarHTML("Atk", bs.at) +
+        pokedexStatBarHTML("Def", bs.df) +
+        pokedexStatBarHTML("SpA", bs.sa) +
+        pokedexStatBarHTML("SpD", bs.sd) +
+        pokedexStatBarHTML("Spe", bs.sp);
+
+      // Confirmed (see pokedexMoveRowHTML's dispatch-comment audit trail)
+      // that learnset_info.learnset is already level-ascending for all
+      // 507 species — no re-sort needed here. Consecutive same-level
+      // moves (e.g. every species' four-or-so level-1 moves) are grouped:
+      // only the first row of a level shows "Lv N", the rest share its
+      // visual group via the `grouped` flag instead of repeating an
+      // identical-looking label N times.
+      var learnset = (p.learnset_info && p.learnset_info.learnset) || [];
+      var learnsetHtml = learnset.map(function(pair, i){
+        var sameLevelAsPrev = i > 0 && learnset[i-1][0] === pair[0];
+        // Every row carries its own "Lv N" even when it repeats the row
+        // above. Grouping previously blanked the repeats, which read as
+        // a rendering bug rather than as grouping (Bulbasaur's Growl and
+        // Sleep Powder appeared to have no level at all). The grouped
+        // flag still suppresses the divider, so a level's moves stay
+        // visually clustered -- only the blank label is gone.
+        return pokedexMoveRowHTML(pair[1], "Lv " + pair[0], sameLevelAsPrev);
+      }).join("");
+
+      var tms = (p.learnset_info && p.learnset_info.tms) || [];
+      var tmsHtml = tms.length
+        ? tms.map(function(mv){ return pokedexMoveRowHTML(mv, "", false); }).join("")
+        : '<div class="dex-move-row-empty">No TMs learned</div>';
+
+      // Deliberately out of scope for this pass (see CLAUDE.md dispatch
+      // notes): a future "Move Tutor" section would slot in right here,
+      // as one more '<div class="dex-section-title">Move Tutor</div>' +
+      // its own pokedexMoveRowHTML rows, after TMs — learnset_info has
+      // no tutor data yet (only .learnset/.tms), that needs the
+      // spreadsheet. Move effect text/secondary-effect % (moves[].e_id
+      // has no description source yet) would live as one more line
+      // inside each move row's line1, next to the category chip.
+      body = (
+        '<div class="dex-body">' +
+          '<div class="dex-stats">'+statsHtml+'<div class="dex-stat-total">Total: '+total+'</div></div>' +
+          '<div class="dex-section-title">Abilities</div>' +
+          '<div class="dex-abilities">'+(abilities.length ? escapeHTML(abilities.join(" / ")) : "—")+'</div>' +
+          '<div class="dex-section-title">Level-up Learnset</div>' +
+          learnsetHtml +
+          '<div class="dex-section-title">TMs</div>' +
+          tmsHtml +
+        '</div>'
+      );
+    }
+
+    return (
+      '<div class="dex-card'+(expanded?" dex-expanded":"")+'">' +
+        '<div class="dex-top" data-act="toggle-pokedex" data-species="'+escapeHTML(name)+'">' +
+          '<div class="dex-name">'+escapeHTML(name)+'</div>' +
+          '<div class="dex-types">'+typesHtml+'</div>' +
+          '<div class="dex-total">'+total+'</div>' +
+        '</div>' +
+        body +
+      '</div>'
+    );
+  }
+
+  var ALL_TYPES = ["Normal","Fire","Water","Electric","Grass","Ice","Fighting","Poison",
+    "Ground","Flying","Psychic","Bug","Rock","Ghost","Dragon","Dark","Steel","Fairy"];
+
+  function renderPokedexList(){
+    var el = document.getElementById("pokedexList");
+    var filterInput = document.getElementById("pokedexFilter");
+    var q = filterInput ? filterInput.value.trim().toLowerCase() : "";
+
+    var names = getPokedexSpeciesList();
+    if(q){
+      // Dual-mode match, same idea as the Checklist filter box: a species
+      // NAME match is the common case, but typing a type name (e.g.
+      // "fire") is a natural, cheap-to-support bonus — checked as an
+      // exact match against that species' own types rather than a
+      // substring, so "fir" doesn't spuriously match nothing while "ice"
+      // doesn't also match "Iceberg" (not a real name here, but the
+      // principle holds) via substring-on-name collisions.
+      var poks = window.RP_BACKUP_DATA.poks;
+      var qIsType = ALL_TYPES.some(function(t){ return t.toLowerCase() === q; });
+      names = names.filter(function(n){
+        if(n.toLowerCase().indexOf(q) !== -1) return true;
+        if(qIsType) return poks[n].types.some(function(t){ return t.toLowerCase() === q; });
+        return false;
+      });
+    }
+
+    el.innerHTML = names.length
+      ? names.map(pokedexCardHTML).join("")
+      : '<div class="empty">No species match "' + escapeHTML(filterInput ? filterInput.value.trim() : "") + '".</div>';
+  }
+
+  // Same four-panel-state pattern as renderCalculator() (see that
+  // function's comment) — the Pokédex reads the identical lazily-loaded
+  // bundle, so it needs the identical unavailable/loading/error/body
+  // states rather than assuming the data is already there.
+  function renderPokedex(){
+    var unavailable = document.getElementById("pokedexUnavailable");
+    var loading = document.getElementById("pokedexLoading");
+    var loadError = document.getElementById("pokedexLoadError");
+    var body = document.getElementById("pokedexBody");
+
+    if(state.selectedGame !== "renegade"){
+      unavailable.style.display = "";
+      loading.style.display = "none";
+      loadError.style.display = "none";
+      body.style.display = "none";
+      return;
+    }
+
+    if(typeof window.RPCalc !== "undefined"){
+      // Already loaded (Calc tab visited first, or the background idle
+      // load already finished) — show the real Pokédex immediately.
+      unavailable.style.display = "none";
+      loading.style.display = "none";
+      loadError.style.display = "none";
+      body.style.display = "";
+      renderPokedexList();
+      return;
+    }
+
+    unavailable.style.display = "none";
+    loadError.style.display = "none";
+    body.style.display = "none";
+    loading.style.display = "";
+    loadCalcBundle().then(function(){
+      // Same reasoning as renderCalculator()'s equivalent .then() — the
+      // user may have navigated away while this was loading.
+      renderPokedex();
+    }).catch(function(err){
+      console.warn("Calc bundle failed to load (Pokédex)", err);
+      calcBundlePromise = null;   // allow Retry to actually try again
+      loading.style.display = "none";
+      loadError.style.display = "";
+    });
   }
 
   // ---------- "Load from Route Log" quick-fill ----------
@@ -5840,6 +6518,13 @@
       return;
     }
 
+    if(act === "toggle-pokedex"){
+      var speciesKey = btn.getAttribute("data-species");
+      pokedexExpanded[speciesKey] = !pokedexExpanded[speciesKey];
+      renderPokedexList();   // transient UI state — not save()'d, see pokedexExpanded's comment
+      return;
+    }
+
     if(act === "toggle-collapse-split"){
       var splitKey = btn.getAttribute("data-split");
       currentRun().collapsedSplits[splitKey] = !currentRun().collapsedSplits[splitKey];
@@ -5872,6 +6557,7 @@
       document.getElementById("panel-bosses").style.display = "none";
       document.getElementById("panel-trainers").style.display = "none";
       document.getElementById("panel-calculator").style.display = "";
+      document.getElementById("panel-pokedex").style.display = "none";
       document.getElementById("panel-guide").style.display = "none";
       document.getElementById("panel-graveyard").style.display = "none";
       renderCalculator();
@@ -6010,6 +6696,10 @@
   state = load();
   populateGameSelect();
   renderAll();
+  // Fire-and-forget: see scheduleBackgroundCalcLoad()'s own comment for
+  // why this is deferred (not blocking) and why it only applies to
+  // Renegade Platinum saves.
+  scheduleBackgroundCalcLoad();
 })();
 
 if("serviceWorker" in navigator){
