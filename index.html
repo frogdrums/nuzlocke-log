@@ -4826,12 +4826,12 @@
   // window.RPCalc and re-branch for nothing.
   wireFilterBox("pokedexFilter", "pokedexFilterClear", renderPokedexList);
 
-  document.getElementById("calcLoadRetry").addEventListener("click", function(){
-    renderCalculator();   // calcBundlePromise was already cleared on failure
-  });
-  document.getElementById("pokedexLoadRetry").addEventListener("click", function(){
-    renderPokedex();   // calcBundlePromise was already cleared on failure
-  });
+  // Retry reloads the page rather than re-running the loader: see
+  // calcBundleFailed's comment near loadCalcBundle() for why a failed
+  // load cannot be repaired in place without re-executing engine files.
+  function retryCalcBundle(){ location.reload(); }
+  document.getElementById("calcLoadRetry").addEventListener("click", retryCalcBundle);
+  document.getElementById("pokedexLoadRetry").addEventListener("click", retryCalcBundle);
 
   function populateGameSelect(){
     var sel = document.getElementById("gameSelect");
@@ -5557,21 +5557,56 @@
     "./calc/rp-adapter.js"
   ];
 
+  // Set to true once the 30 scripts have been injected ONCE. The engine
+  // files are CommonJS-style: each one piles its exports onto the shared
+  // window.exports object and several of them capture references to
+  // objects defined by earlier files at their own top level. Executing
+  // any of them a second time against a FRESH exports object therefore
+  // leaves a half-old/half-new engine whose parts no longer point at
+  // each other, which surfaces later as TypeErrors deep inside the
+  // calculator rather than as a load failure. So: inject at most once
+  // per page, ever. A retry after a failed load re-fetches only the
+  // scripts that never made it into the document, and the shim object is
+  // never rebuilt. (Before 2026-09-10 a retry re-injected all 30 over a
+  // brand-new shim — that is the corruption path this guards.)
+  var calcShimInstalled = false;
+  var calcScriptsInjected = {};
+  // Once a load has failed, this page can never recover in place. When a
+  // script 404s or its fetch dies, the scripts queued after it still run
+  // (that is how ordered dynamic scripts behave), so the engine is left
+  // half-built — and rebuilding it would mean re-executing files, which
+  // is exactly the corruption described above. The only clean recovery
+  // is a fresh document, so the Retry buttons reload the page.
+  var calcBundleFailed = false;
+
   function loadCalcBundle(){
+    if(calcBundleFailed){
+      return Promise.reject(new Error("Calc bundle load already failed on this page"));
+    }
     if(calcBundlePromise) return calcBundlePromise;   // idempotent/shared
 
     // Same require()/exports shim that used to sit in a static <script>
     // block above the (now-removed) <script src> tags — see that spot's
     // comment for why require() ignores its argument and always returns
     // the same object, and why calc/adaptable.js + calc/index.js are
-    // deliberately not vendored.
-    var calc = window.calc = window.exports = {};
-    window.require = function(){ return window.exports; };
+    // deliberately not vendored. Installed once and never replaced, per
+    // the comment above.
+    if(!calcShimInstalled){
+      calcShimInstalled = true;
+      window.calc = window.exports = {};
+      window.require = function(){ return window.exports; };
+    }
 
     calcBundlePromise = new Promise(function(resolve, reject){
-      var remaining = CALC_BUNDLE_FILES.length;
+      var pending = CALC_BUNDLE_FILES.filter(function(src){
+        return !calcScriptsInjected[src];
+      });
+      if(pending.length === 0){ resolve(); return; }
+
+      var remaining = pending.length;
       var failed = false;
-      CALC_BUNDLE_FILES.forEach(function(src){
+      pending.forEach(function(src){
+        calcScriptsInjected[src] = true;
         var s = document.createElement("script");
         s.src = src;
         // async=false on a set of dynamically-created scripts preserves
@@ -5583,15 +5618,38 @@
         s.async = false;
         s.onload = function(){
           remaining--;
-          if(remaining === 0 && !failed) resolve();
+          if(remaining === 0 && !failed) settle();
         };
         s.onerror = function(){
+          // A script that 404s or whose fetch fails never runs, so it is
+          // not really "injected" — clear the flag so a retry fetches it
+          // again. Everything that DID run stays flagged and is not
+          // re-executed.
+          calcScriptsInjected[src] = false;
           if(failed) return;
           failed = true;
+          calcBundleFailed = true;
           reject(new Error("Failed to load " + src));
         };
         document.head.appendChild(s);
       });
+
+      // onload fires even when a script THROWS while executing, so "all
+      // 30 loaded" is not the same as "the engine is usable". Every
+      // caller gates on window.RPCalc, which rp-adapter.js (the last
+      // file) defines, so check for it here and reject if it is missing.
+      // Without this the callers' .then() re-entered their own render
+      // function, found RPCalc still undefined, got this same
+      // already-resolved promise back and re-entered again — an infinite
+      // microtask loop that locks up (and on iOS gets the tab killed).
+      function settle(){
+        if(typeof window.RPCalc === "undefined"){
+          calcBundleFailed = true;
+          reject(new Error("Calc bundle loaded but window.RPCalc is missing"));
+          return;
+        }
+        resolve();
+      }
     });
     return calcBundlePromise;
   }
@@ -5812,7 +5870,6 @@
       renderCalculator();
     }).catch(function(err){
       console.warn("Calc bundle failed to load", err);
-      calcBundlePromise = null;   // allow Retry to actually try again
       loading.style.display = "none";
       loadError.style.display = "";
     });
@@ -6105,7 +6162,6 @@
       renderPokedex();
     }).catch(function(err){
       console.warn("Calc bundle failed to load (Pokédex)", err);
-      calcBundlePromise = null;   // allow Retry to actually try again
       loading.style.display = "none";
       loadError.style.display = "";
     });

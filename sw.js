@@ -1,4 +1,4 @@
-var CACHE_NAME = "nuzlocke-log-v14";
+var CACHE_NAME = "nuzlocke-log-v15";
 var PRECACHE = [
   "./",
   "./index.html",
@@ -90,14 +90,25 @@ self.addEventListener("fetch", function(event){
     // network response (if any) still updates the cache for next time.
     event.respondWith(
       caches.match(event.request).then(function(cached){
-        var networkFetch = fetch(event.request).then(function(response){
+        // A cache hit is served as-is and NOTHING is re-fetched. These
+        // files only ever change alongside a CACHE_NAME bump, which
+        // re-precaches all of them on activate, so a background
+        // revalidate could never find anything new — it only re-downloaded
+        // the whole bundle (~4.9MB of it in rp-data.js alone) on every
+        // launch, which is the opposite of what this branch is for.
+        if(cached) return cached;
+        return fetch(event.request).then(function(response){
           if(response && response.status === 200){
             var copy = response.clone();
             caches.open(CACHE_NAME).then(function(cache){ cache.put(event.request, copy); });
           }
           return response;
-        }).catch(function(){ return null; });
-        return cached || networkFetch;
+        });
+        // Deliberately no .catch() returning null here: respondWith(null)
+        // makes the request fail as a network error, which the page sees
+        // as a script that failed to load. Letting the rejection through
+        // produces the same failure but with a real error, and the page's
+        // own retry path handles it.
       })
     );
     return;
