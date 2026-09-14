@@ -479,6 +479,57 @@
   .calc-team-chips{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom: 9px; }
   .calc-team-chips .chip.active{ background: var(--lcd-dim); border-color: var(--lcd); color: #0d1712; font-weight:700; }
 
+  /* ---------- save-file import (Calc tab) ----------
+     Sits above the calculator grid. Collapsed to a one-line summary plus a
+     party chip row once a save is loaded, so importing 20 Pokemon doesn't
+     push the calculator itself off the bottom of a phone screen. Tapping a
+     chip expands ONE detail card below the rows — deliberately one at a
+     time rather than a list of 20 expanded cards. */
+  .save-panel{
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 12px; margin-bottom: 12px;
+  }
+  .save-panel-head{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .save-summary{ font-size: 12.5px; color: var(--cream-dim); flex:1 1 auto; }
+  .save-warn{ font-size: 12px; color: var(--gold); margin-top: 6px; }
+  .save-group-title{
+    font-size: 11px; color: var(--cream-dim); text-transform:uppercase; letter-spacing:0.5px;
+    margin: 10px 0 4px;
+  }
+  .save-chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .save-chips .chip.active{ background: var(--lcd-dim); border-color: var(--lcd); color: #0d1712; font-weight:700; }
+  /* Flagged by the parser's validate() — see calc/gen4-save.js. Shown rather
+     than hidden: if these ever appear, it is far more likely a parser bug
+     than a genuinely corrupt save, and silently dropping the mon would hide
+     exactly the signal worth acting on. */
+  .save-chips .chip.suspect{ border-color: var(--gold); color: var(--gold); }
+  .save-detail{
+    margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line);
+  }
+  .save-detail-name{ font-size: 14px; color: var(--cream); margin-bottom: 2px; }
+  .save-detail-sub{ font-size: 12px; color: var(--cream-dim); margin-bottom: 8px; }
+  .save-detail-moves{ font-size: 12.5px; color: var(--cream-dim); margin-top: 6px; }
+  /* Read-only IV/EV display. Reuses .calc-stat-row's 6-column grid so the
+     columns line up with the editable rows in the calculator below. */
+  .save-stat-row{ display:grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 3px; }
+  .save-stat-row div{ display:flex; flex-direction:column; gap:1px; text-align:center; }
+  .save-stat-row label{ font-size: 9.5px; color: var(--cream-dim); text-transform:uppercase; }
+  .save-stat-row span{
+    font-size: 13px; font-family:'JetBrains Mono',monospace; color: var(--cream);
+    background: var(--bg); border:1px solid var(--line); border-radius:6px; padding: 3px 0;
+  }
+  .save-stat-row span.max{ color: var(--lcd); font-weight:700; }
+  .save-stat-row span.zero{ color: var(--cream-dim); opacity:0.5; }
+  .save-load-btns{ display:flex; gap:8px; margin-top: 10px; }
+  .save-load-btns button{ flex:1; }
+  .save-file-label{
+    display:inline-block; font-size: 13px; padding: 7px 12px; cursor:pointer;
+    background: var(--bg); border:1px solid var(--line); border-radius: 10px; color: var(--cream);
+    font-family:'JetBrains Mono',monospace;
+  }
+  .save-file-label:active{ transform: scale(0.98); }
+  .save-panel input[type="file"]{ display:none; }
+
   /* "Load from Route Log" quick-fill picker — a plain <select> (the
      tracked-mons list is realistically small, unlike the 507-species
      dex that justified attachTypeahead()) sitting above the Species
@@ -687,6 +738,23 @@
       <div id="calcLoading" class="empty" style="display:none;">Loading calculator…</div>
       <div id="calcLoadError" class="empty" style="display:none;">Couldn't load the calculator (network error). <button type="button" id="calcLoadRetry">Retry</button></div>
       <div id="calcBody" style="display:none;">
+        <!-- Save-file import. Static markup (not rebuilt by a render*()
+             call) for the same reason the filter boxes are — an <input>
+             inside a container whose innerHTML gets replaced loses its
+             value. Only #saveRosterBody below is re-rendered.
+             The parser (calc/gen4-save.js) is loaded on demand by
+             loadSaveParser(), separately from the engine bundle. -->
+        <div class="save-panel">
+          <div class="save-panel-head">
+            <label class="save-file-label" for="saveFileInput">📂 Import save file…</label>
+            <input type="file" id="saveFileInput" accept=".sav,.dsv,.dat,application/octet-stream">
+            <div class="save-summary" id="saveSummary">Load a .sav or .dsv to see your team's exact IVs and EVs.</div>
+            <button type="button" class="btn-ghost" id="saveClearBtn" style="display:none;">Clear</button>
+          </div>
+          <div class="save-warn" id="saveWarn" style="display:none;"></div>
+          <div id="saveRosterBody"></div>
+        </div>
+
         <div class="calc-grid">
           <div class="calc-mon-card">
             <div class="calc-mon-title">Attacker</div>
@@ -5695,6 +5763,11 @@
     if(calcInitialized) return;
     calcInitialized = true;
 
+    // Save-import panel. Lives inside #calcBody, which only becomes visible
+    // once the engine bundle has loaded, so by the time any of this is
+    // reachable window.RPCalc exists for the species-validation checks.
+    initSaveImport();
+
     attachTypeahead("calcAtkSpecies", "calcAtkSpeciesDD", function(){ return window.RPCalc.speciesNames; });
     attachTypeahead("calcDefSpecies", "calcDefSpeciesDD", function(){ return window.RPCalc.speciesNames; });
     attachTypeahead("calcAtkItem", "calcAtkItemDD", function(){ return window.RPCalc.itemNames; });
@@ -6455,6 +6528,346 @@
     applyMonToSide(t.team[idx], side);
   }
 
+  // ---------- save-file import ----------
+  // Reads a real .sav/.dsv and fills the calculator from the player's own
+  // Pokémon with their EXACT IVs and EVs. That is the whole point: EVs in
+  // particular are invisible in-game and can't be entered by hand, so a
+  // Simulate-style manual fill can never be right about them.
+  //
+  // The parser is calc/gen4-save.js, verified field-for-field against the
+  // Python reference decoder in tools/ (see tools/verify_js_parser.js — 763
+  // comparisons across 20 Pokémon). Do not "fix" the parser from in-browser
+  // observation alone; re-run that diff.
+
+  // Loaded on demand and INDEPENDENTLY of loadCalcBundle(). These two files
+  // are deliberately not in CALC_BUNDLE_FILES: they define plain globals and
+  // touch neither window.exports nor require(), so none of the once-only
+  // injection discipline the CommonJS engine files need applies to them.
+  var saveParserPromise = null;
+  var SAVE_PARSER_FILES = ["./calc/gen4-save-data.js", "./calc/gen4-save.js"];
+
+  function loadSaveParser(){
+    if(saveParserPromise) return saveParserPromise;
+    saveParserPromise = new Promise(function(resolve, reject){
+      var i = 0;
+      (function next(){
+        if(i >= SAVE_PARSER_FILES.length){
+          // A script's onload means "fetched and executed", NEVER "executed
+          // successfully" — a file that throws still fires onload. Gate on
+          // the global the callers actually need, or a failed parse shows up
+          // later as a confusing undefined rather than as a load error.
+          if(!window.Gen4Save || typeof window.Gen4Save.parse !== "function"){
+            reject(new Error("save parser loaded but window.Gen4Save is missing"));
+            return;
+          }
+          resolve(window.Gen4Save);
+          return;
+        }
+        var s = document.createElement("script");
+        s.src = SAVE_PARSER_FILES[i++];
+        s.async = false;
+        s.onload = next;
+        s.onerror = function(){
+          saveParserPromise = null;   // a retry may succeed; nothing is half-built
+          reject(new Error("failed to load " + s.src));
+        };
+        document.head.appendChild(s);
+      })();
+    });
+    return saveParserPromise;
+  }
+
+  // Parsed roster, persisted so an imported save survives a reload/relaunch
+  // (this is an offline PWA — re-picking the file every launch would be
+  // miserable). Deliberately its OWN localStorage key, outside state.runs:
+  // it isn't run progress, it's a cached read of an external file, and
+  // Export/Import backs up runs. Re-importing the .sav rebuilds it exactly.
+  var SAVE_ROSTER_KEY = "nuzlockeSaveRoster";
+  var saveRoster = null;                       // last parse result, or null
+  var saveSelected = null;                     // { group:"party"|"box", index:N }
+
+  function loadSaveRosterFromStorage(){
+    try{
+      var raw = localStorage.getItem(SAVE_ROSTER_KEY);
+      if(!raw) return null;
+      var parsed = JSON.parse(raw);
+      if(parsed && parsed.party && parsed.boxes) return parsed;
+    }catch(e){ /* corrupt or unavailable — treat as "no save imported" */ }
+    return null;
+  }
+
+  function persistSaveRoster(){
+    try{
+      if(saveRoster) localStorage.setItem(SAVE_ROSTER_KEY, JSON.stringify(saveRoster));
+      else localStorage.removeItem(SAVE_ROSTER_KEY);
+    }catch(e){ /* quota/private mode — the roster still works for this session */ }
+  }
+
+  // The save stores vanilla Gen 4 species names; the calculator looks species
+  // up in Renegade Platinum's own dex. 491 of 493 spellings match outright —
+  // these are the only two that don't, confirmed by cross-checking every
+  // Gen 4 dex ID against rp-data.js's keys. Anything else that fails to
+  // resolve is surfaced to the user, never silently swallowed.
+  var SAVE_SPECIES_ALIAS = {
+    "Farfetch’d": "Farfetch'd",   // save table uses a curly apostrophe
+    "Unown": "UNOWN"                    // RP keys this one in all caps
+  };
+
+  function saveSpeciesToDex(name){
+    if(!name) return name;
+    if(SAVE_SPECIES_ALIAS[name]) return SAVE_SPECIES_ALIAS[name];
+    return name;
+  }
+
+  function saveMonLabel(mon){
+    // Prefer the nickname the player actually gave it — that's how they think
+    // of the mon — but keep the species visible, since a nickname alone is
+    // useless for picking the right one out of a box.
+    var nick = (mon.isNicknamed && mon.nickname && mon.nickname.indexOf("�") === -1)
+      ? mon.nickname : "";
+    return nick ? (nick + " (" + mon.species + ")") : mon.species;
+  }
+
+  function saveStatRowHTML(stats, isIv){
+    return STAT_KEYS.map(function(key, i){
+      var v = stats && stats[key] !== undefined ? stats[key] : 0;
+      var cls = "";
+      if(isIv && v === 31) cls = " class=\"max\"";
+      else if(v === 0) cls = " class=\"zero\"";
+      return '<div><label>' + STAT_LABELS[i] + '</label><span' + cls + '>' + v + '</span></div>';
+    }).join("");
+  }
+
+  function saveMonByRef(ref){
+    if(!saveRoster || !ref) return null;
+    var list = ref.group === "party" ? saveRoster.party : saveRoster.boxes;
+    return list && list[ref.index] ? list[ref.index] : null;
+  }
+
+  function renderSaveRoster(){
+    var body = document.getElementById("saveRosterBody");
+    var summary = document.getElementById("saveSummary");
+    var clearBtn = document.getElementById("saveClearBtn");
+    var warn = document.getElementById("saveWarn");
+    if(!body) return;
+
+    if(!saveRoster){
+      body.innerHTML = "";
+      if(summary) summary.textContent = "Load a .sav or .dsv to see your team's exact IVs and EVs.";
+      if(clearBtn) clearBtn.style.display = "none";
+      if(warn) warn.style.display = "none";
+      return;
+    }
+
+    if(summary){
+      summary.textContent = saveRoster.party.length + " in party · " +
+        saveRoster.boxes.length + " in boxes";
+    }
+    if(clearBtn) clearBtn.style.display = "";
+
+    // Surface anything the parser flagged. See .save-chips .chip.suspect in
+    // the CSS for why these are shown rather than filtered out.
+    var suspect = saveRoster.party.concat(saveRoster.boxes).filter(function(m){
+      return m.problems && m.problems.length;
+    });
+    if(warn){
+      if(suspect.length){
+        warn.style.display = "";
+        warn.textContent = "⚠ " + suspect.length + " Pokémon didn't fully validate " +
+          "(" + suspect.map(function(m){ return m.species; }).join(", ") + "). " +
+          "They're marked below — this usually means a parser bug, not a bad save.";
+      } else {
+        warn.style.display = "none";
+      }
+    }
+
+    function chipsHTML(list, group){
+      return list.map(function(m, i){
+        var active = saveSelected && saveSelected.group === group && saveSelected.index === i;
+        var cls = "chip" + (active ? " active" : "") +
+                  (m.problems && m.problems.length ? " suspect" : "");
+        var lv = m.level ? (" Lv" + m.level) : "";
+        return '<button type="button" class="' + cls + '" data-act="save-pick" ' +
+               'data-group="' + group + '" data-idx="' + i + '">' +
+               escapeHTML(saveMonLabel(m)) + lv + '</button>';
+      }).join("");
+    }
+
+    var html = "";
+    if(saveRoster.party.length){
+      html += '<div class="save-group-title">Party</div>' +
+              '<div class="save-chips">' + chipsHTML(saveRoster.party, "party") + '</div>';
+    }
+    if(saveRoster.boxes.length){
+      html += '<div class="save-group-title">Boxes</div>' +
+              '<div class="save-chips">' + chipsHTML(saveRoster.boxes, "box") + '</div>';
+    }
+    html += '<div id="saveDetail"></div>';
+    body.innerHTML = html;
+    renderSaveDetail();
+  }
+
+  function renderSaveDetail(){
+    var el = document.getElementById("saveDetail");
+    if(!el) return;
+    var mon = saveMonByRef(saveSelected);
+    if(!mon){ el.innerHTML = ""; return; }
+
+    var dexName = saveSpeciesToDex(mon.species);
+    var known = !(window.RPCalc && !window.RPCalc.getSpecies(dexName));
+    var bits = [];
+    if(mon.level) bits.push("Lv " + mon.level);
+    bits.push(mon.nature);
+    if(mon.ability) bits.push(mon.ability);
+    if(mon.item && mon.item !== "None") bits.push(mon.item);
+    if(mon.box !== undefined) bits.push("Box " + (mon.box + 1));
+
+    var h = '<div class="save-detail">' +
+      '<div class="save-detail-name">' + escapeHTML(saveMonLabel(mon)) + '</div>' +
+      '<div class="save-detail-sub">' + escapeHTML(bits.join(" · ")) + '</div>' +
+      '<div class="calc-iv-ev-title">IVs</div>' +
+      '<div class="save-stat-row">' + saveStatRowHTML(mon.ivs, true) + '</div>' +
+      '<div class="calc-iv-ev-title">EVs</div>' +
+      '<div class="save-stat-row">' + saveStatRowHTML(mon.evs, false) + '</div>';
+
+    // The stats the GAME itself wrote into the save, shown for party mons
+    // (box Pokémon carry no stat block). Worth displaying because the
+    // calculator recomputes from IVs/EVs and can legitimately disagree by a
+    // point or two: Gen 4 only folds newly-gained EVs into a mon's displayed
+    // stats when it next levels up, so a mon that has battled since its last
+    // level shows pre-EV numbers in-game. Verified on the sample save — all
+    // 36 party stats reproduce from base+level+nature+IVs+EVs except one,
+    // and that one matches the EV-less figure exactly.
+    if(mon.stats){
+      h += '<div class="calc-iv-ev-title">Stats (as stored in the save)</div>' +
+           '<div class="save-stat-row">' + saveStatRowHTML(mon.stats, false) + '</div>';
+    }
+
+    if(mon.moves && mon.moves.length){
+      h += '<div class="save-detail-moves">' + escapeHTML(mon.moves.join(", ")) + '</div>';
+    }
+    if(mon.problems && mon.problems.length){
+      h += '<div class="save-warn">⚠ ' + escapeHTML(mon.problems.join("; ")) + '</div>';
+    }
+    if(!known){
+      h += '<div class="save-warn">⚠ "' + escapeHTML(mon.species) + '" isn\'t in the ' +
+           'Renegade Platinum dex, so this one can\'t be loaded into the calculator.</div>';
+    } else {
+      h += '<div class="save-load-btns">' +
+           '<button type="button" class="btn-ghost" data-act="save-load" data-side="Atk">→ Attacker</button>' +
+           '<button type="button" class="btn-ghost" data-act="save-load" data-side="Def">→ Defender</button>' +
+           '</div>';
+    }
+    h += '</div>';
+    el.innerHTML = h;
+  }
+
+  // Fill one side of the calculator from a save-imported mon.
+  //
+  // Unlike applyMonToSide() (the Simulate path, which pins exact stats via
+  // calcStatsOverride because trainer data gives stats but not EVs), this
+  // sets the real IVs and EVs and lets the engine compute the stats. That is
+  // strictly better: the numbers then respond correctly to a level change,
+  // and they're derived the same way the game derives them.
+  function applySaveMonToSide(mon, side){
+    calcInitOnce();
+    var dexName = saveSpeciesToDex(mon.species);
+    if(window.RPCalc && !window.RPCalc.getSpecies(dexName)) return false;
+
+    document.getElementById("calc" + side + "Species").value = dexName;
+    if(mon.level) document.getElementById("calc" + side + "Level").value = mon.level;
+
+    var natureSel = document.getElementById("calc" + side + "Nature");
+    if(natureSel && mon.nature) natureSel.value = mon.nature;
+
+    document.getElementById("calc" + side + "Item").value =
+      (mon.item && mon.item !== "None") ? mon.item : "";
+
+    // The save's ability name can miss RP's dex (a hack-flagged ability, or a
+    // species whose slot differs), in which case populateAbilitySelect falls
+    // back to the species' first ability — same tolerated behaviour as the
+    // Simulate path, and the field stays editable.
+    populateAbilitySelect(document.getElementById("calc" + side + "Ability"), dexName, mon.ability);
+
+    MOVE_SLOTS.forEach(function(i){
+      var el = document.getElementById("calc" + side + "Move" + i);
+      if(el) el.value = (mon.moves && mon.moves[i - 1]) || "";
+    });
+
+    STAT_KEYS.forEach(function(key){
+      var iv = document.getElementById("calc" + side + "Iv" + key);
+      var ev = document.getElementById("calc" + side + "Ev" + key);
+      if(iv) iv.value = (mon.ivs && mon.ivs[key] !== undefined) ? mon.ivs[key] : 31;
+      if(ev) ev.value = (mon.evs && mon.evs[key] !== undefined) ? mon.evs[key] : 0;
+    });
+
+    // Real IVs/EVs supersede any pinned stat block, and the team chip row
+    // belongs to the Simulate flow — leaving either in place would make the
+    // side show numbers that no longer match its own fields.
+    calcStatsOverride[side] = null;
+    calcTeamState[side] = null;
+    renderTeamChips(side);
+    refreshComputedStats(side);
+    return true;
+  }
+
+  function handleSaveFile(file){
+    var summary = document.getElementById("saveSummary");
+    if(!file) return;
+    if(summary) summary.textContent = "Reading " + file.name + "…";
+
+    var reader = new FileReader();
+    reader.onerror = function(){
+      if(summary) summary.textContent = "Couldn't read that file.";
+    };
+    reader.onload = function(){
+      loadSaveParser().then(function(parser){
+        var result = parser.parse(reader.result);
+        saveRoster = {
+          party: result.party,
+          boxes: result.boxes,
+          container: result.container,
+          importedAt: Date.now(),
+          fileName: file.name
+        };
+        saveSelected = result.party.length ? { group: "party", index: 0 } : null;
+        persistSaveRoster();
+        renderSaveRoster();
+      }).catch(function(err){
+        if(summary){
+          summary.textContent = "Couldn't read that save: " + (err && err.message ? err.message : err);
+        }
+      });
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function initSaveImport(){
+    var input = document.getElementById("saveFileInput");
+    if(input){
+      input.addEventListener("change", function(){
+        if(this.files && this.files[0]) handleSaveFile(this.files[0]);
+        // Reset so re-picking the SAME file still fires a change event —
+        // otherwise a re-import after saving in-game silently does nothing.
+        this.value = "";
+      });
+    }
+    var clearBtn = document.getElementById("saveClearBtn");
+    if(clearBtn){
+      clearBtn.addEventListener("click", function(){
+        saveRoster = null;
+        saveSelected = null;
+        persistSaveRoster();
+        renderSaveRoster();
+      });
+    }
+    saveRoster = loadSaveRosterFromStorage();
+    if(saveRoster && saveRoster.party && saveRoster.party.length){
+      saveSelected = { group: "party", index: 0 };
+    }
+    renderSaveRoster();
+  }
+
   // Which guide subtabs a game shows are per-game (GAMES[id].guideSections)
   // since the sections themselves differ — Emerald's Tips/Cheats/Natures/EV
   // Spots vs. Renegade's Items/TMs/Gifts&Events. `activeGuideKey` is
@@ -6624,6 +7037,21 @@
       var pickSide = btn.getAttribute("data-side");
       var pickIdx = parseInt(btn.getAttribute("data-idx"), 10);
       pickTeamMember(pickSide, pickIdx);
+      return;
+    }
+
+    if(act === "save-pick"){
+      saveSelected = {
+        group: btn.getAttribute("data-group"),
+        index: parseInt(btn.getAttribute("data-idx"), 10)
+      };
+      renderSaveRoster();
+      return;
+    }
+
+    if(act === "save-load"){
+      var saveMon = saveMonByRef(saveSelected);
+      if(saveMon) applySaveMonToSide(saveMon, btn.getAttribute("data-side"));
       return;
     }
 

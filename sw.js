@@ -1,4 +1,4 @@
-var CACHE_NAME = "nuzlocke-log-v15";
+var CACHE_NAME = "nuzlocke-log-v16";
 var PRECACHE = [
   "./",
   "./index.html",
@@ -41,7 +41,13 @@ var PRECACHE = [
   "./calc/desc.js",
   "./calc/result.js",
   "./calc/rp-data.js",
-  "./calc/rp-adapter.js"
+  "./calc/rp-adapter.js",
+  // Gen 4 save-file parser + its lookup tables (ours, not vendored; see
+  // CLAUDE.md's Phase 3 section). Loaded on demand by loadSaveParser(),
+  // separately from the engine bundle above — but precached alongside it so
+  // importing a save works offline, same as everything else here.
+  "./calc/gen4-save-data.js",
+  "./calc/gen4-save.js"
 ];
 
 self.addEventListener("install", function(event){
