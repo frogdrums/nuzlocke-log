@@ -361,6 +361,23 @@
   .dex-card{
     background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
     padding: 10px 12px; margin-bottom: 8px; border-left: 3px solid var(--line);
+    /* The Pokédex renders all 505 species at once, and showing the panel used
+       to force layout + paint for every one of them — which was most of this
+       tab's lag, far more than building the HTML (measured: a *memoized* tab
+       tap, doing no JS work at all, still cost ~265ms over a bare tab switch
+       at 6x CPU throttle).
+
+       content-visibility:auto lets the browser skip layout and paint entirely
+       for cards scrolled out of view. contain-intrinsic-size gives it a
+       placeholder height so the scrollbar and scroll position stay sane for
+       the skipped ones — `auto` means "remember each card's real height once
+       measured", so expanded cards don't collapse the scroll height.
+       ~46px matches a collapsed card (padding + a 16px name row + margin).
+
+       Unsupported browsers simply ignore both properties and render exactly
+       as before, so there is no fallback to write. */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 46px;
   }
   .dex-card.dex-expanded{ border-left-color: var(--lcd); }
   .dex-top{
@@ -435,8 +452,24 @@
   .dex-move-contact{ color: var(--lcd); font-weight:700; text-align:right; }
 
   /* ---------- calculator tab ---------- */
-  .calc-grid{ display:grid; grid-template-columns: 1fr; gap: 12px; }
-  @media (min-width: 480px){ .calc-grid{ grid-template-columns: 1fr 1fr; } }
+  /* Two columns at EVERY width, including phones. Stacked, one side alone
+     filled most of a phone screen and comparing the two meant scrolling up
+     and down between them — which defeats the point of a damage calculator.
+     Everything inside the card is tightened below 480px to buy the room. */
+  .calc-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items:start; }
+  @media (max-width: 479px){
+    .calc-grid{ gap: 6px; }
+    .calc-mon-card{ padding: 8px 7px; }
+    .calc-mon-title{ font-size: 11px; margin-bottom: 6px; }
+    .calc-grid .f{ font-size: 10px; }
+    .calc-grid input, .calc-grid select{ font-size: 13px; padding: 5px 6px; }
+    .calc-move-slots .calc-dd-wrap input{ font-size: 13px; }
+    .calc-grid .add-form.row{ gap: 5px; }
+    .calc-stat-row{ gap: 2px; }
+    .calc-stat-row input{ font-size: 11px; padding: 3px 1px; }
+    .calc-stat-row label{ font-size: 8.5px; }
+    .calc-boost-row{ gap: 2px; }
+  }
   .calc-mon-card{
     background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px;
   }
@@ -520,8 +553,38 @@
   }
   .save-stat-row span.max{ color: var(--lcd); font-weight:700; }
   .save-stat-row span.zero{ color: var(--cream-dim); opacity:0.5; }
-  .save-load-btns{ display:flex; gap:8px; margin-top: 10px; }
-  .save-load-btns button{ flex:1; }
+  /* Route Log group headings ("Your team 4/6", then one per PC box). */
+  .roster-group-title{
+    display:flex; align-items:center; gap:8px;
+    font-size: 13px; color: var(--gold); text-transform:uppercase; letter-spacing:0.5px;
+    margin: 14px 0 8px; border-bottom: 1px dashed var(--line); padding-bottom: 4px;
+  }
+  .roster-group-title:first-child{ margin-top: 0; }
+  .roster-count{
+    font-size: 11px; color: var(--cream-dim); background: var(--bg);
+    border:1px solid var(--line); border-radius: 8px; padding: 1px 6px;
+  }
+  .roster-count.over{ color: var(--danger, #e06c6c); border-color: currentColor; }
+
+  /* Your six, above the calculator. Six across on any width — they are the
+     primary control now that the per-side pickers and Swap Sides are gone,
+     so they must never wrap out of reach on a phone. */
+  .calc-party{ margin-bottom: 10px; }
+  .calc-party-title{
+    font-size: 11px; color: var(--cream-dim); text-transform:uppercase;
+    letter-spacing:0.5px; margin-bottom: 4px;
+  }
+  .calc-party-slots{ display:grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+  .calc-party-slot{
+    display:flex; flex-direction:column; align-items:center; gap:1px;
+    background: var(--bg); border:1px solid var(--line); border-radius: 8px;
+    padding: 5px 2px; color: var(--cream-dim); cursor:pointer; overflow:hidden;
+    font-family:'JetBrains Mono',monospace; -webkit-tap-highlight-color: transparent;
+  }
+  .calc-party-slot:active{ transform: scale(0.96); }
+  .calc-party-slot.active{ background: var(--lcd-dim); border-color: var(--lcd); color:#0d1712; }
+  .cps-name{ font-size: 11px; font-weight:700; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cps-sub{ font-size: 9px; opacity:0.75; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .save-file-label{
     display:inline-block; font-size: 13px; padding: 7px 12px; cursor:pointer;
     background: var(--bg); border:1px solid var(--line); border-radius: 10px; color: var(--cream);
@@ -538,10 +601,38 @@
      persistent state, so there's nothing here to keep in sync. */
   .calc-routelog-pick{ margin-bottom: 9px; }
 
+  /* Final stats. A "HP 41 · Atk 22 · ..." text line wrapped onto two rows on
+     a phone (Spe fell off the end), which made comparing the two sides
+     annoying. A fixed 6-column grid always fits on one row at any width. */
   .calc-computed-stats{
-    font-size: 12.5px; color: var(--lcd); font-weight:700; letter-spacing:0.2px;
-    margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--line); line-height:1.5;
+    display:grid; grid-template-columns: repeat(6, 1fr); gap: 2px;
+    margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--line);
   }
+  .calc-computed-stats:empty{ display:none; }
+  .ccs-cell{ display:flex; flex-direction:column; align-items:center; gap:0; min-width:0; }
+  .ccs-label{ font-size: 8.5px; color: var(--cream-dim); text-transform:uppercase; letter-spacing:0.3px; }
+  .ccs-val{ font-size: 13px; font-weight:700; color: var(--lcd); font-family:'JetBrains Mono',monospace; }
+  /* Nature effect, shown on the stat itself rather than only in the dropdown.
+     Explicit green/red literals, NOT var(--lcd): the Renegade theme's --lcd is
+     teal (#4fd6c7), so colouring a buffed stat with it is both not-green and —
+     since .ccs-val is already var(--lcd) — a complete no-op. An earlier version
+     did exactly that and the buffed stat had no colour distinction at all. The
+     arrows are a redundancy for colour-blind readers, not the primary signal. */
+  .ccs-cell.buff .ccs-val{ color: #6ee06e; }
+  .ccs-cell.buff .ccs-label{ color: #6ee06e; }
+  .ccs-cell.buff .ccs-label::after{ content:"▲"; font-size:7px; margin-left:1px; }
+  .ccs-cell.nerf .ccs-val{ color: #e86a6a; }
+  .ccs-cell.nerf .ccs-label{ color: #e86a6a; }
+  .ccs-cell.nerf .ccs-label::after{ content:"▼"; font-size:7px; margin-left:1px; }
+  /* Speed is the one stat where "who is higher" decides the turn, so it gets
+     an explicit faster/slower flag rather than making the user compare two
+     numbers across the gap between the cards. */
+  .ccs-cell.spe-fast{ background: rgba(124,214,124,0.16); border-radius:5px; }
+  .ccs-cell.spe-slow{ background: rgba(224,138,138,0.16); border-radius:5px; }
+  .ccs-flag{ font-size: 7.5px; font-weight:700; letter-spacing:0.3px; text-transform:uppercase; }
+  .ccs-cell.spe-fast .ccs-flag{ color:#7cd67c; }
+  .ccs-cell.spe-slow .ccs-flag{ color:#e08a8a; }
+  .ccs-cell.spe-tie .ccs-flag{ color: var(--cream-dim); }
 
   .calc-boost-row{ display:grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
   .calc-boost-row div{ display:flex; flex-direction:column; gap:2px; }
@@ -701,6 +792,22 @@
         <button class="btn-primary" id="addBtn">+ Add Encounter</button>
       </div>
 
+      <!-- Save-file import. Static markup (not rebuilt by a render*() call)
+           for the same reason the filter boxes are — an <input> inside a
+           container whose innerHTML gets replaced loses its value.
+           The parser (calc/gen4-save.js) is loaded on demand by
+           loadSaveParser(), separately from the engine bundle. -->
+      <div class="save-panel">
+        <div class="save-panel-head">
+          <label class="save-file-label" for="saveFileInput">📂 Import save file…</label>
+          <input type="file" id="saveFileInput" accept=".sav,.dsv,.dat,application/octet-stream">
+          <div class="save-summary" id="saveSummary">Import a .sav/.dsv to fill this log from your game — exact IVs, EVs and catch locations.</div>
+          <button type="button" class="btn-ghost" id="saveClearBtn" style="display:none;">Clear import</button>
+        </div>
+        <div class="save-warn" id="saveWarn" style="display:none;"></div>
+        <button type="button" class="btn-primary" id="loadPartyToCalcBtn" style="display:none; margin-top:10px;">⚔ Load team into Calculator</button>
+      </div>
+
       <div id="rosterList"></div>
     </div>
 
@@ -730,7 +837,7 @@
 
     <div id="panel-calculator" style="display:none;">
       <div id="calcUnavailable" class="empty" style="display:none;">The Calculator only supports Renegade Platinum right now — switch games above to use it.</div>
-      <!-- Shown while the vendored calc/ engine bundle (~4.9MB, see the
+      <!-- Shown while the vendored calc/ engine bundle (~1.3MB, see the
            lazy-loader comment near loadCalcBundle()) is still being
            fetched/parsed. Only reachable via renderCalculator(), never
            left visible if the bundle was already loaded by an earlier
@@ -738,30 +845,18 @@
       <div id="calcLoading" class="empty" style="display:none;">Loading calculator…</div>
       <div id="calcLoadError" class="empty" style="display:none;">Couldn't load the calculator (network error). <button type="button" id="calcLoadRetry">Retry</button></div>
       <div id="calcBody" style="display:none;">
-        <!-- Save-file import. Static markup (not rebuilt by a render*()
-             call) for the same reason the filter boxes are — an <input>
-             inside a container whose innerHTML gets replaced loses its
-             value. Only #saveRosterBody below is re-rendered.
-             The parser (calc/gen4-save.js) is loaded on demand by
-             loadSaveParser(), separately from the engine bundle. -->
-        <div class="save-panel">
-          <div class="save-panel-head">
-            <label class="save-file-label" for="saveFileInput">📂 Import save file…</label>
-            <input type="file" id="saveFileInput" accept=".sav,.dsv,.dat,application/octet-stream">
-            <div class="save-summary" id="saveSummary">Load a .sav or .dsv to see your team's exact IVs and EVs.</div>
-            <button type="button" class="btn-ghost" id="saveClearBtn" style="display:none;">Clear</button>
-          </div>
-          <div class="save-warn" id="saveWarn" style="display:none;"></div>
-          <div id="saveRosterBody"></div>
+        <!-- Your six, loaded from the Route Log. Replaces the old per-side
+             "Load from Route Log" pickers and Simulate chip rows: the Route
+             Log owns the roster now, and this is just a switcher. -->
+        <div class="calc-party" id="calcPartyBar" style="display:none;">
+          <div class="calc-party-title">Your team</div>
+          <div class="calc-party-slots" id="calcPartySlots"></div>
         </div>
 
         <div class="calc-grid">
           <div class="calc-mon-card">
-            <div class="calc-mon-title">Attacker</div>
+            <div class="calc-mon-title">Your Pokémon</div>
             <div class="calc-team-chips" id="calcAtkTeamChips" style="display:none;"></div>
-            <div class="calc-routelog-pick" id="calcAtkRouteLogWrap" style="display:none;">
-              <select id="calcAtkRouteLogSelect"><option value="">Load from Route Log…</option></select>
-            </div>
             <label class="f">Species</label>
             <div class="calc-dd-wrap">
               <input type="text" id="calcAtkSpecies" autocomplete="off" placeholder="Start typing a species…">
@@ -800,11 +895,8 @@
           </div>
 
           <div class="calc-mon-card">
-            <div class="calc-mon-title">Defender</div>
+            <div class="calc-mon-title">Opponent</div>
             <div class="calc-team-chips" id="calcDefTeamChips" style="display:none;"></div>
-            <div class="calc-routelog-pick" id="calcDefRouteLogWrap" style="display:none;">
-              <select id="calcDefRouteLogSelect"><option value="">Load from Route Log…</option></select>
-            </div>
             <label class="f">Species</label>
             <div class="calc-dd-wrap">
               <input type="text" id="calcDefSpecies" autocomplete="off" placeholder="Start typing a species…">
@@ -855,12 +947,13 @@
              consults — a Terrain dropdown here would silently do nothing,
              so it's left out rather than offering a control that lies. -->
         <div class="calc-checks">
-          <label><input type="checkbox" id="calcReflect"> Defender has Reflect</label>
-          <label><input type="checkbox" id="calcLightScreen"> Defender has Light Screen</label>
+          <label><input type="checkbox" id="calcReflect"> Opponent has Reflect</label>
+          <label><input type="checkbox" id="calcLightScreen"> Opponent has Light Screen</label>
         </div>
 
+        <!-- No Swap Sides button: Calculate reports BOTH directions, so
+             swapping only ever re-ordered two results the user already had. -->
         <div style="display:flex; gap:8px; margin-top:12px;">
-          <button type="button" class="btn-ghost" id="calcSwapBtn" style="flex:0 0 auto;">⇅ Swap Sides</button>
           <button type="button" class="btn-primary" id="calcRunBtn" style="flex:1;">Calculate</button>
         </div>
 
@@ -872,7 +965,7 @@
       <div id="pokedexUnavailable" class="empty" style="display:none;">The Pokédex only supports Renegade Platinum right now — switch games above to use it.</div>
       <!-- Same 4-panel loading pattern as the Calc tab (see renderCalculator()'s
            comment) — the Pokédex reads window.RP_BACKUP_DATA.poks from the
-           same lazily-loaded ~4.9MB calc/ bundle, so it goes through
+           same lazily-loaded ~1.3MB calc/ bundle, so it goes through
            loadCalcBundle() exactly like the Calc tab rather than assuming
            the data already exists. -->
       <div id="pokedexLoading" class="empty" style="display:none;">Loading Pokédex…</div>
@@ -928,7 +1021,7 @@
   no-build-step approach.
 
   2026-09-09 perf fix: these 30 files (one of them, rp-data.js, is a
-  ~4.9MB object literal) used to be loaded right here as 30 blocking
+  ~1.3MB object literal) used to be loaded right here as 30 blocking
   script tags, so every single app launch paid to fetch+parse+execute
   all of them before the app's own script even started, even though
   most visits never open the Calculator tab. Measured on a phone this
@@ -4627,7 +4720,8 @@
         mons: Array.isArray(r.mons) ? r.mons : [],
         beatenBosses: r.beatenBosses || {},
         collapsedRoutes: r.collapsedRoutes || {},
-        collapsedSplits: r.collapsedSplits || {}
+        collapsedSplits: r.collapsedSplits || {},
+        saveImportMeta: r.saveImportMeta || null
       };
     }
 
@@ -4812,20 +4906,57 @@
   }
 
   function renderRoster(){
-    var alive = currentRun().mons.filter(function(m){ return m.status !== "dead"; });
+    var living = currentRun().mons.filter(function(m){ return m.status !== "dead"; });
     var el = document.getElementById("rosterList");
-    if(alive.length === 0){
-      el.innerHTML = '<div class="empty">No active encounters logged yet.<br>Add your first catch above.</div>';
+    if(living.length === 0){
+      el.innerHTML = '<div class="empty">No active encounters logged yet.<br>Add your first catch above, or import a save file.</div>';
       return;
     }
-    // One flat grid in playthrough order, not one row per route — a real
-    // Nuzlocke almost never has more than one active mon per route, so
-    // grouping by route defeated the point of the 3-per-row grid (every
-    // group would just be a group of one). Array#sort is stable, so mons
-    // from the same route (multiple gifts at one town, etc) still land
-    // next to each other.
-    alive = alive.slice().sort(function(a, b){ return routeOrderIndex(a.route) - routeOrderIndex(b.route); });
-    el.innerHTML = '<div class="route-cards">' + alive.map(cardHTML).join("") + '</div>';
+    // Playthrough order within each group. Array#sort is stable, so mons from
+    // the same route (multiple gifts at one town, etc) still land next to
+    // each other.
+    var byRoute = function(a, b){ return routeOrderIndex(a.route) - routeOrderIndex(b.route); };
+
+    var party = living.filter(function(m){ return m.status === "alive"; }).sort(byRoute);
+    var boxed = living.filter(function(m){ return m.status === "boxed"; }).sort(byRoute);
+
+    // Group boxed mons under their in-game box name so the log mirrors what
+    // the player sees in their PC. Hand-added boxed mons have no box name and
+    // collect under one heading rather than being hidden.
+    var groups = [], index = {};
+    boxed.forEach(function(m){
+      var key = m.boxName || "Boxed";
+      if(!index[key]){
+        // box is null for hand-added mons and for anything no longer in the
+        // save; those sort last rather than jumbling in among the real boxes.
+        index[key] = { name: key, box: (m.box === null || m.box === undefined) ? 999 : m.box, mons: [] };
+        groups.push(index[key]);
+      }
+      index[key].mons.push(m);
+    });
+    // In PC order, not route order. The mons inside each box are sorted by
+    // route, which meant the BOXES themselves came out ordered by whichever
+    // box happened to hold the earliest-route Pokémon — so Box 2 listed
+    // above Box 1. The player thinks in box order; match their PC.
+    groups.sort(function(a, b){ return a.box - b.box; });
+
+    var html = "";
+    // Six is the game's party limit; showing it makes an over-full or
+    // under-full team obvious at a glance while swapping mons around.
+    html += '<div class="roster-group-title">Your team ' +
+            '<span class="roster-count' + (party.length > 6 ? " over" : "") + '">' +
+            party.length + '/6</span></div>';
+    html += party.length
+      ? '<div class="route-cards">' + party.map(cardHTML).join("") + '</div>'
+      : '<div class="empty">Nobody in your team. Un-box someone below.</div>';
+
+    groups.forEach(function(g){
+      html += '<div class="roster-group-title">' + escapeHTML(g.name) +
+              '<span class="roster-count">' + g.mons.length + '</span></div>' +
+              '<div class="route-cards">' + g.mons.map(cardHTML).join("") + '</div>';
+    });
+
+    el.innerHTML = html;
   }
 
   function renderGraveyard(){
@@ -4853,6 +4984,7 @@
     renderBadges();
     renderStats();
     renderRoster();
+    renderSaveImportSummary();
     renderChecklist();
     renderBosses();
     renderTrainers();
@@ -5576,7 +5708,7 @@
   // ---------- lazy-loading the vendored calc/ engine bundle ----------
   // See the big comment where the <script src> tags used to live (just
   // above the app's own <script> block) for the "why" — this replaces
-  // 30 blocking script tags (one of them, rp-data.js, ~4.9MB) with an
+  // 30 blocking script tags (one of them, rp-data.js, ~1.3MB) with an
   // on-demand loader. calcBundlePromise is the idempotent/shared-load
   // guard: the first caller kicks off the load, every other caller
   // (concurrent or later) gets the SAME promise back rather than
@@ -5763,11 +5895,6 @@
     if(calcInitialized) return;
     calcInitialized = true;
 
-    // Save-import panel. Lives inside #calcBody, which only becomes visible
-    // once the engine bundle has loaded, so by the time any of this is
-    // reachable window.RPCalc exists for the species-validation checks.
-    initSaveImport();
-
     attachTypeahead("calcAtkSpecies", "calcAtkSpeciesDD", function(){ return window.RPCalc.speciesNames; });
     attachTypeahead("calcDefSpecies", "calcDefSpeciesDD", function(){ return window.RPCalc.speciesNames; });
     attachTypeahead("calcAtkItem", "calcAtkItemDD", function(){ return window.RPCalc.itemNames; });
@@ -5846,53 +5973,8 @@
       });
     });
 
-    ["Atk","Def"].forEach(function(side){
-      var sel = document.getElementById("calc"+side+"RouteLogSelect");
-      if(!sel) return;
-      sel.addEventListener("change", function(){
-        var id = this.value;
-        this.value = ""; // action trigger, not persistent state — always snaps back
-        if(!id) return;
-        var mon = findMon(id);
-        if(!mon) return;
-        loadRouteLogMonIntoCalculator(mon, side);
-      });
-    });
-
     document.getElementById("calcRunBtn").addEventListener("click", runCalculator);
 
-    document.getElementById("calcSwapBtn").addEventListener("click", function(){
-      ["Species","Level","Nature","Ability","Item"].forEach(function(field){
-        var a = document.getElementById("calcAtk"+field);
-        var b = document.getElementById("calcDef"+field);
-        var tmp = a.value; a.value = b.value; b.value = tmp;
-      });
-      STAT_KEYS.forEach(function(key){
-        ["Iv","Ev"].forEach(function(kind){
-          var a = document.getElementById("calcAtk"+kind+key);
-          var b = document.getElementById("calcDef"+kind+key);
-          var tmp = a.value; a.value = b.value; b.value = tmp;
-        });
-      });
-      BOOST_KEYS.forEach(function(key){
-        var a = document.getElementById("calcAtkBoost"+key);
-        var b = document.getElementById("calcDefBoost"+key);
-        if(a && b){ var tmp = a.value; a.value = b.value; b.value = tmp; }
-      });
-      MOVE_SLOTS.forEach(function(i){
-        var a = document.getElementById("calcAtkMove"+i);
-        var b = document.getElementById("calcDefMove"+i);
-        var tmp = a.value; a.value = b.value; b.value = tmp;
-      });
-      var tmpOverride = calcStatsOverride.Atk; calcStatsOverride.Atk = calcStatsOverride.Def; calcStatsOverride.Def = tmpOverride;
-      var tmpTeam = calcTeamState.Atk; calcTeamState.Atk = calcTeamState.Def; calcTeamState.Def = tmpTeam;
-      renderTeamChips("Atk");
-      renderTeamChips("Def");
-      populateAbilitySelect(document.getElementById("calcAtkAbility"), document.getElementById("calcAtkSpecies").value, document.getElementById("calcAtkAbility").value);
-      populateAbilitySelect(document.getElementById("calcDefAbility"), document.getElementById("calcDefSpecies").value, document.getElementById("calcDefAbility").value);
-      refreshComputedStats("Atk");
-      refreshComputedStats("Def");
-    });
 
     refreshComputedStats("Atk");
     refreshComputedStats("Def");
@@ -5926,8 +6008,9 @@
       loadError.style.display = "none";
       body.style.display = "";
       calcInitOnce();
-      populateRouteLogPicker("Atk");
-      populateRouteLogPicker("Def");
+      // The bar derives from the Route Log, so it is simply correct after a
+      // reload, a game switch, or a roster edit — nothing to rehydrate.
+      renderCalcPartyBar();
       return;
     }
 
@@ -6168,10 +6251,34 @@
   var ALL_TYPES = ["Normal","Fire","Water","Electric","Grass","Ice","Fighting","Poison",
     "Ground","Flying","Psychic","Bug","Rock","Ghost","Dragon","Dark","Steel","Fairy"];
 
+  // Signature of everything renderPokedexList()'s output depends on. Building
+  // 505 cards is ~126KB of HTML and the single most expensive thing either
+  // lazy tab does after the bundle itself, and renderPokedex() runs on EVERY
+  // tap of the tab — so without this the same identical markup was rebuilt
+  // from scratch each time, which is most of the Pokédex tab's perceived lag.
+  // Cheap to compute: the expanded set is only ever a handful of species.
+  var pokedexListSig = null;
+
+  function pokedexListSignature(q){
+    return state.selectedGame + "|" + q + "|" + Object.keys(pokedexExpanded)
+      .filter(function(k){ return pokedexExpanded[k]; }).sort().join(",");
+  }
+
+  // Call after anything that changes what the list should show but isn't
+  // captured by the signature (currently nothing does, but a future filter or
+  // sort would) — or simply to force the next render to rebuild.
+  function invalidatePokedexList(){ pokedexListSig = null; }
+
   function renderPokedexList(){
     var el = document.getElementById("pokedexList");
     var filterInput = document.getElementById("pokedexFilter");
     var q = filterInput ? filterInput.value.trim().toLowerCase() : "";
+
+    var sig = pokedexListSignature(q);
+    // el.children.length guards the case where the DOM was cleared out from
+    // under us — a matching signature must never mean "leave it empty".
+    if(sig === pokedexListSig && el.children.length) return;
+    pokedexListSig = sig;
 
     var names = getPokedexSpeciesList();
     if(q){
@@ -6240,72 +6347,6 @@
     });
   }
 
-  // ---------- "Load from Route Log" quick-fill ----------
-  // A tracked Route Log entry (currentRun().mons, see defaultRunState())
-  // only ever has {id, route, species, nick, level, status, cause,
-  // causeLevel, createdAt} — no ability/item/moves/nature/IVs/EVs. This
-  // is NOT the Simulate flow (applyMonToSide/loadTeamIntoCalculator),
-  // which loads a trainer/boss mon's exact known stats — it's a lighter
-  // quick-fill that pre-populates species+level only, same as if the
-  // player had typed that species by hand, and leaves every other field
-  // (nature/IVs/EVs/ability/item/moves) exactly as the form already has
-  // it. Only species RPCalc actually recognizes are offered, same
-  // filter monSimButtonHTML uses for Simulate, so picking an entry can
-  // never leave the calculator with an "Unknown species" error.
-  function calcEligibleRouteLogMons(){
-    if(state.selectedGame !== "renegade" || typeof window.RPCalc === "undefined") return [];
-    return currentRun().mons.filter(function(m){ return window.RPCalc.getSpecies(m.species); });
-  }
-
-  function routeLogMonOptionLabel(m){
-    var label = (m.nick ? m.nick + " the " : "") + m.species + " (Lv " + m.level + ")";
-    if(m.route) label += " · " + m.route;
-    if(m.status === "dead") label += " · Fainted";
-    else if(m.status === "boxed") label += " · Boxed";
-    return label;
-  }
-
-  // Re-run every time the Calc tab is (re)shown — see renderCalculator()
-  // above — so a game switch, a run switch, or logging/losing a mon
-  // elsewhere never leaves a stale list behind. Shows every tracked mon
-  // regardless of status (alive/boxed/fainted), labeled so it's clear
-  // which is which — checking a fainted mon's old matchup is a
-  // reasonable thing to want, so nothing is hidden, only labeled.
-  function populateRouteLogPicker(side){
-    var wrap = document.getElementById("calc"+side+"RouteLogWrap");
-    var sel = document.getElementById("calc"+side+"RouteLogSelect");
-    if(!wrap || !sel) return;
-    var mons = calcEligibleRouteLogMons();
-    if(!mons.length){
-      wrap.style.display = "none";
-      sel.innerHTML = '<option value="">Load from Route Log…</option>';
-      return;
-    }
-    wrap.style.display = "";
-    sel.innerHTML = '<option value="">Load from Route Log…</option>' + mons.map(function(m){
-      return '<option value="'+escapeHTML(m.id)+'">'+escapeHTML(routeLogMonOptionLabel(m))+'</option>';
-    }).join("");
-  }
-
-  // Sets species+level only; repopulates that side's ability select to
-  // the new species' default (abilities[0]) exactly like hand-typing a
-  // new species into the Species field does (see the field's own
-  // "change" listener above) — item/move fields are left untouched for
-  // the same reason. Drops any Simulated-in team on this side (a single
-  // quick-filled mon isn't a team to chip through) and any stats
-  // override (a Route Log mon has no known exact stats), so the
-  // calculator falls back to computing stats from the (untouched)
-  // nature/IV/EV fields, same as any hand-entered matchup.
-  function loadRouteLogMonIntoCalculator(mon, side){
-    document.getElementById("calc"+side+"Species").value = mon.species;
-    document.getElementById("calc"+side+"Level").value = mon.level;
-    populateAbilitySelect(document.getElementById("calc"+side+"Ability"), mon.species);
-    clearStatsOverrideOn(side);
-    calcTeamState[side] = null;
-    renderTeamChips(side);
-    refreshComputedStats(side);
-  }
-
   // Set by applyMonToSide() when a trainer/boss mon is Simulated in —
   // its exact already-known real stats (from Phase 1's data pull), used
   // in place of computing stats from the form's IV/EV/nature fields for
@@ -6354,20 +6395,73 @@
   // guarantees this line never disagrees with what Calculate itself uses.
   // Deliberately the post-level/nature/IV/EV numbers only (rawStats), not
   // stat-stage-boosted — boosts are shown/edited separately above.
+  // Last computed stats per side, so the speed comparison can be drawn
+  // without recomputing the other side (and so it stays correct when only
+  // one side changes).
+  var calcComputed = { Atk: null, Def: null };
+
   function refreshComputedStats(side){
     var el = document.getElementById("calc"+side+"Computed");
     if(!el || typeof window.RPCalc === "undefined") return;
     var form = readMonForm(side);
     if(!form.species || !window.RPCalc.getSpecies(form.species)){
-      el.textContent = "";
+      el.innerHTML = "";
+      calcComputed[side] = null;
+      renderSpeedFlags();
       return;
     }
     var res = window.RPCalc.computeStats(form);
     if(!res.ok){
-      el.textContent = "";
+      el.innerHTML = "";
+      calcComputed[side] = null;
+      renderSpeedFlags();
       return;
     }
-    el.textContent = "HP "+res.hp+" · Atk "+res.atk+" · Def "+res.def+" · SpA "+res.spa+" · SpD "+res.spd+" · Spe "+res.spe;
+    calcComputed[side] = res;
+    calcComputed[side].nature = form.nature;
+    renderComputedRow(side);
+    renderSpeedFlags();
+  }
+
+  function renderComputedRow(side){
+    var el = document.getElementById("calc"+side+"Computed");
+    var res = calcComputed[side];
+    if(!el || !res) return;
+    // NATURE_MODS[nature] is [raised, lowered]; the 5 neutral natures have no
+    // entry at all, which correctly yields no arrows.
+    var mods = NATURE_MODS[res.nature] || [];
+    el.innerHTML = STAT_KEYS.map(function(key, i){
+      var cls = "ccs-cell";
+      if(mods[0] === key) cls += " buff";
+      else if(mods[1] === key) cls += " nerf";
+      if(key === "spe") cls += " ccs-spe";
+      return '<div class="' + cls + '" data-stat="' + key + '">' +
+             '<span class="ccs-label">' + STAT_LABELS[i] + '</span>' +
+             '<span class="ccs-val">' + res[key] + '</span>' +
+             (key === "spe" ? '<span class="ccs-flag"></span>' : '') +
+             '</div>';
+    }).join("");
+  }
+
+  // Speed decides who moves first, which matters more than any other stat
+  // when comparing two Pokémon — so rather than making the user eyeball two
+  // numbers in separate cards, each side's Spe cell is flagged directly.
+  function renderSpeedFlags(){
+    var a = calcComputed.Atk, d = calcComputed.Def;
+    ["Atk","Def"].forEach(function(side){
+      var el = document.getElementById("calc"+side+"Computed");
+      if(!el) return;
+      var cell = el.querySelector(".ccs-spe");
+      if(!cell) return;
+      var flag = cell.querySelector(".ccs-flag");
+      cell.classList.remove("spe-fast","spe-slow","spe-tie");
+      if(!a || !d){ if(flag) flag.textContent = ""; return; }
+      var mine = (side === "Atk" ? a : d).spe;
+      var theirs = (side === "Atk" ? d : a).spe;
+      if(mine === theirs){ cell.classList.add("spe-tie"); if(flag) flag.textContent = "tie"; }
+      else if(mine > theirs){ cell.classList.add("spe-fast"); if(flag) flag.textContent = "faster"; }
+      else { cell.classList.add("spe-slow"); if(flag) flag.textContent = "slower"; }
+    });
   }
 
   function calcResultRowHTML(moveName, res){
@@ -6392,11 +6486,14 @@
 
   // One collapsible <details> group per direction — both directions are
   // always computed (every non-empty move slot on that side vs. the other
-  // mon), but shown as a native, large-tap-target collapsible section
-  // rather than a flat wall of numbers so 8 possible move results don't
-  // overwhelm a small screen. Forward (attacker's moves) starts open
-  // since that's the matchup the player is usually building; reverse
-  // starts collapsed but is never skipped.
+  // mon), shown as a native, large-tap-target collapsible section rather
+  // than a flat wall of numbers.
+  //
+  // BOTH now start OPEN. The incoming direction used to start collapsed,
+  // which was wrong for the thing this is actually for: in a Nuzlocke the
+  // question is almost always "do I survive the hit", so hiding the damage
+  // coming at you behind a tap hid the half that decides whether you click
+  // Fight or switch. They can still be collapsed by hand.
   function calcResultGroupHTML(label, atkForm, defForm, moves, field, openDefault){
     var inner;
     if(!moves.length){
@@ -6440,8 +6537,8 @@
     var defMoves = collectMoves("Def");
 
     resultEl.innerHTML =
-      calcResultGroupHTML("Attacker → Defender", attacker, defender, atkMoves, field, true) +
-      calcResultGroupHTML("Defender → Attacker", defender, attacker, defMoves, reverseField, false);
+      calcResultGroupHTML("Yours → Opponent", attacker, defender, atkMoves, field, true) +
+      calcResultGroupHTML("Opponent → Yours", defender, attacker, defMoves, reverseField, true);
   }
 
   // Loads one trainer/boss mon (from monToSimPayload's shape — {name,
@@ -6473,13 +6570,25 @@
     return String(name).replace(/^[^']+'s\s+/, "");
   }
 
+  // RENEGADE_BOSSES marks anything Renegade Platinum changed from vanilla with
+  // a trailing "(!)" — "Technician (!)", "Icicle Crash (!)". That marker is
+  // useful to SEE on the Bosses tab, but it is not part of the name: the RP
+  // dex and movedex know "Technician" and "Icicle Crash". Feeding the flagged
+  // string to the calculator silently fell back to the species' first ability,
+  // and silently dropped the move — 35 ability and 152 move occurrences, none
+  // of which surfaced an error. So the marker is stripped at the point of use
+  // rather than deleted from the data.
+  function stripHackFlag(name){
+    return name ? String(name).replace(/\s*\(!\)/g, "").trim() : name;
+  }
+
   function applyMonToSide(mon, side){
     var speciesName = dexSpeciesName(mon.name);
     document.getElementById("calc"+side+"Species").value = speciesName;
     document.getElementById("calc"+side+"Level").value = mon.level;
-    document.getElementById("calc"+side+"Item").value = (mon.item && mon.item !== "—") ? mon.item : "";
-    populateAbilitySelect(document.getElementById("calc"+side+"Ability"), speciesName, mon.ability);
-    var moveList = mon.moves ? String(mon.moves).split(",").map(function(s){ return s.trim(); }).filter(Boolean) : [];
+    document.getElementById("calc"+side+"Item").value = (mon.item && mon.item !== "—") ? stripHackFlag(mon.item) : "";
+    populateAbilitySelect(document.getElementById("calc"+side+"Ability"), speciesName, stripHackFlag(mon.ability));
+    var moveList = mon.moves ? String(mon.moves).split(",").map(function(s){ return stripHackFlag(s); }).filter(Boolean) : [];
     MOVE_SLOTS.forEach(function(i){
       var el = document.getElementById("calc"+side+"Move"+i);
       if(el) el.value = moveList[i-1] || "";
@@ -6526,6 +6635,89 @@
     t.index = idx;
     renderTeamChips(side);
     applyMonToSide(t.team[idx], side);
+  }
+
+  // ---------- your six, loaded from the Route Log ----------
+  // DERIVED, never cached. An earlier version kept a `calcParty` array of
+  // direct references into currentRun().mons, which went stale in every
+  // direction that matters: switching game left the previous run's six in the
+  // bar (and loaded another game's mon into the calculator), Reset Run left it
+  // pointing at a discarded array, and deleting or fainting a mon left it as a
+  // live slot. Recomputing is O(6) and cannot go stale, so there is nothing to
+  // invalidate and no invalidation to forget.
+  function currentCalcParty(){
+    if(state.selectedGame !== "renegade") return [];
+    return currentRun().mons.filter(function(m){ return m.status === "alive"; }).slice(0, 6);
+  }
+
+  var calcPartyIndex = 0;
+
+  function renderCalcPartyBar(){
+    var bar = document.getElementById("calcPartyBar");
+    var slots = document.getElementById("calcPartySlots");
+    if(!bar || !slots) return;
+    var party = currentCalcParty();
+    if(!party.length){
+      bar.style.display = "none";
+      slots.innerHTML = "";
+      return;
+    }
+    // Keep the highlight in range when the team shrinks under it.
+    if(calcPartyIndex >= party.length) calcPartyIndex = 0;
+    bar.style.display = "";
+    slots.innerHTML = party.map(function(m, i){
+      var name = m.nick || m.species;
+      return '<button type="button" class="calc-party-slot' + (i === calcPartyIndex ? " active" : "") +
+             '" data-act="calc-party-pick" data-idx="' + i + '">' +
+             '<span class="cps-name">' + escapeHTML(name) + '</span>' +
+             '<span class="cps-sub">' + escapeHTML(m.species) + (m.level ? " · L" + m.level : "") + '</span>' +
+             '</button>';
+    }).join("");
+  }
+
+  // Fill a side from a Route Log mon. When that mon came from a save file it
+  // carries real IVs/EVs/nature/ability/item/moves, so this is the same
+  // quality of fill as the old save-import path — the difference is only
+  // where the roster lives. A hand-added mon has just species+level, and the
+  // remaining fields are left at their defaults rather than invented.
+  function applyRunMonToSide(m, side){
+    if(!m) return false;
+    calcInitOnce();
+    var dexName = saveSpeciesToDex(m.species);
+    if(window.RPCalc && !window.RPCalc.getSpecies(dexName)) return false;
+
+    document.getElementById("calc" + side + "Species").value = dexName;
+    // Level and nature are set UNCONDITIONALLY. Skipping them when the mon
+    // doesn't carry one left the previous slot's values in place, so switching
+    // from an imported L47 Adamant mon to a hand-added one silently computed
+    // damage at L47 Adamant while the bar showed the other mon selected.
+    document.getElementById("calc" + side + "Level").value = m.level || 50;
+
+    var natureSel = document.getElementById("calc" + side + "Nature");
+    if(natureSel) natureSel.value = m.nature || "Serious";
+
+    document.getElementById("calc" + side + "Item").value = m.item || "";
+    populateAbilitySelect(document.getElementById("calc" + side + "Ability"), dexName, m.ability);
+
+    MOVE_SLOTS.forEach(function(i){
+      var el = document.getElementById("calc" + side + "Move" + i);
+      if(el) el.value = (m.moves && m.moves[i - 1]) || "";
+    });
+
+    STAT_KEYS.forEach(function(key){
+      var iv = document.getElementById("calc" + side + "Iv" + key);
+      var ev = document.getElementById("calc" + side + "Ev" + key);
+      if(iv) iv.value = (m.ivs && m.ivs[key] !== undefined) ? m.ivs[key] : 31;
+      if(ev) ev.value = (m.evs && m.evs[key] !== undefined) ? m.evs[key] : 0;
+    });
+
+    // Real IVs/EVs supersede any pinned stat block, and the team chip row
+    // belongs to the Simulate flow.
+    calcStatsOverride[side] = null;
+    calcTeamState[side] = null;
+    renderTeamChips(side);
+    refreshComputedStats(side);
+    return true;
   }
 
   // ---------- save-file import ----------
@@ -6577,37 +6769,9 @@
     return saveParserPromise;
   }
 
-  // Parsed roster, persisted so an imported save survives a reload/relaunch
-  // (this is an offline PWA — re-picking the file every launch would be
-  // miserable). Deliberately its OWN localStorage key, outside state.runs:
-  // it isn't run progress, it's a cached read of an external file, and
-  // Export/Import backs up runs. Re-importing the .sav rebuilds it exactly.
-  var SAVE_ROSTER_KEY = "nuzlockeSaveRoster";
-  var saveRoster = null;                       // last parse result, or null
-  var saveSelected = null;                     // { group:"party"|"box", index:N }
-
-  function loadSaveRosterFromStorage(){
-    try{
-      var raw = localStorage.getItem(SAVE_ROSTER_KEY);
-      if(!raw) return null;
-      var parsed = JSON.parse(raw);
-      if(parsed && parsed.party && parsed.boxes) return parsed;
-    }catch(e){ /* corrupt or unavailable — treat as "no save imported" */ }
-    return null;
-  }
-
-  function persistSaveRoster(){
-    try{
-      if(saveRoster) localStorage.setItem(SAVE_ROSTER_KEY, JSON.stringify(saveRoster));
-      else localStorage.removeItem(SAVE_ROSTER_KEY);
-    }catch(e){ /* quota/private mode — the roster still works for this session */ }
-  }
-
-  // The save stores vanilla Gen 4 species names; the calculator looks species
-  // up in Renegade Platinum's own dex. 491 of 493 spellings match outright —
-  // these are the only two that don't, confirmed by cross-checking every
-  // Gen 4 dex ID against rp-data.js's keys. Anything else that fails to
-  // resolve is surfaced to the user, never silently swallowed.
+  // The save's vanilla Gen 4 species names vs Renegade Platinum's dex: 491 of
+  // 493 match outright. These two don't. Anything else that fails to resolve
+  // is surfaced to the user rather than silently loading a blank.
   var SAVE_SPECIES_ALIAS = {
     "Farfetch’d": "Farfetch'd",   // save table uses a curly apostrophe
     "Unown": "UNOWN"                    // RP keys this one in all caps
@@ -6615,200 +6779,171 @@
 
   function saveSpeciesToDex(name){
     if(!name) return name;
-    if(SAVE_SPECIES_ALIAS[name]) return SAVE_SPECIES_ALIAS[name];
-    return name;
+    return SAVE_SPECIES_ALIAS[name] || name;
   }
 
-  function saveMonLabel(mon){
-    // Prefer the nickname the player actually gave it — that's how they think
-    // of the mon — but keep the species visible, since a nickname alone is
-    // useless for picking the right one out of a box.
-    var nick = (mon.isNicknamed && mon.nickname && mon.nickname.indexOf("�") === -1)
-      ? mon.nickname : "";
-    return nick ? (nick + " (" + mon.species + ")") : mon.species;
+  // A Nuzlocke player keeps a box for the dead. Recognising it on import is
+  // the difference between the graveyard filling itself in and the user
+  // re-entering every loss by hand. Deliberately generous -- a false positive
+  // is one tap to undo (the revive button), a false negative means the user
+  // silently thinks a dead mon is alive, which is the worse error.
+  var DEAD_BOX_RE = /\b(dead|death|died|grave|graveyard|rip|r\.i\.p|fallen|lost|gone|memorial|cemetery|ko'?d|fainted)\b/i;
+
+  function isDeadBoxName(name){
+    return DEAD_BOX_RE.test(String(name || ""));
   }
 
-  function saveStatRowHTML(stats, isIv){
-    return STAT_KEYS.map(function(key, i){
-      var v = stats && stats[key] !== undefined ? stats[key] : 0;
-      var cls = "";
-      if(isIv && v === 31) cls = " class=\"max\"";
-      else if(v === 0) cls = " class=\"zero\"";
-      return '<div><label>' + STAT_LABELS[i] + '</label><span' + cls + '>' + v + '</span></div>';
-    }).join("");
+  // Map one decoded save Pokémon onto the Route Log's own mon shape.
+  //
+  // Party vs box maps straight onto the existing alive/boxed/dead statuses --
+  // no parallel structure needed, and the box/un-box buttons already in the
+  // card UI become the "swap between team and box" the roster needs.
+  function saveMonToRunMon(m, boxNames, existing){
+    var boxName = (m.box !== undefined && boxNames && boxNames[m.box]) || null;
+    var dead = boxName ? isDeadBoxName(boxName) : false;
+    var nick = (m.isNicknamed && m.nickname && m.nickname.indexOf("�") === -1)
+      ? m.nickname : "";
+    return {
+      // A manually-added mon keeps its id; a re-import updates in place.
+      id: (existing && existing.id) || ("sav-" + m.pv),
+      pv: m.pv,
+      route: m.metLocationName || (existing && existing.route) || "Unknown Location",
+      species: saveSpeciesToDex(m.species),
+      nick: nick,
+      level: m.level || (existing && existing.level) || m.metLevel || null,
+      status: dead ? "dead" : (m.box === undefined ? "alive" : "boxed"),
+      // Preserve a cause the user typed; a save can't tell us how it died.
+      cause: (existing && existing.cause) || (dead ? "In " + boxName : ""),
+      causeLevel: existing ? existing.causeLevel : null,
+      createdAt: (existing && existing.createdAt) || Date.now(),
+      // Everything below is what makes this better than manual entry.
+      fromSave: true,
+      box: m.box === undefined ? null : m.box,
+      boxName: boxName,
+      nature: m.nature,
+      ability: m.ability,
+      item: (m.item && m.item !== "None") ? m.item : "",
+      moves: (m.moves || []).slice(),
+      ivs: m.ivs,
+      evs: m.evs,
+      problems: (m.problems && m.problems.length) ? m.problems.slice() : null
+    };
   }
 
-  function saveMonByRef(ref){
-    if(!saveRoster || !ref) return null;
-    var list = ref.group === "party" ? saveRoster.party : saveRoster.boxes;
-    return list && list[ref.index] ? list[ref.index] : null;
+  // Merge a parsed save into the current run's roster.
+  //
+  // Keyed on the Pokémon's personality value, which is unique and stable for
+  // the life of a mon -- so re-importing after playing updates each mon in
+  // place (new level, new moves, moved to the dead box) instead of creating
+  // duplicates. Manually-added entries have no `pv` and are never touched.
+  function importSaveIntoRouteLog(result){
+    var run = currentRun();
+    var byPv = {};
+    run.mons.forEach(function(m){ if(m.pv != null) byPv[m.pv] = m; });
+
+    var all = result.party.concat(result.boxes);
+    var seen = {}, added = 0, updated = 0;
+    all.forEach(function(m){
+      seen[m.pv] = true;
+      var existing = byPv[m.pv];
+      var mapped = saveMonToRunMon(m, result.boxNames, existing);
+      if(existing){
+        // The save is authoritative for level, moves, IVs/EVs, box and so on.
+        // It is NOT authoritative for these three, and blindly copying the
+        // whole object over lost real user data:
+        //
+        //  status — marking a mon dead is the single most important act in a
+        //    Nuzlocke, and it usually happens BEFORE you go and move the body
+        //    into the dead box. A re-import in between resurrected it. Dead
+        //    is therefore sticky: only the user can undo it (revive button).
+        //  nick — blank whenever the mon is un-nicknamed in game, which wiped
+        //    a nickname the user had typed here by hand.
+        //  route — a hand-corrected location was overwritten every time.
+        if(existing.status === "dead") delete mapped.status;
+        if(!mapped.nick && existing.nick) delete mapped.nick;
+        if(!mapped.route || mapped.route === "Unknown Location") delete mapped.route;
+        Object.keys(mapped).forEach(function(k){ existing[k] = mapped[k]; });
+        updated++;
+      } else {
+        run.mons.push(mapped);
+        added++;
+      }
+    });
+
+    // A previously-imported mon that is no longer anywhere in the save was
+    // released or traded away. Don't delete it silently -- the user may have
+    // Nuzlocke history attached to it -- but stop claiming it's in the party.
+    var released = 0;
+    run.mons.forEach(function(m){
+      if(m.fromSave && m.pv != null && !seen[m.pv] && m.status !== "dead"){
+        m.status = "boxed";
+        m.boxName = "Not in this save";
+        m.box = null;
+        released++;
+      }
+    });
+
+    currentRun().saveImportMeta = {
+      fileName: result.fileName,
+      importedAt: Date.now(),
+      boxNames: result.boxNames,
+      partyCount: result.party.length,
+      boxCount: result.boxes.length,
+      deadBoxes: (result.boxNames || []).filter(isDeadBoxName)
+    };
+    save();
+    renderAll();
+    return { added: added, updated: updated, released: released };
   }
 
-  function renderSaveRoster(){
-    var body = document.getElementById("saveRosterBody");
+  // Import metadata (which file, when, which boxes looked like dead boxes)
+  // lives on the RUN, never in a module-level global: a global outlived Reset
+  // Run and an Import Backup, and reported the previous import's filename and
+  // dead-box list against a roster it had nothing to do with.
+
+  function renderSaveImportSummary(){
     var summary = document.getElementById("saveSummary");
     var clearBtn = document.getElementById("saveClearBtn");
     var warn = document.getElementById("saveWarn");
-    if(!body) return;
+    var loadBtn = document.getElementById("loadPartyToCalcBtn");
+    if(!summary) return;
 
-    if(!saveRoster){
-      body.innerHTML = "";
-      if(summary) summary.textContent = "Load a .sav or .dsv to see your team's exact IVs and EVs.";
+    var run = currentRun();
+    var imported = run.mons.filter(function(m){ return m.fromSave; });
+    var party = run.mons.filter(function(m){ return m.status === "alive"; });
+
+    if(!imported.length){
+      summary.textContent = "Import a .sav/.dsv to fill this log from your game — exact IVs, EVs and catch locations.";
       if(clearBtn) clearBtn.style.display = "none";
       if(warn) warn.style.display = "none";
+      if(loadBtn) loadBtn.style.display = "none";
       return;
     }
 
-    if(summary){
-      summary.textContent = saveRoster.party.length + " in party · " +
-        saveRoster.boxes.length + " in boxes";
-    }
+    var meta = run.saveImportMeta || {};
+    summary.textContent = imported.length + " imported" +
+      (meta.fileName ? " from " + meta.fileName : "") +
+      " · " + party.length + " in your team";
     if(clearBtn) clearBtn.style.display = "";
+    if(loadBtn) loadBtn.style.display = party.length ? "" : "none";
 
-    // Surface anything the parser flagged. See .save-chips .chip.suspect in
-    // the CSS for why these are shown rather than filtered out.
-    var suspect = saveRoster.party.concat(saveRoster.boxes).filter(function(m){
-      return m.problems && m.problems.length;
-    });
+    var notes = [];
+    if(meta.deadBoxes && meta.deadBoxes.length){
+      notes.push("Treated " + meta.deadBoxes.map(function(b){ return '"' + b + '"'; }).join(", ") +
+                 " as a graveyard box — those Pokémon went straight to Graveyard.");
+    } else if(meta.boxNames){
+      notes.push("No box looked like a graveyard. Rename one to something like “DEAD” in-game and re-import to have losses sorted automatically.");
+    }
+    var flagged = imported.filter(function(m){ return m.problems; });
+    if(flagged.length){
+      notes.push("⚠ " + flagged.length + " didn't fully validate (" +
+        flagged.map(function(m){ return m.species; }).join(", ") +
+        ") — that usually means a parser bug, not a bad save.");
+    }
     if(warn){
-      if(suspect.length){
-        warn.style.display = "";
-        warn.textContent = "⚠ " + suspect.length + " Pokémon didn't fully validate " +
-          "(" + suspect.map(function(m){ return m.species; }).join(", ") + "). " +
-          "They're marked below — this usually means a parser bug, not a bad save.";
-      } else {
-        warn.style.display = "none";
-      }
+      warn.style.display = notes.length ? "" : "none";
+      warn.innerHTML = notes.map(escapeHTML).join("<br>");
     }
-
-    function chipsHTML(list, group){
-      return list.map(function(m, i){
-        var active = saveSelected && saveSelected.group === group && saveSelected.index === i;
-        var cls = "chip" + (active ? " active" : "") +
-                  (m.problems && m.problems.length ? " suspect" : "");
-        var lv = m.level ? (" Lv" + m.level) : "";
-        return '<button type="button" class="' + cls + '" data-act="save-pick" ' +
-               'data-group="' + group + '" data-idx="' + i + '">' +
-               escapeHTML(saveMonLabel(m)) + lv + '</button>';
-      }).join("");
-    }
-
-    var html = "";
-    if(saveRoster.party.length){
-      html += '<div class="save-group-title">Party</div>' +
-              '<div class="save-chips">' + chipsHTML(saveRoster.party, "party") + '</div>';
-    }
-    if(saveRoster.boxes.length){
-      html += '<div class="save-group-title">Boxes</div>' +
-              '<div class="save-chips">' + chipsHTML(saveRoster.boxes, "box") + '</div>';
-    }
-    html += '<div id="saveDetail"></div>';
-    body.innerHTML = html;
-    renderSaveDetail();
-  }
-
-  function renderSaveDetail(){
-    var el = document.getElementById("saveDetail");
-    if(!el) return;
-    var mon = saveMonByRef(saveSelected);
-    if(!mon){ el.innerHTML = ""; return; }
-
-    var dexName = saveSpeciesToDex(mon.species);
-    var known = !(window.RPCalc && !window.RPCalc.getSpecies(dexName));
-    var bits = [];
-    if(mon.level) bits.push("Lv " + mon.level);
-    bits.push(mon.nature);
-    if(mon.ability) bits.push(mon.ability);
-    if(mon.item && mon.item !== "None") bits.push(mon.item);
-    if(mon.box !== undefined) bits.push("Box " + (mon.box + 1));
-
-    var h = '<div class="save-detail">' +
-      '<div class="save-detail-name">' + escapeHTML(saveMonLabel(mon)) + '</div>' +
-      '<div class="save-detail-sub">' + escapeHTML(bits.join(" · ")) + '</div>' +
-      '<div class="calc-iv-ev-title">IVs</div>' +
-      '<div class="save-stat-row">' + saveStatRowHTML(mon.ivs, true) + '</div>' +
-      '<div class="calc-iv-ev-title">EVs</div>' +
-      '<div class="save-stat-row">' + saveStatRowHTML(mon.evs, false) + '</div>';
-
-    // The stats the GAME itself wrote into the save, shown for party mons
-    // (box Pokémon carry no stat block). Worth displaying because the
-    // calculator recomputes from IVs/EVs and can legitimately disagree by a
-    // point or two: Gen 4 only folds newly-gained EVs into a mon's displayed
-    // stats when it next levels up, so a mon that has battled since its last
-    // level shows pre-EV numbers in-game. Verified on the sample save — all
-    // 36 party stats reproduce from base+level+nature+IVs+EVs except one,
-    // and that one matches the EV-less figure exactly.
-    if(mon.stats){
-      h += '<div class="calc-iv-ev-title">Stats (as stored in the save)</div>' +
-           '<div class="save-stat-row">' + saveStatRowHTML(mon.stats, false) + '</div>';
-    }
-
-    if(mon.moves && mon.moves.length){
-      h += '<div class="save-detail-moves">' + escapeHTML(mon.moves.join(", ")) + '</div>';
-    }
-    if(mon.problems && mon.problems.length){
-      h += '<div class="save-warn">⚠ ' + escapeHTML(mon.problems.join("; ")) + '</div>';
-    }
-    if(!known){
-      h += '<div class="save-warn">⚠ "' + escapeHTML(mon.species) + '" isn\'t in the ' +
-           'Renegade Platinum dex, so this one can\'t be loaded into the calculator.</div>';
-    } else {
-      h += '<div class="save-load-btns">' +
-           '<button type="button" class="btn-ghost" data-act="save-load" data-side="Atk">→ Attacker</button>' +
-           '<button type="button" class="btn-ghost" data-act="save-load" data-side="Def">→ Defender</button>' +
-           '</div>';
-    }
-    h += '</div>';
-    el.innerHTML = h;
-  }
-
-  // Fill one side of the calculator from a save-imported mon.
-  //
-  // Unlike applyMonToSide() (the Simulate path, which pins exact stats via
-  // calcStatsOverride because trainer data gives stats but not EVs), this
-  // sets the real IVs and EVs and lets the engine compute the stats. That is
-  // strictly better: the numbers then respond correctly to a level change,
-  // and they're derived the same way the game derives them.
-  function applySaveMonToSide(mon, side){
-    calcInitOnce();
-    var dexName = saveSpeciesToDex(mon.species);
-    if(window.RPCalc && !window.RPCalc.getSpecies(dexName)) return false;
-
-    document.getElementById("calc" + side + "Species").value = dexName;
-    if(mon.level) document.getElementById("calc" + side + "Level").value = mon.level;
-
-    var natureSel = document.getElementById("calc" + side + "Nature");
-    if(natureSel && mon.nature) natureSel.value = mon.nature;
-
-    document.getElementById("calc" + side + "Item").value =
-      (mon.item && mon.item !== "None") ? mon.item : "";
-
-    // The save's ability name can miss RP's dex (a hack-flagged ability, or a
-    // species whose slot differs), in which case populateAbilitySelect falls
-    // back to the species' first ability — same tolerated behaviour as the
-    // Simulate path, and the field stays editable.
-    populateAbilitySelect(document.getElementById("calc" + side + "Ability"), dexName, mon.ability);
-
-    MOVE_SLOTS.forEach(function(i){
-      var el = document.getElementById("calc" + side + "Move" + i);
-      if(el) el.value = (mon.moves && mon.moves[i - 1]) || "";
-    });
-
-    STAT_KEYS.forEach(function(key){
-      var iv = document.getElementById("calc" + side + "Iv" + key);
-      var ev = document.getElementById("calc" + side + "Ev" + key);
-      if(iv) iv.value = (mon.ivs && mon.ivs[key] !== undefined) ? mon.ivs[key] : 31;
-      if(ev) ev.value = (mon.evs && mon.evs[key] !== undefined) ? mon.evs[key] : 0;
-    });
-
-    // Real IVs/EVs supersede any pinned stat block, and the team chip row
-    // belongs to the Simulate flow — leaving either in place would make the
-    // side show numbers that no longer match its own fields.
-    calcStatsOverride[side] = null;
-    calcTeamState[side] = null;
-    renderTeamChips(side);
-    refreshComputedStats(side);
-    return true;
   }
 
   function handleSaveFile(file){
@@ -6823,16 +6958,15 @@
     reader.onload = function(){
       loadSaveParser().then(function(parser){
         var result = parser.parse(reader.result);
-        saveRoster = {
-          party: result.party,
-          boxes: result.boxes,
-          container: result.container,
-          importedAt: Date.now(),
-          fileName: file.name
-        };
-        saveSelected = result.party.length ? { group: "party", index: 0 } : null;
-        persistSaveRoster();
-        renderSaveRoster();
+        result.fileName = file.name;
+        var counts = importSaveIntoRouteLog(result);
+        if(summary && (counts.added || counts.updated)){
+          // renderSaveImportSummary() has already written the standing
+          // summary; append what this particular import actually did.
+          summary.textContent += "  (" + counts.added + " new, " +
+            counts.updated + " updated" +
+            (counts.released ? ", " + counts.released + " no longer in save" : "") + ")";
+        }
       }).catch(function(err){
         if(summary){
           summary.textContent = "Couldn't read that save: " + (err && err.message ? err.message : err);
@@ -6840,6 +6974,21 @@
       });
     };
     reader.readAsArrayBuffer(file);
+  }
+
+  // Load the six in your team into the calculator and jump to it.
+  function loadPartyToCalculator(){
+    var party = currentCalcParty();
+    if(!party.length) return;
+    calcPartyIndex = 0;
+    var calcTab = document.querySelector('.tab[data-tab="calculator"]');
+    if(calcTab) calcTab.click();
+    // The bundle may still be loading; applying the mon has to wait for it.
+    loadCalcBundle().then(function(){
+      calcInitOnce();
+      renderCalcPartyBar();
+      applyRunMonToSide(currentCalcParty()[0], "Atk");
+    }).catch(function(){ /* renderCalculator() already shows the error state */ });
   }
 
   function initSaveImport(){
@@ -6855,17 +7004,20 @@
     var clearBtn = document.getElementById("saveClearBtn");
     if(clearBtn){
       clearBtn.addEventListener("click", function(){
-        saveRoster = null;
-        saveSelected = null;
-        persistSaveRoster();
-        renderSaveRoster();
+        // showConfirm(), not window.confirm() — see the .modal CSS comment:
+        // some embedded/PWA webviews silently no-op native dialogs, which
+        // makes the button appear to do nothing.
+        showConfirm("Remove every Pokémon that came from the save file? Anything you added by hand is kept.", function(){
+          var run = currentRun();
+          run.mons = run.mons.filter(function(m){ return !m.fromSave; });
+          run.saveImportMeta = null;
+          save();
+          renderAll();
+        });
       });
     }
-    saveRoster = loadSaveRosterFromStorage();
-    if(saveRoster && saveRoster.party && saveRoster.party.length){
-      saveSelected = { group: "party", index: 0 };
-    }
-    renderSaveRoster();
+    var loadBtn = document.getElementById("loadPartyToCalcBtn");
+    if(loadBtn) loadBtn.addEventListener("click", loadPartyToCalculator);
   }
 
   // Which guide subtabs a game shows are per-game (GAMES[id].guideSections)
@@ -7040,18 +7192,20 @@
       return;
     }
 
-    if(act === "save-pick"){
-      saveSelected = {
-        group: btn.getAttribute("data-group"),
-        index: parseInt(btn.getAttribute("data-idx"), 10)
-      };
-      renderSaveRoster();
-      return;
-    }
-
-    if(act === "save-load"){
-      var saveMon = saveMonByRef(saveSelected);
-      if(saveMon) applySaveMonToSide(saveMon, btn.getAttribute("data-side"));
+    // Switch which of your six the calculator is showing.
+    if(act === "calc-party-pick"){
+      var partyIdx = parseInt(btn.getAttribute("data-idx"), 10);
+      var partyNow = currentCalcParty();
+      if(partyNow[partyIdx]){
+        // Only move the highlight if the mon actually loaded. Otherwise the
+        // bar claimed slot N was active while the form still held slot 1.
+        if(applyRunMonToSide(partyNow[partyIdx], "Atk")){
+          calcPartyIndex = partyIdx;
+          renderCalcPartyBar();
+        } else {
+          showToast(partyNow[partyIdx].species + " isn't in the Renegade dex");
+        }
+      }
       return;
     }
 
@@ -7105,6 +7259,14 @@
       mon.status = "boxed";
       showToast((mon.nick || mon.species) + " boxed");
     } else if(act === "unbox"){
+      // Six is the game's hard party limit, so refuse rather than quietly
+      // building a team of seven that can't be loaded into the calculator
+      // (which takes the first six) or exist in-game.
+      var partySize = currentRun().mons.filter(function(m){ return m.status === "alive"; }).length;
+      if(partySize >= 6){
+        showToast("Team is full — box someone first");
+        return;
+      }
       mon.status = "alive";
       showToast((mon.nick || mon.species) + " back in the party");
     } else if(act === "revive"){
@@ -7179,6 +7341,15 @@
   // ---------- init ----------
   state = load();
   populateGameSelect();
+  // Wire the Route Log's save-import controls HERE, not from calcInitOnce().
+  // They used to be initialised there, back when the panel lived inside the
+  // Calc tab — but calcInitOnce() only runs once the Renegade calc bundle has
+  // loaded, so after the panel moved to the Route Log the file input had NO
+  // listener on Emerald at all (the default game), and on Renegade only after
+  // the ~1.3MB bundle resolved. Picking a file before then fired a change
+  // event into nothing, silently. The parser loads on demand and is
+  // independent of that bundle, so there is no reason to wait for it.
+  initSaveImport();
   renderAll();
   // Fire-and-forget: see scheduleBackgroundCalcLoad()'s own comment for
   // why this is deferred (not blocking) and why it only applies to

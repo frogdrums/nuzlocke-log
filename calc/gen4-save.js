@@ -232,6 +232,9 @@
       if(id) moves.push(lookup(E.sav_move_names, id) || ("#" + id));
     }
 
+    var metLocation = u16(B, 0x1E) || u16(D, 0x18);
+    var eggLocation = u16(B, 0x1C) || u16(D, 0x16);
+
     var mon = {
       pv: pv,
       speciesId: speciesId,
@@ -250,11 +253,26 @@
       exp: u32(A, 8),
       friendship: A[0x0C],
       otName: decodeText(D, 8),
+      // Block D layout. The OT name occupies the FIRST 16 bytes (8 chars x 2),
+      // so anything read below 0x10 lands inside it -- an earlier version read
+      // met/egg location at 0x0A/0x0C and the ball at 0x14, which were really
+      // OT-name padding and met-date bytes. They returned 0/0/9 for every
+      // Pokemon and passed validation vacuously. From 0x10:
+      //   0x10 egg date, 0x13 met date, 0x16 egg location (DP slot),
+      //   0x18 met location (DP slot), 0x1A pokerus, 0x1B ball,
+      //   0x1C met level | OT gender, 0x1D encounter type.
+      // Platinum also carries the location in block B at 0x1C/0x1E because Pt
+      // added locations beyond DP's range; both slots agree in the sample RP
+      // save, so the Pt slot wins and the DP slot is the fallback.
+      metLocation: metLocation,
+      metLocationName: lookup(E.locations_pt, metLocation),
+      eggLocation: eggLocation,
+      eggLocationName: lookup(E.locations_pt, eggLocation),
+      metLevel: D[0x1C] & 0x7F,
+      encounterType: D[0x1D],
       otId: u16(A, 4),
       otSid: u16(A, 6),
-      metLocation: u16(D, 0x0C),
-      eggLocation: u16(D, 0x0A),
-      pokeball: D[0x14],
+      pokeball: D[0x1B],
       checksumOk: calcChecksum === storedChecksum
     };
 
@@ -285,8 +303,20 @@
       p.push("invalid ability id " + mon.abilityId);
     }
     if(mon.pokeball > 24) p.push("Poke Ball id " + mon.pokeball + " out of range");
-    if(mon.metLocation > 3000) p.push("met location " + mon.metLocation + " implausible");
-    if(mon.eggLocation > 3000) p.push("egg location " + mon.eggLocation + " implausible");
+    // Gen 4 location IDs at or above 2000 are the documented "faraway place" /
+    // special range used for eggs and event Pokemon. They have no entry in the
+    // Pt name table and are NOT corruption -- the sample save's Mantyke is a
+    // hatched egg with egg location 2000 and met level 0.
+    var nLoc = enums().locations_pt.length;
+    ["metLocation", "eggLocation"].forEach(function(f){
+      var v = mon[f];
+      if((v >= nLoc && v < 2000) || v > 3000){
+        p.push(f.replace("L", " l") + " " + v + " outside the Pt table");
+      }
+    });
+    if(mon.metLevel < 0 || mon.metLevel > 100){
+      p.push("met level " + mon.metLevel + " out of range");
+    }
     if(mon.isNicknamed && mon.nickname.indexOf("�") !== -1){
       p.push("nickname contains undecodable characters");
     }
@@ -298,6 +328,28 @@
       p.push("level " + mon.level + " out of range");
     }
     return p;
+  }
+
+  // ---- box names ----------------------------------------------------------
+  var BOX_NAME_BYTES = 40;   // 20 chars per name
+
+  // The 18 box names sit immediately after the box Pokemon data. Confirmed
+  // empirically: the sample save decodes 18 clean "BOX 1".."BOX 18" defaults
+  // there, and the storage block has exactly 768 bytes left at that point
+  // (18 * 40 = 720 plus trailing).
+  //
+  // These matter because a Nuzlocke player keeps a box for the dead, and the
+  // Route Log sorts those Pokemon straight into the graveyard on that basis.
+  function readBoxNames(bytes, storageBase){
+    var start = storageBase + BOX_DATA_OFFSET + NUM_BOXES * SLOTS_PER_BOX * BOX_PKM_SIZE;
+    var names = [];
+    for(var i = 0; i < NUM_BOXES; i++){
+      var off = start + i * BOX_NAME_BYTES;
+      names.push(off + BOX_NAME_BYTES <= bytes.length
+        ? decodeText(bytes.subarray(off, off + BOX_NAME_BYTES), BOX_NAME_BYTES / 2)
+        : "Box " + (i + 1));
+    }
+    return names;
   }
 
   // ---- entry point --------------------------------------------------------
@@ -329,6 +381,7 @@
 
     return {
       container: container.note,
+      boxNames: readBoxNames(bytes, storage),
       fileSize: bytes.length,
       blocks: blocks,
       partyCount: partyCount,
