@@ -110,7 +110,7 @@ read through `currentGame()`.
 | Field | Meaning |
 | --- | --- |
 | `sp` | Species name. |
-| `m` | Method — `Grass`, `Surf`, `Cave`, `Rod`, `Poké Radar`, `Honey Tree`, `Gift`, `Static (event)`. Locations render grouped by this. |
+| `m` | Method — `Grass`, `Surf`, `Cave`, `Ground`, `Rod`, `Poké Radar`, `Honey Tree`, `Gift`, `Trade`, `Static (event)`. Locations render grouped by this. `Ground` is the spawn surface inside an interior (Old Chateau, Lost Tower, Snowpoint Temple) and is a real method, not a typo for `Grass`. A floor or area qualifier stays in the method: `Cave (B1F)`, `Ground (3F, 4F)`. |
 | `lv` | Level or range as a string; `"—"` when the sheet gives none. |
 | `t` | *Optional.* Time-of-day restriction, letters from `MDN` (Morning/Day/Night). **Omit entirely** when the species is available all day — it exists only to mark exceptions. |
 | `tier` | *Optional.* Which rods a fished species bites on, letters from `OGS` (Old/Good/Super). |
@@ -154,19 +154,20 @@ The authoritative reference is **`poke-docs/tools/EXTRACTION_GUIDE.md`**
 ## Current status (2026-09-15)
 
 - **Emerald** — complete. 88 locations, `guideComplete: true`.
-- **Renegade Platinum** — `RENEGADE_GUIDE` has **39 locations** /
-  505 encounters after `mergeSplitLocations` (45 raw entries / 507 rows),
-  Twinleaf Town → Route 215. That covers the **Roark, Gardenia, Fantina
-  and Maylene splits — through gym 4**. `guideComplete: false` (Wake
-  onward still to do).
-- `RENEGADE_BOSSES` is filled in well past that point; the *encounter
-  guide* is the part that now stops at gym 4.
+- **Renegade Platinum** — **complete**. `RENEGADE_GUIDE` has **72 locations /
+  1070 encounters** after `mergeSplitLocations` (96 raw entries / 1101 rows),
+  Twinleaf Town through the postgame. `guideComplete: true`.
+- **Legendaries are excluded by a standing instruction from the project
+  owner**, so "complete" means complete *for that scope*. Six legendaries
+  shipped before the rule and stay (Mew, Zapdos, Celebi, Entei, Raikou and the
+  Manaphy egg gift). Locations whose only content was a legendary static —
+  Flower Paradise, the Distortion World, Rock Peak / Iceberg / Iron Ruins, the
+  Acuity / Verity / Valor Caverns, Fullmoon and Newmoon Islands, Spear Pillar —
+  are absent by design, not missing. See EXTRACTION_GUIDE §2e.
 
-> **Count these, don't copy them forward.** The figures above were stale
-> for ten days before 2026-09-15 (the doc still said 27/322 when the
-> shipped file held 31/400 — the 2026-09-09 scope audit added locations
-> without updating this section). Re-derive them instead of trusting the
-> line you are reading:
+> **Count these, don't copy them forward.** The figures above went stale once
+> already (the doc said 27/322 when the shipped file held 31/400). Re-derive
+> them instead of trusting the line you are reading:
 >
 > ```
 > node -e 'const h=require("fs").readFileSync("index.html","utf8");
@@ -179,9 +180,26 @@ The authoritative reference is **`poke-docs/tools/EXTRACTION_GUIDE.md`**
 
 ### Open work
 
-**Gym order in this romhack is not vanilla.** The workbook's split sheets
-run **ROARK → GARDENiA → FANTINA → MAYLENE**: Fantina is the *third* gym
-(Hearthome), not Maylene. Level caps come straight off each split sheet:
+The encounter guide is done. What is left is not extraction:
+
+1. **Maniac Tunnel placement.** Its Cave table (28-32) is level-appropriate for
+   the Maylene split but its entrance is on Route 214, so it is ordered with the
+   Wake split. Cosmetic; move it if the human disagrees.
+2. **Resort Area** is one species (Magikarp) under a single `Surf and Rods
+   (1-100)` header, whose level and rate cells sit eight columns to the right of
+   its species. It is emitted as two rows, `Surf` and `Rod`, both `lv:"1-100"`,
+   and the Rod row has no `tier` because the sheet gives no O/G/S breakdown.
+   The only row in the guide shaped like that.
+3. **`Paras` and `Kecleon`** appear in the Great Marsh's `CHANGING POKEMON`
+   rotation roster but in none of the three area tables. Not added (nothing to
+   infer from), worth asking the human about.
+4. **Route 230's Good-Rod column sums to 80**, a typo in the source workbook.
+   No effect on the data; see EXTRACTION_GUIDE §2c.
+
+**Gym order in this romhack is not vanilla** — the split sheets run ROARK →
+GARDENiA → FANTINA → MAYLENE → WAKE → BYRON → CANDICE → VOLKNER → CHAMPiON →
+POST GAME, so Fantina is the *third* gym (Hearthome), not Maylene. Level caps
+come straight off each split sheet:
 
 | Split | Gym | Cap |
 | --- | --- | --- |
@@ -189,38 +207,25 @@ run **ROARK → GARDENiA → FANTINA → MAYLENE**: Fantina is the *third* gym
 | `GARDENiA SPLiT` | 2 — Eterna | 26 |
 | `FANTINA SPLiT ` | 3 — Hearthome | 33 |
 | `MAYLENE SPLiT ` | 4 — Veilstone | 39 |
-| `WAKE SPLiT ` | 5 — Pastoria | — |
+| `WAKE SPLiT ` | 5 — Pastoria | 44 |
+| `BYRON SPLiT` | 6 — Canalave | 53 |
+| `CANDICE SPLiT` | 7 — Snowpoint | 56 |
+| `VOLKNER SPLiT` | 8 — Sunyshore | 62 |
+| `CHAMPiON SPLiT` | Elite Four | 78 |
+| `POST GAME` | — | 89 |
 
 (Note the trailing spaces in some sheet names, and the lowercase `i` in
-`SPLiT`, `TRAiNERS`, `GARDENiA` — they are literal.)
+`SPLiT`, `TRAiNERS`, `GARDENiA`, `CHAMPiON` — they are literal.)
 
-Gyms 1–4 are **done** (see the Current status section). The Maylene
-split landed 2026-09-15 as eight locations / 105 encounters: Route 212
-(North), Pokémon Mansion (a Manaphy-egg gift, no wild table), Trophy
-Garden, Route 209, Lost Tower, Solaceon Ruins, Route 210 (South),
-Route 215. Hearthome City, Solaceon Town, Veilstone City and Galactic
-Hangar are bare labels on `ENCOUNTERS` with no rows under them, so they
-were omitted rather than shown empty.
+Locations that are towns/buildings with no grass or water tiles get omitted
+from the guide entirely rather than shown empty.
 
-The next increment is the **Wake split** (Pastoria, gym 5). Three
-things were found while doing Maylene and deliberately left for it —
-start here rather than re-deriving them:
-
-1. **Maniac Tunnel** (`ENCOUNTERS` cols 159-164, rows 6-14, a Cave
-   28-32 table) is level-appropriate for Maylene but its entrance is on
-   **Route 214**, which is a `WAKE SPLiT ` trainer location. Held back
-   on story-progression grounds, not data grounds. If that call is
-   wrong it is a one-block addition.
-2. **Jirachi**, a `Static Encounter (After Pastoria City)` at level 40
-   in band 145, rows 38-40 — sits next to Solaceon Ruins on the sheet
-   and is gated behind Pastoria, so it belongs to Wake or later.
-3. **Lost Tower's Ho-oh** at level 70 lives in the after-credits
-   legendaries block (band 327); the level-26-30 table shipped here is
-   the correct early-game clone. Same story for a level-70 Deoxys under
-   `VEILSTONE CITY` in that block.
-
-Locations that are towns/buildings with no grass or water tiles get
-omitted from the guide entirely rather than shown empty.
+**Run both audits after any encounter-data change** — they cover the whole
+sheet now and both read zero:
+`python3 tools/audit_encounter_counts.py` (per-band cell totals) and
+`python3 tools/verify_renegade_guide.py` (every location/species/method/level/
+time/tier tuple). They take a few minutes each; the second one is the real
+check.
 
 Longer term the human wants a real **local-LLM extraction pipeline**
 (`poke-docs/tools/extract_with_ollama.py`). For a ~18-location job,
