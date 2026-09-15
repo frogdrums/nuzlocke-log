@@ -983,6 +983,14 @@
             <option value="">None</option><option value="Sun">Sun</option><option value="Rain">Rain</option>
             <option value="Sand">Sand</option><option value="Hail">Hail</option>
           </select></div>
+          <!-- Doubles-vs-Singles only changes the SPREAD-move multiplier and
+               the Reflect/Light Screen fraction the engine already applies
+               (gen4.js:543/533) — see CLAUDE.md's "Doubles" note. No second
+               opposing mon or target picker here; that's an intentionally
+               separate, unscheduled piece of work. -->
+          <div><label class="f">Battle</label><select id="calcGameType">
+            <option value="Singles">Singles</option><option value="Doubles">Doubles</option>
+          </select></div>
         </div>
         <!-- No Terrain control: Renegade Platinum's mechanics settings use
              the Gen 4 (DPP) damage formula (see CLAUDE.md), and Terrain is
@@ -1853,13 +1861,13 @@
   //        per-species level for these, hence lv:"—".
   var RENEGADE_GUIDE = [
     { name: "Twinleaf Town", encounters: [
-      {sp:"Turtwig",m:"Gift",lv:"5"},{sp:"Chimchar",m:"Gift",lv:"5"},{sp:"Piplup",m:"Gift",lv:"5"},
       {sp:"Eevee",m:"Gift (from Mom)",lv:"5"},
       {sp:"Psyduck",m:"Surf",lv:"20-40"},{sp:"Golduck",m:"Surf",lv:"30-40"},
       {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Poliwag",m:"Rod",lv:"—",tier:"OG"},
       {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Poliwhirl",m:"Rod",lv:"—",tier:"S"}
     ]},
     { name: "Route 201", encounters: [
+      {sp:"Turtwig",m:"Gift (from Professor Rowan)",lv:"5"},
       {sp:"Starly",m:"Grass",lv:"4-5"},{sp:"Bidoof",m:"Grass",lv:"4-5"},{sp:"Pidgey",m:"Grass",lv:"4",t:"MD"},
       {sp:"Kricketot",m:"Grass",lv:"4",t:"MN"},{sp:"Nidoran ♂",m:"Grass",lv:"4-5"},{sp:"Nidoran ♀",m:"Grass",lv:"4-5"},
       {sp:"Hoothoot",m:"Grass",lv:"4",t:"N"},
@@ -1867,15 +1875,14 @@
       {sp:"Mew",m:"Static (event)",lv:"40"}
     ]},
     { name: "Sandgem Town", encounters: [
-      {sp:"Turtwig",m:"Gift (Rowan's briefcase)",lv:"5"},{sp:"Chimchar",m:"Gift (Rowan's briefcase)",lv:"5"},
-      {sp:"Piplup",m:"Gift (Rowan's briefcase)",lv:"5"}
+      {sp:"Chimchar",m:"Gift (Rowan's briefcase)",lv:"5"},{sp:"Piplup",m:"Gift (Rowan's briefcase)",lv:"5"}
     ]},
     { name: "Lake Verity", encounters: [
       {sp:"Starly",m:"Grass",lv:"4-5"},{sp:"Bidoof",m:"Grass",lv:"4"},{sp:"Surskit",m:"Grass",lv:"4-5"},
       {sp:"Azurill",m:"Grass",lv:"5"},{sp:"Psyduck",m:"Grass",lv:"5"},{sp:"Wingull",m:"Grass",lv:"4-5"},
       {sp:"Wynaut",m:"Poké Radar",lv:"5"},
-      {sp:"Surskit",m:"Surf",lv:"20-40"},{sp:"Masquerain",m:"Surf",lv:"30-40"},
-      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Feebas",m:"Rod",lv:"—",tier:"O"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"}
+      {sp:"Surskit",m:"Surf (after Distortion World)",lv:"20-40"},{sp:"Masquerain",m:"Surf (after Distortion World)",lv:"30-40"},
+      {sp:"Magikarp",m:"Rod (after Distortion World)",lv:"—",tier:"OG"},{sp:"Feebas",m:"Rod (after Distortion World)",lv:"—",tier:"O"},{sp:"Gyarados",m:"Rod (after Distortion World)",lv:"—",tier:"S"}
     ]},
     { name: "Route 202", encounters: [
       {sp:"Shinx",m:"Grass",lv:"5"},{sp:"Zigzagoon",m:"Grass",lv:"5"},{sp:"Sentret",m:"Grass",lv:"5",t:"MD"},
@@ -1964,7 +1971,7 @@
       {sp:"Spinarak",m:"Grass",lv:"11",t:"N"},{sp:"Roselia",m:"Poké Radar",lv:"11-12"}
     ]},
     { name: "Floaroma Town", encounters: [
-      {sp:"Chikorita",m:"Gift",lv:"15"},{sp:"Cyndaquil",m:"Gift",lv:"15"},{sp:"Totodile",m:"Gift",lv:"15"},
+      {sp:"Chikorita",m:"Gift (Interviewer)",lv:"15"},{sp:"Cyndaquil",m:"Gift (Interviewer)",lv:"15"},{sp:"Totodile",m:"Gift (Interviewer)",lv:"15"},
       {sp:"Skorupi",m:"Trade — give a Cherubi",lv:"—"}
     ]},
     { name: "Floaroma Meadow", encounters: [
@@ -2024,7 +2031,7 @@
       {sp:"Psyduck",m:"Surf",lv:"20-30"},{sp:"Golduck",m:"Surf",lv:"20-40"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
       {sp:"Poliwag",m:"Rod",lv:"—",tier:"OG"},{sp:"Dratini",m:"Rod",lv:"—",tier:"OG"},
       {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Poliwhirl",m:"Rod",lv:"—",tier:"S"},
-      {sp:"Dragonair",m:"Rod",lv:"—",tier:"S"},{sp:"Togepi",m:"Gift",lv:"1"},
+      {sp:"Dragonair",m:"Rod",lv:"—",tier:"S"},{sp:"Togepi",m:"Gift (from Cynthia)",lv:"1"},
       {sp:"Chatot",m:"Trade — give a Snorunt",lv:"—"}
     ]},
     { name: "Route 211 (West)", encounters: [
@@ -6074,6 +6081,11 @@
     });
 
     document.getElementById("calcRunBtn").addEventListener("click", runCalculator);
+    // Recalculate on toggle so a Singles/Doubles flip updates the numbers
+    // already on screen without requiring another Calculate click.
+    // runCalculator() itself no-ops safely (shows the species-required
+    // errors) if the form isn't filled in yet.
+    document.getElementById("calcGameType").addEventListener("change", runCalculator);
 
 
     refreshComputedStats("Atk");
@@ -6621,6 +6633,7 @@
     }
 
     var field = {
+      gameType: document.getElementById("calcGameType").value,
       weather: document.getElementById("calcWeather").value,
       isReflect: document.getElementById("calcReflect").checked,
       isLightScreen: document.getElementById("calcLightScreen").checked
@@ -6630,8 +6643,9 @@
     // pair of checkboxes for "the attacker also has screens up" — rather
     // than misapply the same two checkboxes to the wrong side, the
     // defender->attacker direction below computes without screens.
-    // Weather is a whole-field condition, so it does carry over as-is.
-    var reverseField = { weather: field.weather, isReflect: false, isLightScreen: false };
+    // Weather and Battle type (Singles/Doubles) are whole-field conditions,
+    // so both carry over as-is.
+    var reverseField = { gameType: field.gameType, weather: field.weather, isReflect: false, isLightScreen: false };
 
     var atkMoves = collectMoves("Atk");
     var defMoves = collectMoves("Def");

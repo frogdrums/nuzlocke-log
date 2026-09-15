@@ -845,7 +845,9 @@ var DPP_WEIGHTKG_BY_NORMALIZED_NAME = {
   // statsOverride (optional) is [hp,atk,def,spa,spd,spe] of already-known-
   // exact stats, used as-is instead of computing from level/nature/ivs/evs
   // (see buildPokemon). moveName: string. fieldOpts (all optional):
-  // {weather, terrain, isReflect, isLightScreen}.
+  // {weather, terrain, isReflect, isLightScreen, gameType}. gameType:
+  // 'Singles' (default) or 'Doubles' — see gen4.js:543/533 for the
+  // spread-move and screen-value effects this drives.
   function runCalculation(attackerOpts, defenderOpts, moveName, fieldOpts) {
     applyGameGlobals();
     fieldOpts = fieldOpts || {};
@@ -855,6 +857,7 @@ var DPP_WEIGHTKG_BY_NORMALIZED_NAME = {
       var move = buildMove(moveName, {});
       attacker.moves = [move];
       var field = new calc.Field({
+        gameType: fieldOpts.gameType || undefined,
         weather: fieldOpts.weather || undefined,
         terrain: fieldOpts.terrain || undefined,
         defenderSide: {
