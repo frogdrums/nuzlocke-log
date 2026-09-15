@@ -1817,11 +1817,14 @@
   // gracefully (renderChecklist/renderBosses show an empty-state) so the
   // game can be selected and wired up before any rows are filled in.
   // Wild encounter tables — extracted from the source spreadsheet's
-  // ENCOUNTERS sheet, Roark-split locations only so far (see CLAUDE.md
-  // romhack goal section for the rest of the game). Sandgem Town,
-  // Jubilife City, Oreburgh City and Oreburgh Gym have no wild encounter
-  // table in that sheet (no grass/water tiles) so they're left out of the
-  // Checklist entirely rather than shown with an empty species list.
+  // ENCOUNTERS sheet. Complete as of 2026-09-15: the whole game, Twinleaf
+  // Town through the postgame, minus legendaries (excluded by a standing
+  // instruction from the project owner — see CLAUDE.md). A location with no
+  // wild encounter table in that sheet (no grass or water tiles: Sandgem
+  // Town, Jubilife City, Oreburgh City, Oreburgh Gym, Solaceon Town,
+  // Veilstone City and friends) is left out of the Checklist entirely
+  // rather than shown with an empty species list, and so is a location
+  // whose only entry was a legendary.
   //
   // The ENCOUNTERS sheet isn't one vertical list — it's a grid of location
   // blocks read top-to-bottom within a ~7-column band, then left-to-right
@@ -5183,7 +5186,12 @@
       label: "Pokémon Emerald",
       shortLabel: "Emerald",
       guide: EMERALD_GUIDE,
-      guideComplete: true, // whole game done — Checklist note can say "All N locations"
+      // NOTE (2026-09-15): nothing reads guideComplete. It is a record of
+      // whether a game's guide is finished, not a switch — the Checklist
+      // header it was meant to toggle was never built, so setting it has no
+      // effect on what renders. Kept because it is the one place that states
+      // the intent; wire it up or drop it, but don't assume it does anything.
+      guideComplete: true,
       bosses: EMERALD_BOSSES,
       trainerFights: [], // Emerald folds every trainer into Bosses; no separate split data
       // Guide subtabs are per-game because the sections themselves differ,

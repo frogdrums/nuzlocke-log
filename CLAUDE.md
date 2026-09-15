@@ -124,8 +124,12 @@ Two conventions worth not rediscovering:
   Jubilife City, Oreburgh City, Oreburgh Gym) are **omitted** from the
   guide rather than listed with an empty species array.
 
-`guideComplete` on the `GAMES` entry flips the Checklist header between
-"All N locations" and "N locations extracted so far".
+`guideComplete` on the `GAMES` entry records whether a game's guide is
+finished. **It is inert** — checked 2026-09-15, nothing in `index.html` reads
+it, and the Checklist header it was documented as toggling ("All N locations"
+vs "N locations extracted so far") does not exist in the code. Setting it
+changes nothing that renders. Left in place as the one statement of intent;
+wire it up or delete it, but don't rely on it.
 
 ### Reading the ENCOUNTERS sheet
 
