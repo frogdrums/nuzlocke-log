@@ -4653,6 +4653,52 @@
   // set above, add an entry here, and push its id onto GAME_ORDER. No
   // render/UI code needs to change — see "Extending to a new game" in
   // ../CLAUDE.md.
+  // The documentation spreadsheet splits some locations by sub-area — "Route
+  // 204 (South)" and "(North)", Route 205, Route 211, and four Mt. Coronet
+  // entries. **The game does not.** Each of those is ONE location in Platinum
+  // (confirmed against the Gen 4 location table: Route 204 is id 19, Route 205
+  // id 20, Route 211 id 26, Mt. Coronet id 50), and a save file records only
+  // that single name — which is why an imported Pokémon caught on Route 204
+  // matched no Checklist location at all.
+  //
+  // Grouping them is also the more correct reading for a Nuzlocke regardless
+  // of import: the rule is one encounter per ROUTE, and listing Route 204
+  // twice implies two encounters where the game allows one.
+  //
+  // Done here, at load, rather than by editing RENEGADE_GUIDE itself. The raw
+  // per-sub-area shape is what tools/audit_encounter_counts.py balances
+  // against the spreadsheet's column bands, so rewriting the literal would
+  // break that audit for no gain.
+  //
+  // Exactly-identical rows (same species, method, level, time) are dropped as
+  // true duplicates. Rows that differ are ALL kept: Starly really does appear
+  // at Lv 6 in the south of Route 204 and Lv 13 in the north, the chips show
+  // their own level, and collapsing those into one "Lv 6-13" would invent
+  // intermediate levels the game never offers.
+  function mergeSplitLocations(guide){
+    var out = [], byBase = {};
+    guide.forEach(function(loc){
+      var base = loc.name.replace(/\s*\([^)]*\)\s*$/, "").trim();
+      var part = base === loc.name ? null : loc.name.slice(base.length).trim().replace(/^\(|\)$/g, "");
+      if(!byBase[base]){
+        // Takes the position of its FIRST part, which is the one you reach
+        // first in playthrough order.
+        byBase[base] = { name: base, encounters: [], parts: [], seen: {} };
+        out.push(byBase[base]);
+      }
+      var target = byBase[base];
+      if(part) target.parts.push(part);
+      loc.encounters.forEach(function(e){
+        var key = e.sp + "|" + e.m + "|" + e.lv + "|" + (e.t || "") + "|" + (e.tier || "");
+        if(target.seen[key]) return;
+        target.seen[key] = true;
+        target.encounters.push(e);
+      });
+    });
+    out.forEach(function(l){ delete l.seen; });
+    return out;
+  }
+
   var GAMES = {
     emerald: {
       id: "emerald",
@@ -4681,7 +4727,7 @@
       id: "renegade",
       label: "Pokémon Renegade Platinum",
       shortLabel: "Renegade Platinum",
-      guide: RENEGADE_GUIDE,
+      guide: mergeSplitLocations(RENEGADE_GUIDE),
       guideComplete: false, // Roark + Gardenia + Fantina splits (through gym 3)
       bosses: RENEGADE_BOSSES,
       trainerFights: RENEGADE_TRAINER_FIGHTS,
