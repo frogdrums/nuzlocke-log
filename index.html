@@ -457,19 +457,6 @@
      and down between them — which defeats the point of a damage calculator.
      Everything inside the card is tightened below 480px to buy the room. */
   .calc-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items:start; }
-  @media (max-width: 479px){
-    .calc-grid{ gap: 6px; }
-    .calc-mon-card{ padding: 8px 7px; }
-    .calc-mon-title{ font-size: 11px; margin-bottom: 6px; }
-    .calc-grid .f{ font-size: 10px; }
-    .calc-grid input, .calc-grid select{ font-size: 13px; padding: 5px 6px; }
-    .calc-move-slots .calc-dd-wrap input{ font-size: 13px; }
-    .calc-grid .add-form.row{ gap: 5px; }
-    .calc-stat-row{ gap: 2px; }
-    .calc-stat-row input{ font-size: 11px; padding: 3px 1px; }
-    .calc-stat-row label{ font-size: 8.5px; }
-    .calc-boost-row{ gap: 2px; }
-  }
   .calc-mon-card{
     background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px;
   }
@@ -479,10 +466,20 @@
   }
   .calc-iv-ev{ margin-top: 8px; }
   .calc-iv-ev-title{ font-size: 11px; color: var(--cream-dim); text-transform:uppercase; letter-spacing:0.5px; margin: 6px 0 3px; }
-  .calc-stat-row{ display:grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+  /* EVs go to 252, so every cell must fit three digits without clipping —
+     the padding is horizontal-zero rather than narrow for exactly that
+     reason, and the gap does the visual separating instead. */
+  .calc-stat-row{ display:grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
   .calc-stat-row div{ display:flex; flex-direction:column; gap:2px; }
   .calc-stat-row label{ font-size: 9.5px; color: var(--cream-dim); text-align:center; text-transform:uppercase; }
-  .calc-stat-row input{ width:100%; padding: 4px 2px; font-size: 13px; text-align:center; }
+  .calc-stat-row input{ width:100%; padding: 4px 0; font-size: 13px; text-align:center; }
+  /* Kill the number spinners on the IV/EV grid. They are pure cost here: each
+     cell is ~23px wide on a phone and the spinner eats roughly half of that
+     for a control nobody taps on touch. (They also make scrollWidth exceed
+     clientWidth even when the digits fit, which is a trap when measuring.) */
+  .calc-stat-row input[type=number]{ -moz-appearance: textfield; appearance: textfield; }
+  .calc-stat-row input[type=number]::-webkit-outer-spin-button,
+  .calc-stat-row input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin: 0; }
   .calc-checks{ display:flex; gap:16px; flex-wrap:wrap; margin-top: 10px; font-size: 13px; color: var(--cream-dim); }
   .calc-checks label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
 
@@ -508,9 +505,6 @@
 
   .calc-move-slots{ display:flex; flex-direction:column; gap:6px; }
   .calc-move-slots .calc-dd-wrap input{ font-size: 15px; }
-
-  .calc-team-chips{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom: 9px; }
-  .calc-team-chips .chip.active{ background: var(--lcd-dim); border-color: var(--lcd); color: #0d1712; font-weight:700; }
 
   /* ---------- save-file import (Calc tab) ----------
      Sits above the calculator grid. Collapsed to a one-line summary plus a
@@ -569,11 +563,7 @@
   /* Your six, above the calculator. Six across on any width — they are the
      primary control now that the per-side pickers and Swap Sides are gone,
      so they must never wrap out of reach on a phone. */
-  .calc-party{ margin-bottom: 10px; }
-  .calc-party-title{
-    font-size: 11px; color: var(--cream-dim); text-transform:uppercase;
-    letter-spacing:0.5px; margin-bottom: 4px;
-  }
+  .calc-party{ margin-bottom: 8px; display:flex; flex-direction:column; gap:4px; }
   .calc-party-slots{ display:grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
   .calc-party-slot{
     display:flex; flex-direction:column; align-items:center; gap:1px;
@@ -582,9 +572,35 @@
     font-family:'JetBrains Mono',monospace; -webkit-tap-highlight-color: transparent;
   }
   .calc-party-slot:active{ transform: scale(0.96); }
-  .calc-party-slot.active{ background: var(--lcd-dim); border-color: var(--lcd); color:#0d1712; }
+  /* Whose team a row is, carried by colour instead of a text label — the
+     labels cost a line of vertical space each on a screen that has none to
+     spare. Ally green / foe red, on both the border and the name, so the
+     distinction survives at a glance and doesn't rely on colour alone once
+     the active slot fills in. */
+  .calc-party-slots.ally .calc-party-slot{ border-color: rgba(110,224,110,0.45); }
+  .calc-party-slots.ally .cps-name{ color: #6ee06e; }
+  .calc-party-slots.ally .calc-party-slot.active{ background:#6ee06e; border-color:#6ee06e; }
+  .calc-party-slots.ally .calc-party-slot.active .cps-name{ color:#0d1712; }
+  .calc-party-slots.foe .calc-party-slot{ border-color: rgba(232,106,106,0.45); }
+  .calc-party-slots.foe .cps-name{ color: #e86a6a; }
+  .calc-party-slots.foe .calc-party-slot.active{ background:#e86a6a; border-color:#e86a6a; }
+  .calc-party-slots.foe .calc-party-slot.active .cps-name{ color:#1b0d0d; }
+  .calc-party-slot.active .cps-sub{ color:#0d1712; opacity:0.8; }
   .cps-name{ font-size: 11px; font-weight:700; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .cps-sub{ font-size: 9px; opacity:0.75; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* Inline field rows: the label sits BESIDE its control, not stacked above
+     it. Each stacked label was a full line of vertical space, and there are
+     four of them per side. Abbreviated (LV / NAT / ABL / ITM) so the label
+     column can be narrow enough to leave the control usable on a phone. */
+  .cf-row{ display:flex; gap:6px; margin-top:6px; }
+  .cf{ display:flex; align-items:center; gap:5px; flex:1; min-width:0; }
+  .cf > label{
+    flex:0 0 auto; font-size:9.5px; color:var(--cream-dim); text-transform:uppercase;
+    letter-spacing:0.5px; font-family:'JetBrains Mono',monospace;
+  }
+  .cf > input, .cf > select, .cf > .calc-dd-wrap{ flex:1 1 auto; min-width:0; }
+  .cf > input, .cf > select{ width:100%; }
   .save-file-label{
     display:inline-block; font-size: 13px; padding: 7px 12px; cursor:pointer;
     background: var(--bg); border:1px solid var(--line); border-radius: 10px; color: var(--cream);
@@ -720,6 +736,38 @@
   .modal-actions{ display:flex; gap:8px; }
   .modal-actions button{ flex:1; }
 
+  /* ---------- phone width ----------
+     MUST STAY LAST in this stylesheet. A media query adds no specificity, so
+     any equal-specificity rule further down the file wins over it regardless
+     of the query — which is exactly what happened when this block sat up next
+     to .calc-grid: .calc-mon-card's own `padding: 12px` was 16 lines below and
+     silently beat the override here, costing 24px of width per card on the
+     one screen that could least afford it.
+
+     The calculator is the tightest layout in the app: two cards side by side,
+     each holding a 6-column stat grid whose EV inputs must fit "252". Every
+     px reclaimed from an outer gutter goes straight into those cells. */
+  @media (max-width: 479px){
+    /* Scoped to the calculator, NOT applied to .content globally: the ask was
+       for narrower margins on THIS screen, and every other tab is a
+       comfortable single column that gains nothing from losing its gutter.
+       A negative margin reclaims .content's 16px without touching it. */
+    #panel-calculator{ margin-left: -8px; margin-right: -8px; }
+    .calc-grid{ gap: 6px; }
+    .calc-mon-card{ padding: 7px 5px; }
+    .calc-mon-title{ font-size: 11px; margin-bottom: 6px; }
+    .calc-grid input, .calc-grid select{ font-size: 13px; padding: 5px 6px; }
+    .calc-move-slots .calc-dd-wrap input{ font-size: 13px; }
+    .calc-stat-row{ gap: 4px; }
+    .calc-stat-row input{ font-size: 10px; padding: 3px 0; }
+    .calc-stat-row label{ font-size: 8.5px; }
+    .calc-boost-row{ gap: 3px; }
+    .calc-boost-row select{ font-size: 10px; padding: 3px 0; }
+    .cf{ gap: 4px; }
+    .cf-row{ gap: 4px; }
+    .cf > label{ font-size: 9px; }
+  }
+
   @media (prefers-reduced-motion: reduce){
     *{ transition: none !important; }
   }
@@ -848,40 +896,39 @@
         <!-- Your six, loaded from the Route Log. Replaces the old per-side
              "Load from Route Log" pickers and Simulate chip rows: the Route
              Log owns the roster now, and this is just a switcher. -->
+        <!-- Your six and the Simulated enemy team, as matching rows. No text
+             labels: green = yours, red = theirs, which is one glance instead
+             of a line of text each. -->
         <div class="calc-party" id="calcPartyBar" style="display:none;">
-          <div class="calc-party-title">Your team</div>
-          <div class="calc-party-slots" id="calcPartySlots"></div>
+          <div class="calc-party-slots ally" id="calcAllySlots"></div>
+          <div class="calc-party-slots foe" id="calcFoeSlots" style="display:none;"></div>
         </div>
 
         <div class="calc-grid">
           <div class="calc-mon-card">
             <div class="calc-mon-title">Your Pokémon</div>
-            <div class="calc-team-chips" id="calcAtkTeamChips" style="display:none;"></div>
-            <label class="f">Species</label>
             <div class="calc-dd-wrap">
-              <input type="text" id="calcAtkSpecies" autocomplete="off" placeholder="Start typing a species…">
+              <input type="text" id="calcAtkSpecies" autocomplete="off" placeholder="Species" aria-label="Species">
               <div class="calc-dd-list" id="calcAtkSpeciesDD" style="display:none;"></div>
             </div>
-            <div class="add-form row" style="margin:8px 0 0;">
-              <div><label class="f">Level</label><input type="number" id="calcAtkLevel" min="1" max="100" value="50"></div>
-              <div><label class="f">Nature</label><select id="calcAtkNature"></select></div>
+            <div class="cf-row">
+              <div class="cf"><label for="calcAtkLevel">LV</label><input type="number" id="calcAtkLevel" min="1" max="100" value="50"></div>
+              <div class="cf"><label for="calcAtkNature">NAT</label><select id="calcAtkNature"></select></div>
             </div>
-            <div class="add-form row">
-              <div><label class="f">Ability</label><select id="calcAtkAbility"></select></div>
-              <div>
-                <label class="f">Item</label>
+            <div class="cf-row">
+              <div class="cf"><label for="calcAtkAbility">ABL</label><select id="calcAtkAbility"></select></div>
+              <div class="cf"><label for="calcAtkItem">ITM</label>
                 <div class="calc-dd-wrap">
                   <input type="text" id="calcAtkItem" autocomplete="off" placeholder="(none)">
                   <div class="calc-dd-list" id="calcAtkItemDD" style="display:none;"></div>
                 </div>
               </div>
             </div>
-            <label class="f">Moves</label>
             <div class="calc-move-slots">
-              <div class="calc-dd-wrap"><input type="text" id="calcAtkMove1" autocomplete="off" placeholder="Move 1"><div class="calc-dd-list" id="calcAtkMove1DD" style="display:none;"></div></div>
-              <div class="calc-dd-wrap"><input type="text" id="calcAtkMove2" autocomplete="off" placeholder="Move 2"><div class="calc-dd-list" id="calcAtkMove2DD" style="display:none;"></div></div>
-              <div class="calc-dd-wrap"><input type="text" id="calcAtkMove3" autocomplete="off" placeholder="Move 3"><div class="calc-dd-list" id="calcAtkMove3DD" style="display:none;"></div></div>
-              <div class="calc-dd-wrap"><input type="text" id="calcAtkMove4" autocomplete="off" placeholder="Move 4"><div class="calc-dd-list" id="calcAtkMove4DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcAtkMove1" autocomplete="off" placeholder="Move 1" aria-label="Move 1"><div class="calc-dd-list" id="calcAtkMove1DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcAtkMove2" autocomplete="off" placeholder="Move 2" aria-label="Move 2"><div class="calc-dd-list" id="calcAtkMove2DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcAtkMove3" autocomplete="off" placeholder="Move 3" aria-label="Move 3"><div class="calc-dd-list" id="calcAtkMove3DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcAtkMove4" autocomplete="off" placeholder="Move 4" aria-label="Move 4"><div class="calc-dd-list" id="calcAtkMove4DD" style="display:none;"></div></div>
             </div>
             <div class="calc-iv-ev">
               <div class="calc-iv-ev-title">IVs</div>
@@ -896,32 +943,28 @@
 
           <div class="calc-mon-card">
             <div class="calc-mon-title">Opponent</div>
-            <div class="calc-team-chips" id="calcDefTeamChips" style="display:none;"></div>
-            <label class="f">Species</label>
             <div class="calc-dd-wrap">
-              <input type="text" id="calcDefSpecies" autocomplete="off" placeholder="Start typing a species…">
+              <input type="text" id="calcDefSpecies" autocomplete="off" placeholder="Species" aria-label="Species">
               <div class="calc-dd-list" id="calcDefSpeciesDD" style="display:none;"></div>
             </div>
-            <div class="add-form row" style="margin:8px 0 0;">
-              <div><label class="f">Level</label><input type="number" id="calcDefLevel" min="1" max="100" value="50"></div>
-              <div><label class="f">Nature</label><select id="calcDefNature"></select></div>
+            <div class="cf-row">
+              <div class="cf"><label for="calcDefLevel">LV</label><input type="number" id="calcDefLevel" min="1" max="100" value="50"></div>
+              <div class="cf"><label for="calcDefNature">NAT</label><select id="calcDefNature"></select></div>
             </div>
-            <div class="add-form row">
-              <div><label class="f">Ability</label><select id="calcDefAbility"></select></div>
-              <div>
-                <label class="f">Item</label>
+            <div class="cf-row">
+              <div class="cf"><label for="calcDefAbility">ABL</label><select id="calcDefAbility"></select></div>
+              <div class="cf"><label for="calcDefItem">ITM</label>
                 <div class="calc-dd-wrap">
                   <input type="text" id="calcDefItem" autocomplete="off" placeholder="(none)">
                   <div class="calc-dd-list" id="calcDefItemDD" style="display:none;"></div>
                 </div>
               </div>
             </div>
-            <label class="f">Moves</label>
             <div class="calc-move-slots">
-              <div class="calc-dd-wrap"><input type="text" id="calcDefMove1" autocomplete="off" placeholder="Move 1"><div class="calc-dd-list" id="calcDefMove1DD" style="display:none;"></div></div>
-              <div class="calc-dd-wrap"><input type="text" id="calcDefMove2" autocomplete="off" placeholder="Move 2"><div class="calc-dd-list" id="calcDefMove2DD" style="display:none;"></div></div>
-              <div class="calc-dd-wrap"><input type="text" id="calcDefMove3" autocomplete="off" placeholder="Move 3"><div class="calc-dd-list" id="calcDefMove3DD" style="display:none;"></div></div>
-              <div class="calc-dd-wrap"><input type="text" id="calcDefMove4" autocomplete="off" placeholder="Move 4"><div class="calc-dd-list" id="calcDefMove4DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcDefMove1" autocomplete="off" placeholder="Move 1" aria-label="Move 1"><div class="calc-dd-list" id="calcDefMove1DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcDefMove2" autocomplete="off" placeholder="Move 2" aria-label="Move 2"><div class="calc-dd-list" id="calcDefMove2DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcDefMove3" autocomplete="off" placeholder="Move 3" aria-label="Move 3"><div class="calc-dd-list" id="calcDefMove3DD" style="display:none;"></div></div>
+              <div class="calc-dd-wrap"><input type="text" id="calcDefMove4" autocomplete="off" placeholder="Move 4" aria-label="Move 4"><div class="calc-dd-list" id="calcDefMove4DD" style="display:none;"></div></div>
             </div>
             <div class="calc-iv-ev">
               <div class="calc-iv-ev-title">IVs</div>
@@ -5043,14 +5086,19 @@
 
   document.getElementById("gameSelect").addEventListener("change", function(e){
     state.selectedGame = e.target.value;
+    // A Simulated enemy team belongs to the game it came from. The ally row
+    // derives from currentRun() and so switches games by itself, but this is
+    // a cache — dropping it here is what keeps the two rows consistent
+    // instead of leaving one game's trainer sitting opposite another's team.
+    calcTeamState.Atk = calcTeamState.Def = null;
     save();
     renderAll();
     // The Calc tab's DOM is static (not re-rendered from state by
     // renderAll() — see the comment above renderCalculator()), so if
     // it's already open when the game switches, its own re-render has
     // to be triggered explicitly — otherwise calcUnavailable/calcBody
-    // and the "Load from Route Log" picker would keep showing the
-    // previous game's state until the next tab click.
+    // and the team bar would keep showing the previous game's state
+    // until the next tab click.
     renderCalculator();
     renderPokedex();   // same reasoning — the Pokédex panel is also static
     scheduleBackgroundCalcLoad();
@@ -5941,6 +5989,12 @@
       refreshComputedStats("Atk");
     });
     document.getElementById("calcDefSpecies").addEventListener("change", function(){
+      // The red row advertises "who the Opponent currently holds". Once you
+      // type a different species it no longer does, so drop the active marker
+      // rather than let a slot keep claiming it. The team stays listed so you
+      // can flip back to it.
+      if(calcTeamState.Def) calcTeamState.Def.index = -1;
+      renderCalcPartyBar();
       populateAbilitySelect(document.getElementById("calcDefAbility"), this.value);
       clearStatsOverrideOn("Def");
       refreshComputedStats("Def");
@@ -6359,11 +6413,11 @@
     calcStatsOverride[side] = null;
   }
 
-  // Set by loadTeamIntoCalculator() — { team: [mon, ...], index: N } for
-  // whichever side currently has a Simulated-in trainer/boss team loaded,
-  // so the chip row (renderTeamChips) can be redrawn and so Swap Sides
-  // can carry the team assignment across to the other side along with
-  // everything else.
+  // Set by loadTeamIntoCalculator() — { team: [mon, ...], index: N } for the
+  // Simulated trainer/boss team, which is always the Opponent side. `.Atk` is
+  // vestigial: nothing writes it since the per-side chip rows became one
+  // shared bar. `index: -1` means the Opponent fields have been hand-edited
+  // since, so no slot is the loaded one.
   var calcTeamState = { Atk: null, Def: null };
 
   function readMonForm(side){
@@ -6597,23 +6651,14 @@
     refreshComputedStats(side);
   }
 
-  // Team-switcher chip row above a side's fields — only shown once a
-  // Simulated team has 2+ mons loaded on that side (a single mon has
-  // nothing to switch between). Re-rendered on every pick/swap so the
-  // active chip stays in sync.
+  // Retained under its original name because every Simulate call site uses
+  // it, but there is no per-side chip row any more — both teams share one bar
+  // at the top of the tab, so this just redraws that.
+  // Kept as the name every Simulate call site already uses, but there is no
+  // longer a per-side chip row to draw — both teams live in the one bar at the
+  // top, so this just redraws it. `side` is ignored deliberately.
   function renderTeamChips(side){
-    var el = document.getElementById("calc"+side+"TeamChips");
-    if(!el) return;
-    var t = calcTeamState[side];
-    if(!t || !t.team || t.team.length < 2){
-      el.style.display = "none";
-      el.innerHTML = "";
-      return;
-    }
-    el.style.display = "";
-    el.innerHTML = t.team.map(function(m, i){
-      return '<button type="button" class="chip'+(i===t.index?' active':'')+'" data-act="calc-team-pick" data-side="'+side+'" data-idx="'+i+'">'+escapeHTML(m.name)+' Lv'+m.level+'</button>';
-    }).join("");
+    renderCalcPartyBar();
   }
 
   // Entry point from monSimButtonHTML's Simulate Team button — `team` is
@@ -6651,28 +6696,62 @@
   }
 
   var calcPartyIndex = 0;
+  // Which mon is loaded, by id — see renderCalcPartyBar() for why the index
+  // alone is not enough.
+  var calcPartyId = null;
 
+  function slotHTML(name, sub, active, act, idx){
+    return '<button type="button" class="calc-party-slot' + (active ? " active" : "") +
+           '" data-act="' + act + '" data-idx="' + idx + '">' +
+           '<span class="cps-name">' + escapeHTML(name) + '</span>' +
+           '<span class="cps-sub">' + escapeHTML(sub) + '</span>' +
+           '</button>';
+  }
+
+  // Two matching rows: your six (green) on top, the Simulated enemy team
+  // (red) below. Simulate always loads the trainer into the Opponent side, so
+  // the foe row is simply calcTeamState.Def.
   function renderCalcPartyBar(){
     var bar = document.getElementById("calcPartyBar");
-    var slots = document.getElementById("calcPartySlots");
-    if(!bar || !slots) return;
+    var ally = document.getElementById("calcAllySlots");
+    var foe = document.getElementById("calcFoeSlots");
+    if(!bar || !ally || !foe) return;
+
     var party = currentCalcParty();
-    if(!party.length){
-      bar.style.display = "none";
-      slots.innerHTML = "";
-      return;
+    // Follow the mon, not the slot number. currentCalcParty() filters on
+    // status, so fainting or boxing anyone shifts every later index down — an
+    // index-only clamp then leaves the highlight on a DIFFERENT mon than the
+    // one actually loaded into the fields.
+    if(calcPartyId){
+      var moved = party.findIndex ? party.findIndex(function(m){ return m.id === calcPartyId; }) : -1;
+      if(moved === -1){
+        for(var q = 0; q < party.length; q++){ if(party[q].id === calcPartyId){ moved = q; break; } }
+      }
+      if(moved >= 0) calcPartyIndex = moved;
     }
-    // Keep the highlight in range when the team shrinks under it.
     if(calcPartyIndex >= party.length) calcPartyIndex = 0;
-    bar.style.display = "";
-    slots.innerHTML = party.map(function(m, i){
-      var name = m.nick || m.species;
-      return '<button type="button" class="calc-party-slot' + (i === calcPartyIndex ? " active" : "") +
-             '" data-act="calc-party-pick" data-idx="' + i + '">' +
-             '<span class="cps-name">' + escapeHTML(name) + '</span>' +
-             '<span class="cps-sub">' + escapeHTML(m.species) + (m.level ? " · L" + m.level : "") + '</span>' +
-             '</button>';
+    ally.innerHTML = party.map(function(m, i){
+      return slotHTML(m.nick || m.species,
+                      m.species + (m.level ? " · L" + m.level : ""),
+                      i === calcPartyIndex, "calc-party-pick", i);
     }).join("");
+    ally.style.display = party.length ? "" : "none";
+
+    // Unlike the ally row, a single-mon enemy "team" is still worth showing —
+    // it labels who the Opponent side currently holds, which is otherwise only
+    // visible by reading the species field.
+    var t = (state.selectedGame === "renegade") ? calcTeamState.Def : null;
+    var team = (t && t.team) || [];
+    foe.innerHTML = team.map(function(m, i){
+      // index -1 means "the Opponent fields were edited by hand since" — the
+      // team is still there to flip back through, but no slot claims to be
+      // the one loaded, because it no longer is.
+      return slotHTML(dexSpeciesName(m.name), m.level ? "L" + m.level : "",
+                      i === t.index, "calc-team-pick", i);
+    }).join("");
+    foe.style.display = team.length ? "" : "none";
+
+    bar.style.display = (party.length || team.length) ? "" : "none";
   }
 
   // Fill a side from a Route Log mon. When that mon came from a save file it
@@ -6981,6 +7060,7 @@
     var party = currentCalcParty();
     if(!party.length) return;
     calcPartyIndex = 0;
+    calcPartyId = party[0].id;
     var calcTab = document.querySelector('.tab[data-tab="calculator"]');
     if(calcTab) calcTab.click();
     // The bundle may still be loading; applying the mon has to wait for it.
@@ -7186,9 +7266,7 @@
     }
 
     if(act === "calc-team-pick"){
-      var pickSide = btn.getAttribute("data-side");
-      var pickIdx = parseInt(btn.getAttribute("data-idx"), 10);
-      pickTeamMember(pickSide, pickIdx);
+      pickTeamMember("Def", parseInt(btn.getAttribute("data-idx"), 10));
       return;
     }
 
@@ -7201,6 +7279,7 @@
         // bar claimed slot N was active while the form still held slot 1.
         if(applyRunMonToSide(partyNow[partyIdx], "Atk")){
           calcPartyIndex = partyIdx;
+          calcPartyId = partyNow[partyIdx].id;
           renderCalcPartyBar();
         } else {
           showToast(partyNow[partyIdx].species + " isn't in the Renegade dex");
@@ -7290,6 +7369,10 @@
     var game = currentGame();
     showConfirm("This clears your " + game.shortLabel + " run: roster, graveyard, badges. Other games' runs are untouched. Export a backup first if you want to keep it. Continue?", function(){
       state.runs[state.selectedGame] = defaultRunState();
+      // Same reason as the game-switch handler: the foe row is a cache, and a
+      // Simulated team that outlives the run it was opened against is exactly
+      // the staleness the ally row was rewritten to avoid.
+      calcTeamState.Atk = calcTeamState.Def = null;
       save();
       renderAll();
       showToast(game.shortLabel + " run reset");
