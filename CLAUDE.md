@@ -151,15 +151,31 @@ The authoritative reference is **`poke-docs/tools/EXTRACTION_GUIDE.md`**
 
 ---
 
-## Current status (2026-09-05)
+## Current status (2026-09-15)
 
 - **Emerald** — complete. 88 locations, `guideComplete: true`.
-- **Renegade Platinum** — `RENEGADE_GUIDE` has **27 locations** /
-  322 encounters, Twinleaf Town → Route 208. That covers the **Roark,
-  Gardenia and Fantina splits — through gym 3**. `guideComplete: false`
-  (Maylene onward still to do).
+- **Renegade Platinum** — `RENEGADE_GUIDE` has **39 locations** /
+  505 encounters after `mergeSplitLocations` (45 raw entries / 507 rows),
+  Twinleaf Town → Route 215. That covers the **Roark, Gardenia, Fantina
+  and Maylene splits — through gym 4**. `guideComplete: false` (Wake
+  onward still to do).
 - `RENEGADE_BOSSES` is filled in well past that point; the *encounter
-  guide* is the part that now stops at gym 3.
+  guide* is the part that now stops at gym 4.
+
+> **Count these, don't copy them forward.** The figures above were stale
+> for ten days before 2026-09-15 (the doc still said 27/322 when the
+> shipped file held 31/400 — the 2026-09-09 scope audit added locations
+> without updating this section). Re-derive them instead of trusting the
+> line you are reading:
+>
+> ```
+> node -e 'const h=require("fs").readFileSync("index.html","utf8");
+> let i=h.indexOf("var RENEGADE_GUIDE = ["),j=h.indexOf("\n  ];",i);
+> const g=eval(h.slice(i+20,j+4));
+> let a=h.indexOf("function mergeSplitLocations(guide){"),b=h.indexOf("\n  }\n",a);
+> const m=eval("("+h.slice(a,b+4)+")")(g);
+> console.log(m.length,"locations",m.reduce((x,l)=>x+l.encounters.length,0),"encounters");'
+> ```
 
 ### Open work
 
@@ -172,16 +188,36 @@ run **ROARK → GARDENiA → FANTINA → MAYLENE**: Fantina is the *third* gym
 | `ROARK SPLiT` | 1 — Oreburgh | 16 |
 | `GARDENiA SPLiT` | 2 — Eterna | 26 |
 | `FANTINA SPLiT ` | 3 — Hearthome | 33 |
-| `MAYLENE SPLiT ` | 4 — Veilstone | — |
+| `MAYLENE SPLiT ` | 4 — Veilstone | 39 |
+| `WAKE SPLiT ` | 5 — Pastoria | — |
 
 (Note the trailing spaces in some sheet names, and the lowercase `i` in
 `SPLiT`, `TRAiNERS`, `GARDENiA` — they are literal.)
 
-Gyms 1–3 are **done** (see the Current status section). The next
-increment is the **Maylene split** (Veilstone): Route 212 North,
-Pokémon Mansion, Route 209, Lost Tower, Solaceon Town, Solaceon Ruins,
-Route 210 (South), Route 215, Veilstone City — read the split sheet
-itself for the authoritative order rather than trusting this list.
+Gyms 1–4 are **done** (see the Current status section). The Maylene
+split landed 2026-09-15 as eight locations / 105 encounters: Route 212
+(North), Pokémon Mansion (a Manaphy-egg gift, no wild table), Trophy
+Garden, Route 209, Lost Tower, Solaceon Ruins, Route 210 (South),
+Route 215. Hearthome City, Solaceon Town, Veilstone City and Galactic
+Hangar are bare labels on `ENCOUNTERS` with no rows under them, so they
+were omitted rather than shown empty.
+
+The next increment is the **Wake split** (Pastoria, gym 5). Three
+things were found while doing Maylene and deliberately left for it —
+start here rather than re-deriving them:
+
+1. **Maniac Tunnel** (`ENCOUNTERS` cols 159-164, rows 6-14, a Cave
+   28-32 table) is level-appropriate for Maylene but its entrance is on
+   **Route 214**, which is a `WAKE SPLiT ` trainer location. Held back
+   on story-progression grounds, not data grounds. If that call is
+   wrong it is a one-block addition.
+2. **Jirachi**, a `Static Encounter (After Pastoria City)` at level 40
+   in band 145, rows 38-40 — sits next to Solaceon Ruins on the sheet
+   and is gated behind Pastoria, so it belongs to Wake or later.
+3. **Lost Tower's Ho-oh** at level 70 lives in the after-credits
+   legendaries block (band 327); the level-26-30 table shipped here is
+   the correct early-game clone. Same story for a level-70 Deoxys under
+   `VEILSTONE CITY` in that block.
 
 Locations that are towns/buildings with no grass or water tiles get
 omitted from the guide entirely rather than shown empty.
