@@ -1817,11 +1817,14 @@
   // gracefully (renderChecklist/renderBosses show an empty-state) so the
   // game can be selected and wired up before any rows are filled in.
   // Wild encounter tables — extracted from the source spreadsheet's
-  // ENCOUNTERS sheet, Roark-split locations only so far (see CLAUDE.md
-  // romhack goal section for the rest of the game). Sandgem Town,
-  // Jubilife City, Oreburgh City and Oreburgh Gym have no wild encounter
-  // table in that sheet (no grass/water tiles) so they're left out of the
-  // Checklist entirely rather than shown with an empty species list.
+  // ENCOUNTERS sheet. Complete as of 2026-09-15: the whole game, Twinleaf
+  // Town through the postgame, minus legendaries (excluded by a standing
+  // instruction from the project owner — see CLAUDE.md). A location with no
+  // wild encounter table in that sheet (no grass or water tiles: Sandgem
+  // Town, Jubilife City, Oreburgh City, Oreburgh Gym, Solaceon Town,
+  // Veilstone City and friends) is left out of the Checklist entirely
+  // rather than shown with an empty species list, and so is a location
+  // whose only entry was a legendary.
   //
   // The ENCOUNTERS sheet isn't one vertical list — it's a grid of location
   // blocks read top-to-bottom within a ~7-column band, then left-to-right
@@ -2112,6 +2115,475 @@
       {sp:"Shroomish",m:"Honey Tree",lv:"—"},{sp:"Exeggcute",m:"Honey Tree",lv:"—"},
       {sp:"Seedot",m:"Honey Tree",lv:"—"},{sp:"Tangela",m:"Honey Tree",lv:"—"},
       {sp:"Raikou",m:"Static (event)",lv:"60"}
+    ]},
+    { name: "Route 212 (North)", encounters: [
+      {sp:"Staravia",m:"Grass",lv:"25-26"},{sp:"Marill",m:"Grass",lv:"24"},
+      {sp:"Roselia",m:"Grass",lv:"25"},{sp:"Weepinbell",m:"Grass",lv:"26"},
+      {sp:"Gloom",m:"Grass",lv:"26"},{sp:"Kirlia",m:"Grass",lv:"25"},
+      {sp:"Smeargle",m:"Grass",lv:"24-25"},{sp:"Farfetch'd",m:"Poké Radar",lv:"25-26"},
+      {sp:"Marill",m:"Surf",lv:"20-30"},{sp:"Azumarill",m:"Surf",lv:"30-40"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Goldeen",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Seaking",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Cherubi",m:"Honey Tree",lv:"—"},{sp:"Shroomish",m:"Honey Tree",lv:"—"},
+      {sp:"Exeggcute",m:"Honey Tree",lv:"—"},{sp:"Nuzleaf",m:"Honey Tree",lv:"—"},
+      {sp:"Tangela",m:"Honey Tree",lv:"—"}
+    ]},
+    { name: "Pokémon Mansion", encounters: [
+      {sp:"Manaphy",m:"Gift (egg from Mr. Backlot)",lv:"1"}
+    ]},
+    { name: "Trophy Garden", encounters: [
+      {sp:"Pichu",m:"Grass",lv:"24"},{sp:"Pikachu",m:"Grass",lv:"26"},{sp:"Cleffa",m:"Grass",lv:"24"},
+      {sp:"Igglybuff",m:"Grass",lv:"24"},{sp:"Togepi",m:"Grass",lv:"24"},
+      {sp:"Porygon",m:"Grass",lv:"26"},{sp:"Happiny",m:"Grass",lv:"24"},
+      {sp:"Eevee",m:"Grass",lv:"25-26"},{sp:"Castform",m:"Poké Radar",lv:"24-26"}
+    ]},
+    { name: "Route 209", encounters: [
+      {sp:"Staravia",m:"Grass",lv:"26"},{sp:"Glameow",m:"Grass",lv:"25"},
+      {sp:"Vulpix",m:"Grass",lv:"25"},{sp:"Bonsly",m:"Grass",lv:"25"},{sp:"Mime Jr.",m:"Grass",lv:"24"},
+      {sp:"Snubbull",m:"Grass",lv:"25"},{sp:"Meowth",m:"Grass",lv:"25"},
+      {sp:"Chansey",m:"Grass",lv:"26"},{sp:"Purugly",m:"Poké Radar",lv:"24-26"},
+      {sp:"Psyduck",m:"Surf",lv:"20-30"},{sp:"Golduck",m:"Surf",lv:"20-40"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Goldeen",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Seaking",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Staravia",m:"Honey Tree",lv:"—"},{sp:"Pidgeotto",m:"Honey Tree",lv:"—"},
+      {sp:"Noctowl",m:"Honey Tree",lv:"—"},{sp:"Swellow",m:"Honey Tree",lv:"—"},
+      {sp:"Farfetch'd",m:"Honey Tree",lv:"—"},{sp:"Spiritomb",m:"Static (event)",lv:"30"}
+    ]},
+    { name: "Lost Tower", encounters: [
+      {sp:"Shuppet",m:"Ground (1F, 2F)",lv:"26"},{sp:"Duskull",m:"Ground (1F, 2F)",lv:"26"},
+      {sp:"Golbat",m:"Ground (1F, 2F)",lv:"27-28"},{sp:"Haunter",m:"Ground (1F, 2F)",lv:"27-28"},
+      {sp:"Murkrow",m:"Ground (1F, 2F)",lv:"27"},{sp:"Misdreavus",m:"Ground (1F, 2F)",lv:"27"},
+      {sp:"Dusclops",m:"Ground (1F, 2F)",lv:"28-29"},{sp:"Banette",m:"Ground (1F, 2F)",lv:"28-29"},
+      {sp:"Shuppet",m:"Ground (3F, 4F)",lv:"27"},{sp:"Duskull",m:"Ground (3F, 4F)",lv:"27"},
+      {sp:"Golbat",m:"Ground (3F, 4F)",lv:"28-29"},{sp:"Haunter",m:"Ground (3F, 4F)",lv:"28-29"},
+      {sp:"Murkrow",m:"Ground (3F, 4F)",lv:"28"},{sp:"Misdreavus",m:"Ground (3F, 4F)",lv:"28"},
+      {sp:"Dusclops",m:"Ground (3F, 4F)",lv:"29"},{sp:"Banette",m:"Ground (3F, 4F)",lv:"29"},
+      {sp:"Shuppet",m:"Ground (5F)",lv:"28"},{sp:"Duskull",m:"Ground (5F)",lv:"28"},
+      {sp:"Golbat",m:"Ground (5F)",lv:"29-30"},{sp:"Haunter",m:"Ground (5F)",lv:"29-30"},
+      {sp:"Murkrow",m:"Ground (5F)",lv:"29"},{sp:"Misdreavus",m:"Ground (5F)",lv:"29"},
+      {sp:"Dusclops",m:"Ground (5F)",lv:"30"},{sp:"Banette",m:"Ground (5F)",lv:"30"}
+    ]},
+    { name: "Solaceon Ruins", encounters: [
+      {sp:"Unown",m:"Cave (Every Floor)",lv:"20-30"}
+    ]},
+    { name: "Route 210 (South)", encounters: [
+      {sp:"Kricketune",m:"Grass",lv:"28"},{sp:"Nuzleaf",m:"Grass",lv:"28"},
+      {sp:"Scyther",m:"Grass",lv:"28-30"},{sp:"Pinsir",m:"Grass",lv:"29"},
+      {sp:"Miltank",m:"Grass",lv:"29"},{sp:"Tauros",m:"Grass",lv:"29"},
+      {sp:"Pidgeotto",m:"Grass",lv:"28",t:"MD"},{sp:"Rapidash",m:"Grass",lv:"30"},
+      {sp:"Noctowl",m:"Grass",lv:"28",t:"N"},{sp:"Kecleon",m:"Poké Radar",lv:"29-30"},
+      {sp:"Combee",m:"Honey Tree",lv:"—"},{sp:"Pineco",m:"Honey Tree",lv:"—"},
+      {sp:"Silcoon",m:"Honey Tree",lv:"—"},{sp:"Cascoon",m:"Honey Tree",lv:"—"},
+      {sp:"Wormadam (P)",m:"Honey Tree",lv:"—"},{sp:"Mothim",m:"Honey Tree",lv:"—"},
+      {sp:"Heracross",m:"Honey Tree",lv:"—"}
+    ]},
+    { name: "Route 215", encounters: [
+      {sp:"Marill",m:"Grass",lv:"27-28"},{sp:"Drowzee",m:"Grass",lv:"27"},
+      {sp:"Lickitung",m:"Grass",lv:"28-30"},{sp:"Kadabra",m:"Grass",lv:"28-30"},
+      {sp:"Mightyena",m:"Grass",lv:"29"},{sp:"Linoone",m:"Grass",lv:"29"},
+      {sp:"Hypno",m:"Grass",lv:"30"},{sp:"Absol",m:"Poké Radar",lv:"29-30"},
+      {sp:"Aipom",m:"Honey Tree",lv:"—"},{sp:"Vigoroth",m:"Honey Tree",lv:"—"},
+      {sp:"Metapod",m:"Honey Tree",lv:"—"},{sp:"Kakuna",m:"Honey Tree",lv:"—"},
+      {sp:"Munchlax",m:"Honey Tree",lv:"—"}
+    ]},
+    { name: "Maniac Tunnel", encounters: [
+      {sp:"Diglett",m:"Cave",lv:"28-29"},{sp:"Whismur",m:"Cave",lv:"28"},
+      {sp:"Hippopotas",m:"Cave",lv:"29-30"},{sp:"Trapinch",m:"Cave",lv:"28-29"},
+      {sp:"Loudred",m:"Cave",lv:"31"},{sp:"Ditto",m:"Cave",lv:"29"},{sp:"Dugtrio",m:"Cave",lv:"32"}
+    ]},
+    { name: "Route 214", encounters: [
+      {sp:"Graveler",m:"Grass",lv:"30-32"},{sp:"Houndour",m:"Grass",lv:"28"},
+      {sp:"Rhyhorn",m:"Grass",lv:"29-30"},{sp:"Numel",m:"Grass",lv:"28-29"},
+      {sp:"Spoink",m:"Grass",lv:"28"},{sp:"Cacnea",m:"Grass",lv:"28"},
+      {sp:"Spinda",m:"Poké Radar",lv:"28-32"},{sp:"Psyduck",m:"Surf",lv:"20-30"},
+      {sp:"Golduck",m:"Surf",lv:"20-40"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Goldeen",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Seaking",m:"Rod",lv:"—",tier:"S"},{sp:"Aipom",m:"Honey Tree",lv:"—"},
+      {sp:"Vigoroth",m:"Honey Tree",lv:"—"},{sp:"Butterfree",m:"Honey Tree",lv:"—"},
+      {sp:"Beedrill",m:"Honey Tree",lv:"—"},{sp:"Munchlax",m:"Honey Tree",lv:"—"}
+    ]},
+    { name: "Valor Lakefront", encounters: [
+      {sp:"Girafarig",m:"Grass",lv:"31-33"},{sp:"Bibarel",m:"Grass",lv:"33"},
+      {sp:"Nidorina",m:"Grass",lv:"31-33"},{sp:"Nidorino",m:"Grass",lv:"31-33"},
+      {sp:"Kricketune",m:"Grass",lv:"33"},{sp:"Venomoth",m:"Poké Radar",lv:"33"}
+    ]},
+    { name: "Route 213", encounters: [
+      {sp:"Gastrodon",m:"Grass",lv:"32-34"},{sp:"Floatzel",m:"Grass",lv:"33"},
+      {sp:"Pelipper",m:"Grass",lv:"33"},{sp:"Swellow",m:"Grass",lv:"32-34"},
+      {sp:"Chatot",m:"Grass",lv:"32",t:"MD"},{sp:"Shuckle",m:"Grass",lv:"32"},
+      {sp:"Absol",m:"Poké Radar",lv:"32-34"},{sp:"Tentacool",m:"Surf",lv:"20-30"},
+      {sp:"Wingull",m:"Surf",lv:"20-30"},{sp:"Tentacruel",m:"Surf",lv:"20-40"},
+      {sp:"Pelipper",m:"Surf",lv:"20-40"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Remoraid",m:"Rod",lv:"—",tier:"OG"},{sp:"Wailmer",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Octillery",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Wailord",m:"Rod",lv:"—",tier:"S"},{sp:"Staravia",m:"Honey Tree",lv:"—"},
+      {sp:"Pidgeotto",m:"Honey Tree",lv:"—"},{sp:"Noctowl",m:"Honey Tree",lv:"—"},
+      {sp:"Swellow",m:"Honey Tree",lv:"—"},{sp:"Farfetch'd",m:"Honey Tree",lv:"—"}
+    ]},
+    { name: "Pastoria City", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"20-30"},{sp:"Shellos",m:"Surf",lv:"20-30"},
+      {sp:"Tentacruel",m:"Surf",lv:"20-40"},{sp:"Gastrodon",m:"Surf",lv:"20-40"},
+      {sp:"Lapras",m:"Gift (from an old lady)",lv:"35"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Poliwag",m:"Rod",lv:"—",tier:"OG"},{sp:"Carvanha",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Poliwhirl",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Sharpedo",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Great Marsh (Area 1 and 2)", encounters: [
+      {sp:"Bibarel",m:"Grass",lv:"34-36"},{sp:"Quagsire",m:"Grass",lv:"34"},
+      {sp:"Tropius",m:"Grass",lv:"35-36"},{sp:"Tangela",m:"Grass",lv:"33-35"},
+      {sp:"Carnivine",m:"Grass",lv:"34"}
+    ]},
+    { name: "Great Marsh (Area 3 and 4)", encounters: [
+      {sp:"Parasect",m:"Grass",lv:"34-36"},{sp:"Exeggcute",m:"Grass",lv:"33"},
+      {sp:"Croagunk",m:"Grass",lv:"33-34"},{sp:"Toxicroak",m:"Grass",lv:"36"},
+      {sp:"Kangaskhan",m:"Grass",lv:"35-36"},{sp:"Yanma",m:"Grass",lv:"34-36"}
+    ]},
+    { name: "Great Marsh (Area 5 and 6)", encounters: [
+      {sp:"Skorupi",m:"Grass",lv:"33-34"},{sp:"Gulpin",m:"Grass",lv:"33"},
+      {sp:"Shroomish",m:"Grass",lv:"33-34"},{sp:"Swalot",m:"Grass",lv:"35-36"},
+      {sp:"Breloom",m:"Grass",lv:"35-36"},{sp:"Drapion",m:"Grass",lv:"36"},
+      {sp:"Wooper",m:"Surf",lv:"20-30"},{sp:"Quagsire",m:"Surf",lv:"20-40"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Barboach",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Carvanha",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Whiscash",m:"Rod",lv:"—",tier:"S"},{sp:"Sharpedo",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Route 212 (South)", encounters: [
+      {sp:"Croagunk",m:"Grass",lv:"33"},{sp:"Grimer",m:"Grass",lv:"33"},
+      {sp:"Koffing",m:"Grass",lv:"33-34"},{sp:"Ekans",m:"Grass",lv:"33-34"},
+      {sp:"Weepinbell",m:"Grass",lv:"36"},{sp:"Lombre",m:"Grass",lv:"36"},
+      {sp:"Arbok",m:"Grass",lv:"36"},{sp:"Toxicroak",m:"Grass",lv:"36"},
+      {sp:"Muk",m:"Poké Radar",lv:"36"},{sp:"Weezing",m:"Poké Radar",lv:"36"},
+      {sp:"Shellos",m:"Surf",lv:"20-30"},{sp:"Wooper",m:"Surf",lv:"20-30"},
+      {sp:"Gastrodon",m:"Surf",lv:"20-40"},{sp:"Quagsire",m:"Surf",lv:"20-40"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Barboach",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Remoraid",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Whiscash",m:"Rod",lv:"—",tier:"S"},{sp:"Octillery",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Cherrim",m:"Honey Tree",lv:"—"},{sp:"Shroomish",m:"Honey Tree",lv:"—"},
+      {sp:"Exeggcute",m:"Honey Tree",lv:"—"},{sp:"Nuzleaf",m:"Honey Tree",lv:"—"},
+      {sp:"Tangela",m:"Honey Tree",lv:"—"}
+    ]},
+    { name: "Route 210 (North)", encounters: [
+      {sp:"Swablu",m:"Grass",lv:"34"},{sp:"Fearow",m:"Grass",lv:"37"},{sp:"Machoke",m:"Grass",lv:"36"},
+      {sp:"Drifblim",m:"Grass",lv:"38"},{sp:"Zangoose",m:"Grass",lv:"38"},
+      {sp:"Seviper",m:"Grass",lv:"38"},{sp:"Skarmory",m:"Grass",lv:"37-38"},
+      {sp:"Shelgon",m:"Grass",lv:"37-38"},{sp:"Altaria",m:"Poké Radar",lv:"38"},
+      {sp:"Psyduck",m:"Surf",lv:"20-30"},{sp:"Golduck",m:"Surf",lv:"20-40"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Horsea",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Dratini",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Seadra",m:"Rod",lv:"—",tier:"S"},{sp:"Dragonair",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Staravia",m:"Honey Tree",lv:"—"},{sp:"Pidgeotto",m:"Honey Tree",lv:"—"},
+      {sp:"Noctowl",m:"Honey Tree",lv:"—"},{sp:"Swellow",m:"Honey Tree",lv:"—"},
+      {sp:"Farfetch'd",m:"Honey Tree",lv:"—"}
+    ]},
+    { name: "Celestic Town", encounters: [
+      {sp:"Psyduck",m:"Surf",lv:"20-30"},{sp:"Golduck",m:"Surf",lv:"20-40"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Relicanth",m:"Rod",lv:"—",tier:"OGS"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Fuego Ironworks", encounters: [
+      {sp:"Magnemite",m:"Grass",lv:"36-37"},{sp:"Magmar",m:"Grass",lv:"38-39"},
+      {sp:"Magneton",m:"Grass",lv:"40"},{sp:"Manectric",m:"Grass",lv:"39-40"},
+      {sp:"Forretress",m:"Grass",lv:"40"},{sp:"Weezing",m:"Poké Radar",lv:"37-39"},
+      {sp:"Shellos",m:"Surf",lv:"30-40"},{sp:"Tentacool",m:"Surf",lv:"30-40"},
+      {sp:"Tentacruel",m:"Surf",lv:"35-45"},{sp:"Gastrodon",m:"Surf",lv:"35-45"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Finneon",m:"Rod",lv:"—",tier:"G"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Lumineon",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Shellder",m:"Rod",lv:"—",tier:"S"},{sp:"Combee",m:"Honey Tree",lv:"—"},
+      {sp:"Forretress",m:"Honey Tree",lv:"—"},{sp:"Wormadam (P)",m:"Honey Tree",lv:"—"},
+      {sp:"Mothim",m:"Honey Tree",lv:"—"},{sp:"Beautifly",m:"Honey Tree",lv:"—"},
+      {sp:"Dustox",m:"Honey Tree",lv:"—"},{sp:"Heracross",m:"Honey Tree",lv:"—"},
+      {sp:"Vespiquen",m:"Honey Tree",lv:"—"}
+    ]},
+    { name: "Route 219", encounters: [
+      {sp:"Wingull",m:"Surf",lv:"30-40"},{sp:"Tentacool",m:"Surf",lv:"30-40"},
+      {sp:"Pelipper",m:"Surf",lv:"35-45"},{sp:"Tentacruel",m:"Surf",lv:"35-45"},
+      {sp:"Krabby",m:"Rod",lv:"—",tier:"OG"},{sp:"Horsea",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Clamperl",m:"Rod",lv:"—",tier:"OG"},{sp:"Kingler",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Seadra",m:"Rod",lv:"—",tier:"S"},{sp:"Huntail",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Gorebyss",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Route 220", encounters: [
+      {sp:"Wingull",m:"Surf",lv:"30-40"},{sp:"Mantyke",m:"Surf",lv:"30-40"},
+      {sp:"Pelipper",m:"Surf",lv:"35-45"},{sp:"Mantine",m:"Surf",lv:"35-45"},
+      {sp:"Luvdisc",m:"Rod",lv:"—",tier:"OGS"},{sp:"Horsea",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Corsola",m:"Rod",lv:"—",tier:"OGS"},{sp:"Seadra",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Route 221", encounters: [
+      {sp:"Sudowoodo",m:"Grass",lv:"39"},{sp:"Skuntank",m:"Grass",lv:"40"},
+      {sp:"Nidorina",m:"Grass",lv:"37-39"},{sp:"Nidorino",m:"Grass",lv:"38"},
+      {sp:"Farfetch'd",m:"Grass",lv:"38-40"},{sp:"Girafarig",m:"Grass",lv:"39"},
+      {sp:"Dodrio",m:"Grass",lv:"40"},{sp:"Wingull",m:"Surf",lv:"30-40"},
+      {sp:"Tentacool",m:"Surf",lv:"30-40"},{sp:"Pelipper",m:"Surf",lv:"35-45"},
+      {sp:"Tentacruel",m:"Surf",lv:"35-45"},{sp:"Krabby",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Horsea",m:"Rod",lv:"—",tier:"OG"},{sp:"Clamperl",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Kingler",m:"Rod",lv:"—",tier:"S"},{sp:"Seadra",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Huntail",m:"Rod",lv:"—",tier:"S"},{sp:"Gorebyss",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Cherrim",m:"Honey Tree",lv:"—"},{sp:"Shroomish",m:"Honey Tree",lv:"—"},
+      {sp:"Exeggcute",m:"Honey Tree",lv:"—"},{sp:"Nuzleaf",m:"Honey Tree",lv:"—"},
+      {sp:"Tangela",m:"Honey Tree",lv:"—"}
+    ]},
+    { name: "Route 218", encounters: [
+      {sp:"Floatzel",m:"Grass",lv:"39"},{sp:"Gastrodon",m:"Grass",lv:"39"},
+      {sp:"Purugly",m:"Grass",lv:"39"},{sp:"Mr. Mime",m:"Grass",lv:"39"},
+      {sp:"Electrode",m:"Grass",lv:"39"},{sp:"Ditto",m:"Grass",lv:"38-39"},
+      {sp:"Electabuzz",m:"Grass",lv:"38-39"},{sp:"Chatot",m:"Grass",lv:"38",t:"MD"},
+      {sp:"Tentacool",m:"Surf",lv:"20-35"},{sp:"Shellos",m:"Surf",lv:"20-35"},
+      {sp:"Tentacruel",m:"Surf",lv:"20-35"},{sp:"Gastrodon",m:"Surf",lv:"30-45"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Finneon",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Staryu",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Lumineon",m:"Rod",lv:"—",tier:"S"},{sp:"Starmie",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Combee",m:"Honey Tree",lv:"—"},{sp:"Forretress",m:"Honey Tree",lv:"—"},
+      {sp:"Wormadam (P)",m:"Honey Tree",lv:"—"},{sp:"Mothim",m:"Honey Tree",lv:"—"},
+      {sp:"Beautifly",m:"Honey Tree",lv:"—"},{sp:"Dustox",m:"Honey Tree",lv:"—"},
+      {sp:"Heracross",m:"Honey Tree",lv:"—"},{sp:"Vespiquen",m:"Honey Tree",lv:"—"}
+    ]},
+    { name: "Canalave City", encounters: [
+      {sp:"Tentacool",m:"Surf",lv:"30-40"},{sp:"Shellos",m:"Surf",lv:"30-40"},
+      {sp:"Tentacruel",m:"Surf",lv:"35-45"},{sp:"Gastrodon",m:"Surf",lv:"35-45"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Finneon",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Staryu",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Lumineon",m:"Rod",lv:"—",tier:"S"},{sp:"Starmie",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Iron Island (1F, B1F)", encounters: [
+      {sp:"Graveler",m:"Cave",lv:"41-42"},{sp:"Golbat",m:"Cave",lv:"42"},
+      {sp:"Lairon",m:"Cave",lv:"41-42"},{sp:"Mawile",m:"Cave",lv:"42"},{sp:"Sableye",m:"Cave",lv:"42"},
+      {sp:"Nosepass",m:"Cave",lv:"42"},{sp:"Rhydon",m:"Cave",lv:"43"},{sp:"Steelix",m:"Cave",lv:"43"}
+    ]},
+    { name: "Iron Island (B2F, B3F)", encounters: [
+      {sp:"Graveler",m:"Cave",lv:"43-44"},{sp:"Golbat",m:"Cave",lv:"44"},
+      {sp:"Lairon",m:"Cave",lv:"43-44"},{sp:"Mawile",m:"Cave",lv:"44"},{sp:"Sableye",m:"Cave",lv:"44"},
+      {sp:"Nosepass",m:"Cave",lv:"44"},{sp:"Rhydon",m:"Cave",lv:"45"},{sp:"Steelix",m:"Cave",lv:"45"}
+    ]},
+    { name: "Iron Island (Outside)", encounters: [
+      {sp:"Wingull",m:"Surf",lv:"30-40"},{sp:"Tentacool",m:"Surf",lv:"30-40"},
+      {sp:"Pelipper",m:"Surf",lv:"35-45"},{sp:"Tentacruel",m:"Surf",lv:"35-45"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Finneon",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Qwilfish",m:"Rod",lv:"—",tier:"OGS"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Lumineon",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Lake Valor", encounters: [
+      {sp:"Staravia",m:"Grass",lv:"53-54"},{sp:"Bibarel",m:"Grass",lv:"53-54"},
+      {sp:"Masquerain",m:"Grass",lv:"53-54"},{sp:"Lickitung",m:"Grass",lv:"53"},
+      {sp:"Golduck",m:"Grass",lv:"54"},{sp:"Wobbuffet",m:"Poké Radar",lv:"53-54"},
+      {sp:"Surskit",m:"Surf",lv:"35-45"},{sp:"Masquerain",m:"Surf",lv:"45-55"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Route 217", encounters: [
+      {sp:"Piloswine",m:"Grass",lv:"46-48"},{sp:"Snorunt",m:"Grass",lv:"44"},
+      {sp:"Sneasel",m:"Grass",lv:"46-48"},{sp:"Jynx",m:"Grass",lv:"47"},
+      {sp:"Abomasnow",m:"Grass",lv:"48"},{sp:"Glalie",m:"Grass",lv:"47"},
+      {sp:"Delibird",m:"Grass",lv:"47"},{sp:"Froslass",m:"Poké Radar",lv:"47-48"}
+    ]},
+    { name: "Acuity Lakefront", encounters: [
+      {sp:"Piloswine",m:"Grass",lv:"47-49"},{sp:"Snorunt",m:"Grass",lv:"45"},
+      {sp:"Sneasel",m:"Grass",lv:"47-49"},{sp:"Jynx",m:"Grass",lv:"48"},
+      {sp:"Abomasnow",m:"Grass",lv:"49"},{sp:"Glalie",m:"Grass",lv:"48"},
+      {sp:"Delibird",m:"Grass",lv:"48"},{sp:"Froslass",m:"Poké Radar",lv:"48-49"}
+    ]},
+    { name: "Lake Acuity", encounters: [
+      {sp:"Sneasel",m:"Grass",lv:"49-50"},{sp:"Abomasnow",m:"Grass",lv:"49-51"},
+      {sp:"Piloswine",m:"Grass",lv:"49-50"},{sp:"Jynx",m:"Grass",lv:"49-51"},
+      {sp:"Glalie",m:"Grass",lv:"50"},{sp:"Wobbuffet",m:"Poké Radar",lv:"50"},
+      {sp:"Sealeo",m:"Surf",lv:"45-50"},{sp:"Dewgong",m:"Surf",lv:"45-50"},
+      {sp:"Lapras",m:"Surf",lv:"45-50"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Snowpoint Temple (1F, B1F, B2F, B3F)", encounters: [
+      {sp:"Golbat",m:"Ground",lv:"48-49"},{sp:"Graveler",m:"Ground",lv:"48"},
+      {sp:"Sneasel",m:"Ground",lv:"47-48"},{sp:"Steelix",m:"Ground",lv:"50"},
+      {sp:"Jynx",m:"Ground",lv:"49"},{sp:"Glalie",m:"Ground",lv:"49"},
+      {sp:"Froslass",m:"Ground",lv:"49"},{sp:"Weavile",m:"Ground",lv:"50"}
+    ]},
+    { name: "Snowpoint Temple (B4F, B5F)", encounters: [
+      {sp:"Golbat",m:"Ground",lv:"48-50"},{sp:"Graveler",m:"Ground",lv:"48"},
+      {sp:"Sneasel",m:"Ground",lv:"47-48"},{sp:"Steelix",m:"Ground",lv:"50"},
+      {sp:"Jynx",m:"Ground",lv:"50"},{sp:"Glalie",m:"Ground",lv:"50"},
+      {sp:"Froslass",m:"Ground",lv:"50"},{sp:"Weavile",m:"Ground",lv:"50"}
+    ]},
+    { name: "Mt. Coronet (2F, 3F)", encounters: [
+      {sp:"Graveler",m:"Cave",lv:"50"},{sp:"Bronzong",m:"Cave",lv:"51"},
+      {sp:"Clefairy",m:"Cave",lv:"49"},{sp:"Nosepass",m:"Cave",lv:"49"},
+      {sp:"Chimecho",m:"Cave",lv:"50"},{sp:"Golbat",m:"Cave",lv:"50"},{sp:"Metang",m:"Cave",lv:"50-51"},
+      {sp:"Solrock",m:"Cave",lv:"50-51"},{sp:"Lunatone",m:"Cave",lv:"50-51"}
+    ]},
+    { name: "Mt. Coronet (4F)", encounters: [
+      {sp:"Graveler",m:"Cave",lv:"51"},{sp:"Bronzong",m:"Cave",lv:"52"},
+      {sp:"Clefairy",m:"Cave",lv:"50"},{sp:"Nosepass",m:"Cave",lv:"50"},
+      {sp:"Chimecho",m:"Cave",lv:"51"},{sp:"Golbat",m:"Cave",lv:"51"},{sp:"Metang",m:"Cave",lv:"51-52"},
+      {sp:"Solrock",m:"Cave",lv:"51-52"},{sp:"Lunatone",m:"Cave",lv:"51-52"},
+      {sp:"Zubat",m:"Surf",lv:"35-45"},{sp:"Golbat",m:"Surf",lv:"45-55"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Horsea",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Dratini",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Seadra",m:"Rod",lv:"—",tier:"S"},{sp:"Dragonair",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Mt. Coronet (Snow Area)", encounters: [
+      {sp:"Abomasnow",m:"Grass",lv:"51-52"},{sp:"Medicham",m:"Grass",lv:"52"},
+      {sp:"Loudred",m:"Grass",lv:"50-51"},{sp:"Absol",m:"Grass",lv:"51"},
+      {sp:"Donphan",m:"Grass",lv:"51-52"},{sp:"Ursaring",m:"Grass",lv:"51-52"},
+      {sp:"Clefable",m:"Poké Radar",lv:"51-52"}
+    ]},
+    { name: "Mt. Coronet (Summit)", encounters: [
+      {sp:"Abomasnow",m:"Grass",lv:"52-53"},{sp:"Medicham",m:"Grass",lv:"53"},
+      {sp:"Loudred",m:"Grass",lv:"51-52"},{sp:"Absol",m:"Grass",lv:"52"},
+      {sp:"Donphan",m:"Grass",lv:"52-53"},{sp:"Ursaring",m:"Grass",lv:"52-53"},
+      {sp:"Clefable",m:"Poké Radar",lv:"52-53"}
+    ]},
+    { name: "Mt. Coronet (5F, 6F, 7F)", encounters: [
+      {sp:"Graveler",m:"Cave",lv:"52"},{sp:"Bronzong",m:"Cave",lv:"53"},
+      {sp:"Clefairy",m:"Cave",lv:"51"},{sp:"Nosepass",m:"Cave",lv:"51"},
+      {sp:"Chimecho",m:"Cave",lv:"52"},{sp:"Golbat",m:"Cave",lv:"52"},{sp:"Metang",m:"Cave",lv:"52-53"},
+      {sp:"Solrock",m:"Cave",lv:"52-53"},{sp:"Lunatone",m:"Cave",lv:"52-53"}
+    ]},
+    { name: "Route 222", encounters: [
+      {sp:"Electabuzz",m:"Grass",lv:"53"},{sp:"Floatzel",m:"Grass",lv:"54"},
+      {sp:"Luxio",m:"Grass",lv:"53"},{sp:"Purugly",m:"Grass",lv:"53-54"},
+      {sp:"Pelipper",m:"Grass",lv:"54"},{sp:"Flaaffy",m:"Grass",lv:"53"},
+      {sp:"Mr. Mime",m:"Grass",lv:"53-54"},{sp:"Chatot",m:"Grass",lv:"53",t:"MD"},
+      {sp:"Delcatty",m:"Poké Radar",lv:"53-54"},{sp:"Tentacool",m:"Surf",lv:"35-45"},
+      {sp:"Wingull",m:"Surf",lv:"35-45"},{sp:"Tentacruel",m:"Surf",lv:"45-55"},
+      {sp:"Pelipper",m:"Surf",lv:"45-55"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Remoraid",m:"Rod",lv:"—",tier:"OG"},{sp:"Wailmer",m:"Rod",lv:"—",tier:"OGS"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Octillery",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Wailord",m:"Rod",lv:"—",tier:"S"},{sp:"Tangela",m:"Honey Tree",lv:"—"},
+      {sp:"Heracross",m:"Honey Tree",lv:"—"},{sp:"Farfetch'd",m:"Honey Tree",lv:"—"},
+      {sp:"Snorlax",m:"Honey Tree",lv:"—"}
+    ]},
+    { name: "Sunyshore City", encounters: [
+      {sp:"Tentacruel",m:"Surf",lv:"50-60"},{sp:"Pelipper",m:"Surf",lv:"50-60"},
+      {sp:"Mantine",m:"Surf",lv:"50-60"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Krabby",m:"Rod",lv:"—",tier:"OG"},{sp:"Staryu",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Kingler",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Starmie",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Route 223", encounters: [
+      {sp:"Tentacruel",m:"Surf",lv:"50-60"},{sp:"Pelipper",m:"Surf",lv:"50-60"},
+      {sp:"Mantine",m:"Surf",lv:"50-60"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Remoraid",m:"Rod",lv:"—",tier:"OG"},{sp:"Wailmer",m:"Rod",lv:"—",tier:"OGS"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Octillery",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Wailord",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Victory Road (1Fa)", encounters: [
+      {sp:"Machoke",m:"Cave",lv:"59"},{sp:"Golbat",m:"Cave",lv:"59"},{sp:"Graveler",m:"Cave",lv:"59"},
+      {sp:"Medicham",m:"Cave",lv:"59"},{sp:"Hariyama",m:"Cave",lv:"59"},{sp:"Gabite",m:"Cave",lv:"59"},
+      {sp:"Rhydon",m:"Cave",lv:"59"},{sp:"Steelix",m:"Cave",lv:"59"}
+    ]},
+    { name: "Victory Road (1Fb 1,2,3)", encounters: [
+      {sp:"Azumarill",m:"Cave",lv:"59"},{sp:"Floatzel",m:"Cave",lv:"59"},
+      {sp:"Graveler",m:"Cave",lv:"59"},{sp:"Machoke",m:"Cave",lv:"59"},{sp:"Medicham",m:"Cave",lv:"59"},
+      {sp:"Steelix",m:"Cave",lv:"59"},{sp:"Golbat",m:"Cave",lv:"59"},{sp:"Gabite",m:"Cave",lv:"59"},
+      {sp:"Sealeo",m:"Surf",lv:"50-60"},{sp:"Dewgong",m:"Surf",lv:"50-60"},
+      {sp:"Lapras",m:"Surf",lv:"50-60"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Victory Road (2F)", encounters: [
+      {sp:"Steelix",m:"Cave",lv:"59"},{sp:"Magneton",m:"Cave",lv:"59"},{sp:"Graveler",m:"Cave",lv:"59"},
+      {sp:"Kadabra",m:"Cave",lv:"59"},{sp:"Lickitung",m:"Cave",lv:"59"},{sp:"Golbat",m:"Cave",lv:"59"},
+      {sp:"Marowak",m:"Cave",lv:"59"},{sp:"Gabite",m:"Cave",lv:"59"}
+    ]},
+    { name: "Victory Road (B1F)", encounters: [
+      {sp:"Azumarill",m:"Cave",lv:"59"},{sp:"Floatzel",m:"Cave",lv:"59"},
+      {sp:"Graveler",m:"Cave",lv:"59"},{sp:"Mawile",m:"Cave",lv:"59"},{sp:"Sableye",m:"Cave",lv:"59"},
+      {sp:"Dewgong",m:"Cave",lv:"59"},{sp:"Golbat",m:"Cave",lv:"59"},{sp:"Gabite",m:"Cave",lv:"59"},
+      {sp:"Floatzel",m:"Surf",lv:"50-60"},{sp:"Golbat",m:"Surf",lv:"50-60"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Pokémon League", encounters: [
+      {sp:"Tentacruel",m:"Surf",lv:"50-60"},{sp:"Pelipper",m:"Surf",lv:"50-60"},
+      {sp:"Mantine",m:"Surf",lv:"50-60"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Luvdisc",m:"Rod",lv:"—",tier:"OGS"},{sp:"Corsola",m:"Rod",lv:"—",tier:"OGS"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Route 224", encounters: [
+      {sp:"Beautifly",m:"Grass",lv:"59"},{sp:"Dustox",m:"Grass",lv:"59"},
+      {sp:"Weepinbell",m:"Grass",lv:"59"},{sp:"Chatot",m:"Grass",lv:"59",t:"MD"},
+      {sp:"Roselia",m:"Grass",lv:"59"},{sp:"Gastrodon",m:"Grass",lv:"59"},
+      {sp:"Shuckle",m:"Grass",lv:"59"},{sp:"Xatu",m:"Grass",lv:"59"},
+      {sp:"Gloom",m:"Grass",lv:"59",t:"N"},{sp:"Tentacruel",m:"Surf",lv:"50-60"},
+      {sp:"Pelipper",m:"Surf",lv:"50-60"},{sp:"Gastrodon",m:"Surf",lv:"50-60"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Luvdisc",m:"Rod",lv:"—",tier:"OGS"},
+      {sp:"Corsola",m:"Rod",lv:"—",tier:"OGS"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Route 225", encounters: [
+      {sp:"Fearow",m:"Grass",lv:"66"},{sp:"Machoke",m:"Grass",lv:"65"},
+      {sp:"Graveler",m:"Grass",lv:"65-66"},{sp:"Raticate",m:"Grass",lv:"65-67"},
+      {sp:"Primeape",m:"Grass",lv:"65-67"},{sp:"Hariyama",m:"Grass",lv:"67"},
+      {sp:"Grumpig",m:"Grass",lv:"66-67"},{sp:"Poliwhirl",m:"Surf",lv:"65-67"},
+      {sp:"Golduck",m:"Surf",lv:"65-67"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Barboach",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Whiscash",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Route 226", encounters: [
+      {sp:"Raticate",m:"Grass",lv:"65"},{sp:"Fearow",m:"Grass",lv:"66"},
+      {sp:"Arbok",m:"Grass",lv:"66-67"},{sp:"Sandslash",m:"Grass",lv:"66-67"},
+      {sp:"Rapidash",m:"Grass",lv:"67"},{sp:"Dodrio",m:"Grass",lv:"67"},
+      {sp:"Kingler",m:"Grass",lv:"66-67"},{sp:"Wingull",m:"Surf",lv:"65-67"},
+      {sp:"Pelipper",m:"Surf",lv:"65-67"},{sp:"Tentacruel",m:"Surf",lv:"65-67"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Horsea",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Relicanth",m:"Rod",lv:"—",tier:"OGS"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Seadra",m:"Rod",lv:"—",tier:"S"},{sp:"Magikarp (GER)",m:"Trade",lv:"—"}
+    ]},
+    { name: "Route 227", encounters: [
+      {sp:"Rhydon",m:"Grass",lv:"67"},{sp:"Camerupt",m:"Grass",lv:"67"},
+      {sp:"Skarmory",m:"Grass",lv:"66-67"},{sp:"Gligar",m:"Grass",lv:"65-67"},
+      {sp:"Weezing",m:"Grass",lv:"66-67"},{sp:"Torkoal",m:"Grass",lv:"65"},
+      {sp:"Spinda",m:"Grass",lv:"66"},{sp:"Poliwhirl",m:"Surf",lv:"65-67"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Barboach",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},{sp:"Whiscash",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Route 228", encounters: [
+      {sp:"Cacturne",m:"Grass",lv:"66"},{sp:"Sandslash",m:"Grass",lv:"66"},
+      {sp:"Dugtrio",m:"Grass",lv:"65-67"},{sp:"Vibrava",m:"Grass",lv:"65"},
+      {sp:"Claydol",m:"Grass",lv:"67"},{sp:"Hippowdon",m:"Grass",lv:"66-67"},
+      {sp:"Metang",m:"Grass",lv:"65"},{sp:"Gabite",m:"Grass",lv:"65"},
+      {sp:"Poliwhirl",m:"Surf",lv:"65-67"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Barboach",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Whiscash",m:"Rod",lv:"—",tier:"GS"}
+    ]},
+    { name: "Route 229", encounters: [
+      {sp:"Scyther",m:"Grass",lv:"66"},{sp:"Pinsir",m:"Grass",lv:"66"},
+      {sp:"Ledian",m:"Grass",lv:"65-67",t:"M"},{sp:"Sunkern",m:"Grass",lv:"65-67",t:"D"},
+      {sp:"Ariados",m:"Grass",lv:"65-67",t:"N"},{sp:"Roselia",m:"Grass",lv:"65-67"},
+      {sp:"Venomoth",m:"Grass",lv:"67"},{sp:"Weepinbell",m:"Grass",lv:"66"},
+      {sp:"Illumise",m:"Grass",lv:"65-67"},{sp:"Volbeat",m:"Grass",lv:"65-67"},
+      {sp:"Masquerain",m:"Surf",lv:"65-67"},{sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},
+      {sp:"Goldeen",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Seaking",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Resort Area", encounters: [
+      {sp:"Magikarp",m:"Surf",lv:"1-100"},{sp:"Magikarp",m:"Rod",lv:"1-100"}
+    ]},
+    { name: "Route 230", encounters: [
+      {sp:"Pelipper",m:"Grass",lv:"66"},{sp:"Floatzel",m:"Grass",lv:"66"},
+      {sp:"Gastrodon",m:"Grass",lv:"66-67"},{sp:"Golduck",m:"Grass",lv:"67"},
+      {sp:"Tropius",m:"Grass",lv:"66-67"},{sp:"Zangoose",m:"Grass",lv:"66"},
+      {sp:"Seviper",m:"Grass",lv:"66"},{sp:"Togetic",m:"Grass",lv:"65"},
+      {sp:"Sealeo",m:"Surf",lv:"65-67"},{sp:"Tentacruel",m:"Surf",lv:"65-67"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Corsola",m:"Rod",lv:"—",tier:"OGS"},
+      {sp:"Wailmer",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"},
+      {sp:"Wailord",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Stark Mountain (Outside)", encounters: [
+      {sp:"Fearow",m:"Grass",lv:"67"},{sp:"Rhydon",m:"Grass",lv:"68"},
+      {sp:"Camerupt",m:"Grass",lv:"67-68"},{sp:"Machoke",m:"Grass",lv:"66"},
+      {sp:"Skarmory",m:"Grass",lv:"67"},{sp:"Gligar",m:"Grass",lv:"66"},{sp:"Magmar",m:"Grass",lv:"67"},
+      {sp:"Torkoal",m:"Grass",lv:"67-68"}
+    ]},
+    { name: "Stark Mountain (Inside)", encounters: [
+      {sp:"Golbat",m:"Cave",lv:"67"},{sp:"Rhydon",m:"Cave",lv:"69"},{sp:"Magcargo",m:"Cave",lv:"68"},
+      {sp:"Graveler",m:"Cave",lv:"67"},{sp:"Machoke",m:"Cave",lv:"67"},
+      {sp:"Weezing",m:"Cave",lv:"68-69"},{sp:"Muk",m:"Cave",lv:"68-69"},{sp:"Torkoal",m:"Cave",lv:"68"}
+    ]},
+    { name: "Sendoff Spring", encounters: [
+      {sp:"Staravia",m:"Grass",lv:"53"},{sp:"Bibarel",m:"Grass",lv:"54"},
+      {sp:"Chimecho",m:"Grass",lv:"53-54"},{sp:"Solrock",m:"Grass",lv:"54"},
+      {sp:"Lunatone",m:"Grass",lv:"54"},{sp:"Dusclops",m:"Grass",lv:"54"},
+      {sp:"Wobbuffet",m:"Poké Radar",lv:"54"},{sp:"Golduck",m:"Surf",lv:"45-55"},
+      {sp:"Magikarp",m:"Rod",lv:"—",tier:"OG"},{sp:"Gyarados",m:"Rod",lv:"—",tier:"S"}
+    ]},
+    { name: "Turnback Cave", encounters: [
+      {sp:"Golbat",m:"Cave",lv:"65"},{sp:"Haunter",m:"Cave",lv:"65"},{sp:"Dusclops",m:"Cave",lv:"65"},
+      {sp:"Banette",m:"Cave",lv:"65"},{sp:"Bronzong",m:"Cave",lv:"66"},{sp:"Chimecho",m:"Cave",lv:"65"},
+      {sp:"Lunatone",m:"Cave",lv:"65-66"},{sp:"Solrock",m:"Cave",lv:"65-66"}
     ]}
   ];
   var RENEGADE_BOSSES = {
@@ -4714,7 +5186,12 @@
       label: "Pokémon Emerald",
       shortLabel: "Emerald",
       guide: EMERALD_GUIDE,
-      guideComplete: true, // whole game done — Checklist note can say "All N locations"
+      // NOTE (2026-09-15): nothing reads guideComplete. It is a record of
+      // whether a game's guide is finished, not a switch — the Checklist
+      // header it was meant to toggle was never built, so setting it has no
+      // effect on what renders. Kept because it is the one place that states
+      // the intent; wire it up or drop it, but don't assume it does anything.
+      guideComplete: true,
       bosses: EMERALD_BOSSES,
       trainerFights: [], // Emerald folds every trainer into Bosses; no separate split data
       // Guide subtabs are per-game because the sections themselves differ,
@@ -4737,7 +5214,12 @@
       label: "Pokémon Renegade Platinum",
       shortLabel: "Renegade Platinum",
       guide: mergeSplitLocations(RENEGADE_GUIDE),
-      guideComplete: false, // Roark + Gardenia + Fantina splits (through gym 3)
+      // Whole game, Twinleaf Town through the postgame. Legendaries are
+      // excluded by a standing instruction from the project owner, so a
+      // handful of locations whose only content was a legendary static
+      // (Flower Paradise, the Distortion World, the four Ruins/Cavern
+      // sites) are absent by design rather than missing.
+      guideComplete: true,
       bosses: RENEGADE_BOSSES,
       trainerFights: RENEGADE_TRAINER_FIGHTS,
       // Natures are shown directly in-game for Renegade Platinum, so no
