@@ -15,6 +15,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
+    /* Height of the iOS status bar / notch strip. With viewport-fit=cover
+       and the black-translucent status bar (see the <meta> tags), the page
+       draws UNDER that strip, so anything pinned at top:0 hides behind it.
+       env() is 0 on desktop/Android, making every use below a no-op there.
+       A variable (not raw env()) so tests can simulate a notch. */
+    --safe-top: env(safe-area-inset-top, 0px);
     --bg: #16241b;
     --panel: #1f3327;
     --panel-raised: #294634;
@@ -65,8 +71,17 @@
     color: var(--cream);
     font-family: 'JetBrains Mono', monospace;
     min-height: 100vh;
-    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+    padding: calc(14px + var(--safe-top)) 14px calc(14px + env(safe-area-inset-bottom));
     -webkit-font-smoothing: antialiased;
+  }
+  /* Opaque strip over the status-bar inset. The status bar is translucent,
+     so without this, content scrolling up past the stuck .tabs would show
+     through behind the clock/notch. Zero height when the inset is 0. Sits
+     above .tabs (5) but below the modal/toast layers (50/100). */
+  body::before{
+    content:""; position: fixed; top: 0; left: 0; right: 0;
+    height: var(--safe-top); background: var(--bg); z-index: 10;
+    pointer-events: none;
   }
   .pixel{ font-family: 'Press Start 2P', monospace; }
 
@@ -181,7 +196,10 @@
        it, plus a z-index above ordinary content. See .device above for
        why this only works with overflow:hidden removed from that
        ancestor. */
-    position: sticky; top: 0; z-index: 5; background: var(--bg);
+    /* top is the safe-area inset, not 0: under iOS's black-translucent
+       status bar a top:0 bar sticks behind the clock/notch and is hidden
+       (see --safe-top). */
+    position: sticky; top: var(--safe-top); z-index: 5; background: var(--bg);
   }
   .tabs::-webkit-scrollbar{ display:none; }
   /* Pixel-art tab icons: monochrome, drawn on a 12x12 grid and filled with
@@ -296,6 +314,7 @@
   .cl-collapsed .cl-toggle{ background: var(--lcd-dim); color: #0d1712; font-weight: 700; border-color: var(--lcd); }
   .cl-card.cl-collapsed{ opacity: 0.7; }
   .cl-method:first-of-type{ margin-top: 8px; }
+  .cl-sub{ color: var(--cream); }
   .chip-lv{ opacity: 0.75; font-size: 12px; }
   .chip-time{ opacity: 0.75; font-size: 12px; color: var(--gold); font-style: italic; }
   .chip{
@@ -693,6 +712,17 @@
   .nature-table tr:nth-child(even){ background: var(--panel-raised); }
   .ev-up{ color: var(--lcd); }
   .ev-down{ color: var(--dead); }
+  /* "tables" guide sections (Renegade reference sheets) */
+  .guide-table-card > summary{ cursor: pointer; list-style: none; margin-bottom: 0; }
+  .guide-table-card > summary::-webkit-details-marker{ display: none; }
+  .guide-table-card > summary::before{ content: "▸ "; color: var(--cream-dim); }
+  .guide-table-card[open] > summary::before{ content: "▾ "; }
+  .guide-table-card[open] > summary{ margin-bottom: 6px; }
+  .gt-count{ font-weight: 400; font-size: 13px; color: var(--cream-dim); }
+  .guide-table{ table-layout: auto; font-size: 13px; }
+  .guide-table td{ vertical-align: top; color: var(--cream); overflow-wrap: break-word; }
+  .guide-table .gt-main{ white-space: pre-line; }
+  .guide-table .gt-sub{ font-size: 12px; color: var(--cream-dim); margin-top: 2px; white-space: pre-line; }
 
   /* ---------- footer ---------- */
   .footer{
@@ -2856,13 +2886,372 @@
 
   };
   // Renegade Platinum's Guide tab is shaped differently from Emerald's —
-  // see GAMES.renegade.guideSections below. Items/TMs are stubs pending a
-  // pull from the source spreadsheet's iTEMSTMs sheet; Gifts/Events has
+  // see GAMES.renegade.guideSections below. Gifts/Events has
   // the two "answer a quiz, win a battle, get a full starter trio" Reporter
   // NPCs found while extracting the Roark trainer split (they're not
   // regular trainer fights, hence Guide rather than the Trainers tab).
-  var RENEGADE_ITEMS = [];
-  var RENEGADE_TMS = [];
+  // Supplemental reference data, transcribed by the project owner into
+  // "Renegade Platinum References/Renegade Plat Formatted Info.xlsx"
+  // (one constant per sheet, 2026-09-18). Generated from the sheet, not
+  // hand-typed: header row and fully-blank spacer rows dropped, cell text
+  // whitespace-trimmed, otherwise verbatim (sheet typos included). Each
+  // entry is a positional row matching the sheet's column order, which is
+  // named in the comment above each constant. Rendered by the "tables"
+  // guide section type -- see GAMES.renegade.guideSections.
+  // Sheet "ITEM EVOLUTIONS" -- columns: POKEMON | ITEM TO LEVEL UP
+  var RENEGADE_ITEM_EVOLUTIONS = [
+    ["#061 Poliwhirl", "into #186 Politoed by using a King's Rock"],
+    ["#079 Slowpoke", "into #199 Slowking by using a King's Rock"],
+    ["#095 Onix", "into #208 Steelix by using a Metal Coat"],
+    ["#112 Rhydon", "into #464 Rhyperior by using a Protector"],
+    ["#117 Seadra", "into #230 Kingdra by using a Dragon Scale"],
+    ["#123 Scyther", "into #212 Scizor by using a Metal Coat"],
+    ["#125 Electabuzz", "into #466 Electivire by using an Electirizer"],
+    ["#126 Magmar", "into #467 Magmortar by using a Magmarizer"],
+    ["#137 Porygon", "into #233 Porygon2 by using a Up-Grade"],
+    ["#233 Porygon2", "into #474 Porygon-Z by using a Dubious Disc"],
+    ["#349 Feebas", "into #350 Milotic by using a Prism Scale"],
+    ["#356 Dusclops", "into #477 Dusknoir by using a Reaper Cloth"],
+    ["#366 Clamperl", "into #367 Huntail by using a Deep Sea Tooth"],
+    ["#366 Clamperl", "into #368 Gorebyss by using a Deep Sea Scale"],
+    ["#064 Kadabra", "evolves into #065 Alakazam at Level 36"],
+    ["#067 Machoke", "evolves into #068 Machamp at Level 36"],
+    ["#075 Graveler", "evolves into #076 Golem at Level 36"],
+    ["#093 Haunter", "evolves into #094 Gengar at Level 36"],
+    ["#133 Eevee", "evolves into #196 Espeon by using a Sun Stone"],
+    ["#133 Eevee", "evolves into #197 Umbreon by using a Moon Stone"],
+    ["#133 Eevee", "evolves into #470 Leafeon by using a Leaf Stone"],
+    ["#133 Eevee", "evolves into #471 Glaceon by using a Ice Stone"],
+    ["#349 Feebas", "evolves into #350 Milotic by using a Prism Scale"],
+    ["#406 Budew", "evolves into #315 Roselia when happy anytime"],
+    ["#433 Chingling", "evolves into #358 Chimecho when happy anytime"],
+    ["#447 Riolu", "evolves into #448 Lucario when happy anytime"]
+  ];
+  // Sheet "LEVEL REQ EVOLUTION CHANGES" -- columns: POKEMON | NEW EVOLUTION LEVEL
+  var RENEGADE_LEVEL_EVOLUTIONS = [
+    ["#077 Ponyta", "evolves into #078 Rapidash at Level 35"],
+    ["#079 Slowpoke", "evolves into #080 Slowbro at Level 33"],
+    ["#088 Grimer", "evolves into #089 Muk at Level 35"],
+    ["#111 Rhyhorn", "evolves into #112 Rhydon at Level 36"],
+    ["#138 Omanyte", "evolves into #139 Omastar at Level 30"],
+    ["#140 Kabuto", "evolves into #141 Kabutops at Level 30"],
+    ["#218 Slugma", "evolves into #219 Magcargo at Level 32"],
+    ["#304 Aron", "evolves into #305 Lairon at Level 24"],
+    ["#305 Lairon", "evolves into #306 Aggron at Level 40"],
+    ["#307 Meditite", "evolves into #308 Medicham at Level 33"],
+    ["#320 Wailmer", "evolves into #321 Wailord at Level 36"],
+    ["#328 Trapinch", "evolves into #329 Vibrava at Level 30"],
+    ["#343 Baltoy", "evolves into #344 Claydol at Level 32"],
+    ["#345 Lileep", "evolves into #346 Cradily at Level 30"],
+    ["#347 Anorith", "evolves into #348 Armaldo at Level 30"],
+    ["#353 Shuppet", "evolves into #354 Banette at Level 32"],
+    ["#355 Duskull", "evolves into #356 Dusclops at Level 32"],
+    ["#361 Snorunt", "evolves into #362 Glalie at Level 32"],
+    ["#363 Spheal", "evolves into #364 Sealeo at Level 24"],
+    ["#364 Sealeo", "evolves into #365 Walrein at Level 40"],
+    ["#431 Glameow", "evolves into #432 Purugly at Level 32"],
+    ["#434 Stunky", "evolves into #435 Skuntank at Level 32"],
+    ["#451 Skorupi", "evolves into #452 Drapion at Level 30"],
+    ["#453 Croagunk", "evolves into #454 Toxicroak at Level 33"]
+  ];
+  // Sheet "ITEM LOCATIONS" -- columns: ITEM NAME | LOCATION
+  var RENEGADE_ITEM_LOCATIONS = [
+    ["Adamant Orb", "Mt. Coronet"],
+    ["Amulet Coin", "Amity Square"],
+    ["Big Root", "Route 214"],
+    ["Black Belt", "Route 221"],
+    ["Black Flute", "Mt. Coronet"],
+    ["BlackGlasses", "Route 215, Celestic Town"],
+    ["Black Sludge", "Great Marsh"],
+    ["Blue Flute", "Route 216"],
+    ["Blue Scarf", "Pastoria City"],
+    ["Bright Powder", "Mt. Coronet"],
+    ["Charcoal", "Route 227, attached to Charmander, Cyndaquil and Torchic gifts"],
+    ["Choice Band", "Route 214"],
+    ["Choice Scarf", "Solaceon Ruins"],
+    ["Choice Specs", "Celestic Town (from NPC at Morning)"],
+    ["Cleanse Tag", "Lost Tower"],
+    ["Damp Rock", "Route 220"],
+    ["Dawn Stone", "Eterna City (Gift from Bike Shop Owner), Mt. Coronet, Route 212 (South) (Hidden), Route 225, Veilstone Dept. Store (Buyable)"],
+    ["DeepSeaScale", "Floaroma Town, Veilstone Game Corner Prize (Buyable)"],
+    ["DeepSeaTooth", "Floaroma Town, Veilstone Game Corner Prize (Buyable)"],
+    ["Destiny Knot", "Route 205, Route 224"],
+    ["Dragon Fang", "Celestic Town"],
+    ["Dragon Scale", "Veilstone City (NPC in Pokémon Center), Victory Road, Snowpoint City (Buyable)"],
+    ["Dubious Disc", "Veilstone City, Snowpoint City (Buyable)"],
+    ["Dusk Stone", "Wayward Cave (Hidden), Wayward Cave, Galactic Warehouse, Victory Road, Veilstone Dept. Store (Buyable)"],
+    ["Electirizer", "Hotel Grand Lake (Route 213), Snowpoint City (Buyable)"],
+    ["Everstone", "Veilstone Dept. Store (Buyable)"],
+    ["Exp. Share", "Route 203"],
+    ["Expert Belt", "Ravaged Path, Veilstone Game Corner Prize"],
+    ["Fire Stone", "Oreburgh Mine, Route 211 (East), Fuego Ironworks, Solaceon Ruins (Hidden), Stark Mountain (Hidden), Veilstone Dept. Store (Buyable)"],
+    ["Flame Orb", "Veilstone Game Corner Prize (Buyable)"],
+    ["Focus Band", "Wayward Cave"],
+    ["Focus Sash", "Route 221, Veilstone Game Corner Prize (Buyable)"],
+    ["Full Incense", "Veilstone City"],
+    ["Green Scarf", "Pastoria City"],
+    ["Grip Claw", "Wayward Cave"],
+    ["Griseous Orb", "Distortion World"],
+    ["Hard Stone", "Route 207"],
+    ["Heat Rock", "Route 214"],
+    ["Ice Stone", "Oreburgh Mine, Route 216, Route 217 (Ice Rock), Snowpoint Temple, Veilstone Dept. Store (Buyable)"],
+    ["Icy Rock", "Route 217"],
+    ["Iron Ball", "Iron Island"],
+    ["King's Rock", "Wayward Cave, Celestic Town (Hidden), Veilstone Game Corner Prize (Buyable)"],
+    ["Lagging Tail", "Route 226"],
+    ["Lax Incense", "Route 225"],
+    ["Leaf Stone", "Oreburgh Mine, Eterna Forest (Moss Rock), Floaroma Meadow, Great Marsh (Hidden), Route 225 (Hidden), Veilstone Dept. Store (Buyable)"],
+    ["Leftovers", "Victory Road, Veilstone Game Corner Prize (Buyable)"],
+    ["Life Orb", "Route 210 (South), Stark Mountain, Veilstone Game Corner Prize (Buyable)"],
+    ["Light Ball", "Floaroma Town"],
+    ["Light Clay", "Oreburgh Gate, Veilstone Game Corner Prize (Buyable)"],
+    ["Luck Incense", "Ravaged Path"],
+    ["Lucky Egg", "Pokémon Mansion"],
+    ["Lucky Punch", "Floaroma Town"],
+    ["Lustrous Orb", "Mt. Coronet"],
+    ["Macho Brace", "Pastoria City"],
+    ["Magmarizer", "Hotel Grand Lake (Route 213), Snowpoint City (Buyable)"],
+    ["Magnet", "Valley Windworks"],
+    ["Mental Herb", "Route 216, Veilstone Game Corner Prize (Buyable)"],
+    ["Metal Coat", "Route 207, Iron Island, Veilstone Game Corner Prize (Buyable), Sunyshore City"],
+    ["Metal Powder", "Floaroma Town"],
+    ["Metronome", "Amity Square, Veilstone Game Corner Prize (Buyable)"],
+    ["Miracle Seed", "Route 204 (North), Floaroma Meadow, attached to Bulbasaur, Chikorita and Treecko gifts"],
+    ["Moon Stone", "Oreburgh Mine, Mt. Coronet (Route 211 entrance), Eterna City (Hidden), Mt. Coronet (Hidden), Veilstone Dept. Store (Buyable)"],
+    ["Muscle Band", "Oreburgh Mine, Veilstone Game Corner Prize (Buyable)"],
+    ["Mystic Water", "Pastoria City, attached to Squirtle, Totodile and Mudkip gifts"],
+    ["NeverMeltIce", "Snowpoint Temple, Trade for Spheal in Oreburgh"],
+    ["Odd Incense", "Solaceon Ruins"],
+    ["Oval Stone", "Oreburgh City, Lost Tower, Veilstone Dept. Store (Buyable)"],
+    ["Pink Scarf", "Pastoria City"],
+    ["Poison Barb", "Route 206, Trade for Skorupi in Floaroma"],
+    ["Power Anklet", "Solaceon Town"],
+    ["Power Band", "Solaceon Town"],
+    ["Power Belt", "Solaceon Town"],
+    ["Power Bracer", "Solaceon Town"],
+    ["Power Herb", "Veilstone Game Corner Prize (Buyable)"],
+    ["Power Lens", "Solaceon Town"],
+    ["Power Weight", "Solaceon Town"],
+    ["Prism Scale", "Mt. Coronet, Snowpoint City (Buyable)"],
+    ["Protector", "Iron Island, Route 228, Snowpoint City (Buyable)"],
+    ["Pure Incense", "Route 221"],
+    ["Quick Claw", "Jubilife City"],
+    ["Quick Powder", "Floaroma Town"],
+    ["Razor Claw", "Route 215, Veilstone Galactic HQ, Route 224, Victory Road, Snowpoint City (Buyable)"],
+    ["Reaper Cloth", "Lost Tower, Acuity Lakefront, Route 229, Snowpoint City (Buyable)"],
+    ["Red Flute", "Route 211 (East)"],
+    ["Red Scarf", "Pastoria City"],
+    ["Rock Incense", "Fuego Ironworks"],
+    ["Rose Incense", "Route 212"],
+    ["Scope Lens", "Jubilife City, Fight Area"],
+    ["Sea Incense", "Route 204"],
+    ["Sharp Beak", "Trade for Chatot in Eterna, Valor Lakefront"],
+    ["Shed Shell", "Great Marsh, Route 228"],
+    ["Shell Bell", "Hearthome City"],
+    ["Shiny Stone", "Hearthome City, Iron Island, Route 210 (North) (Hidden), Veilstone Dept. Store (Buyable)"],
+    ["Silk Scarf", "Route 203"],
+    ["SilverPowder", "Eterna Forest"],
+    ["Smoke Ball", "Route 210"],
+    ["Smooth Rock", "Iron Island"],
+    ["Soft Sand", "Mt. Coronet"],
+    ["Soothe Bell", "Route 203, Pokémon Mansion"],
+    ["Soul Dew", "Oreburgh City"],
+    ["Spell Tag", "Old Chateau, Route 217"],
+    ["Stick", "Floaroma Town"],
+    ["Sticky Barb", "Veilstone Dept. Store"],
+    ["Sun Stone", "Oreburgh Mine, Eterna City, Valor Lakefront (Hidden), Mt. Coronet (Hidden), Veilstone Dept. Store (Buyable)"],
+    ["Thick Club", "Floaroma Town"],
+    ["Thunder Stone", "Oreburgh Mine, Route 206, Solaceon Ruins (Hidden), Sunyshore City, Route 229 (Hidden), Veilstone Dept. Store (Buyable)"],
+    ["Toxic Orb", "Galactic HQ, Veilstone Game Corner Prize (Buyable)"],
+    ["TwistedSpoon", "Route 209"],
+    ["Up-Grade", "Hearthome City, Snowpoint City (Buyable)"],
+    ["Water Stone", "Oreburgh Mine, Route 205, Solaceon Ruins (Hidden), Route 213, Route 230 (Hidden), Veilstone Dept. Store (Buyable)"],
+    ["Wave Incense", "Route 210 (North)"],
+    ["White Flute", "Valor Lakefront"],
+    ["White Herb", "Floaroma Meadow, Veilstone Game Corner Prize (Buyable)"],
+    ["Wide Lens", "Veilstone Game Corner Prize"],
+    ["Wise Glasses", "Eterna Galactic Building, Veilstone Game Corner Prize (Buyable), Celestic Town"],
+    ["Yellow Flute", "Route 210 (North)"],
+    ["Yellow Scarf", "Pastoria City"],
+    ["Zoom Lens", "Veilstone Game Corner Prize (Buyable)"]
+  ];
+  // Sheet "ITEMS TO STEAL" -- columns: NOTES
+  var RENEGADE_ITEMS_TO_STEAL = [
+    "Metal Coat off Magnemite on Valley Windworks to evolve your Onix before Mars 1",
+    "Wide Lenses off of Yanma, on 205 North. It makes Air Slash hit, and clicking 99% Rock Slide is fun too",
+    "a Sitrus Berry from Mars’s Bronzor, which you can then “plant and farm” or hack in starting from that point",
+    "Mira’s Kadabra’s Life Orb. Watch out; you’re gonna take Life Orb recoil at the end of the Thief turn.",
+    "One fight later, Dawn’s Piloswine’s Focus Sash",
+    "Choice Bands / Scarves off of Barry’s Staraptors in lategame"
+  ];
+  // Sheet "TM LOCATIONS" -- columns: TM | Type | BP | ACC | PP | Location | Obtained
+  var RENEGADE_TM_LOCATIONS = [
+    ["TM01 Focus Punch", "Fighting", "150", "100%", "20", "Oreburgh Gate", "Item on ground"],
+    ["TM02 Dragon Claw", "Dragon", "80", "100%", "15", "Mt. Coronet", "Item on ground"],
+    ["TM03 Water Pulse", "Water", "60", "100%", "20", "Route 218", "Item on ground"],
+    ["TM04 Calm Mind", "Psychic", "--", "--", "20", "Solaceon Ruins", "Item on ground"],
+    ["TM05 Roar", "Normal", "--", "100%", "20", "Route 213", "Item on ground"],
+    ["TM06 Toxic", "Poison", "--", "85%", "10", "Route 212 (South)", "Item on ground"],
+    ["TM07 Hail", "Ice", "--", "--", "10", "Route 217", "Item on ground"],
+    ["TM08 Bulk Up", "Fighting", "--", "--", "20", "Route 205 (South)", "Item on ground"],
+    ["TM09 Bullet Seed", "Grass", "10", "100%", "30", "Route 204 (North)", "Item on ground"],
+    ["TM10 Hidden Power", "Normal", "??", "100%", "15", "Jubilife City (Trainer School)", "Gift from NPC"],
+    ["TM11 Sunny Day", "Fire", "--", "--", "5", "Route 212 (North)", "Item on ground"],
+    ["TM12 Taunt", "Dark", "--", "100%", "20", "Route 211 (West)", "Item on ground"],
+    ["TM13 Ice Beam", "Ice", "95", "100%", "10", "Route 216", "Gift from NPC"],
+    ["TM14 Blizzard", "Ice", "120", "70%", "5", "Lake Acuity", "Item on ground"],
+    ["TM15 Hyper Beam", "Normal", "150", "90%", "5", "Sunyshore City", "Gift from NPC"],
+    ["TM16 Light Screen", "Psychic", "--", "--", "30", "Eterna Galactic Building", "Item on ground"],
+    ["TM17 Protect", "Normal", "--", "--", "10", "Great Marsh", "Gift from NPC"],
+    ["TM18 Rain Dance", "Water", "--", "--", "5", "Route 223", "Item on ground"],
+    ["TM19 Giga Drain", "Grass", "60", "100%", "10", "Route 209", "Item on ground"],
+    ["TM20 Safeguard", "Normal", "--", "--", "25", "Route 212 (North)", "Item on ground"],
+    ["TM21 Frustration", "Normal", "??", "100%", "20", "Galactic HQ", "Item on ground"],
+    ["TM22 Solar Beam", "Grass", "120", "100%", "10", "Route 210", "Item on ground"],
+    ["TM23 Iron Tail", "Steel", "100", "75%", "15", "Iron Island", "Item on ground"],
+    ["TM24 Thunderbolt", "Electric", "95", "100%", "15", "Valley Windworks", "Item on ground"],
+    ["TM25 Thunder", "Electric", "120", "70%", "10", "Lake Valor", "Item on ground"],
+    ["TM26 Earthquake", "Ground", "100", "100%", "10", "Veilstone City Dept. Store", "Gift from Bertha"],
+    ["TM27 Return", "Normal", "??", "100%", "20", "Eterna Forest", "Gift from Cheryl"],
+    ["TM28 Dig", "Ground", "80", "100%", "10", "Eterna City", "Gift from NPC"],
+    ["TM29 Psychic", "Psychic", "90", "100%", "10", "Solaceon Town", "Gift from Lucian"],
+    ["TM30 Shadow Ball", "Ghost", "80", "100%", "15", "Hearthome City", "Gift from Fantina"],
+    ["TM31 Brick Break", "Fighting", "75", "100%", "15", "Oreburgh Gate", "Item on ground"],
+    ["TM32 Double Team", "Normal", "--", "--", "15", "Wayward Cave", "Item on ground"],
+    ["TM33 Reflect", "Psychic", "--", "--", "20", "Eterna Galactic Building", "Item on ground"],
+    ["TM34 Shock Wave", "Electric", "60", "100%", "20", "Valley Windworks", "Item on ground"],
+    ["TM35 Flamethrower", "Fire", "95", "100%", "15", "Fuego Ironworks", "Item on ground"],
+    ["TM36 Sludge Bomb", "Poison", "90", "100%", "10", "Great Marsh", "Item on ground"],
+    ["TM37 Sandstorm", "Rock", "--", "--", "10", "Route 228", "Item on ground"],
+    ["TM38 Fire Blast", "Fire", "120", "85%", "5", "Lake Verity", "Item on ground"],
+    ["TM39 Rock Tomb", "Rock", "50", "80%", "10", "Ravaged Path", "Item on ground"],
+    ["TM40 Aerial Ace", "Flying", "60", "100%", "20", "Floaroma Town", "Gift from NPC"],
+    ["TM41 Torment", "Dark", "--", "100%", "15", "Route 213", "Item on ground"],
+    ["TM42 Facade", "Normal", "70", "100%", "20", "Jubilife City", "Gift from NPC"],
+    ["TM43 Secret Power", "Normal", "70", "100%", "20", "Amity Square", "Item on ground"],
+    ["TM44 Rest", "Psychic", "--", "--", "10", "Hearthome City", "Gift from NPC"],
+    ["TM45 Attract", "Normal", "--", "100%", "15", "Amity Square", "Item on ground"],
+    ["TM46 Thief", "Dark", "40", "100%", "10", "Eterna City", "Item on ground"],
+    ["TM47 Steel Wing", "Steel", "70", "90%", "25", "Route 209", "Item on ground"],
+    ["TM48 Skill Swap", "Psychic", "--", "--", "10", "Canalave City", "Gift from NPC"],
+    ["TM49 Snatch", "Dark", "--", "--", "10", "Galactic Warehouse", "Item on ground"],
+    ["TM50 Overheat", "Fire", "140", "90%", "5", "Sunyshore City", "Gift from Flint"],
+    ["TM51 Roost", "Flying", "--", "--", "10", "Route 210 (South)", "Gift from NPC"],
+    ["TM52 Focus Blast", "Fighting", "120", "70%", "5", "Route 217", "Gift from Maylene"],
+    ["TM53 Energy Ball", "Grass", "80", "100%", "10", "Valor Lakefront", "Item on ground"],
+    ["TM54 False Swipe", "Normal", "40", "100%", "40", "Eterna City", "Gift from NPC"],
+    ["TM55 Scald", "Water", "80", "100%", "15", "Hearthome City", "Gift from NPC"],
+    ["TM56 Fling", "Dark", "??", "100%", "10", "Route 222", "Item on ground"],
+    ["TM57 Wild Charge", "Electric", "100", "100%", "15", "Sunyshore Gym", "Gift from Volkner"],
+    ["TM58 Endure", "Normal", "--", "--", "10", "Route 203", "Item on ground"],
+    ["TM59 Dragon Pulse", "Dragon", "90", "100%", "10", "Maniac Tunnel", "Item on ground"],
+    ["TM60 Drain Punch", "Fighting", "60", "100%", "5", "Veilstone Gym", "Gift from Maylene"],
+    ["TM61 Will-O-Wisp", "Fire", "--", "75%", "15", "Lost Tower", "Item on ground"],
+    ["TM62 Bug Buzz", "Bug", "90", "100%", "10", "Route 212 (South)", "Item on ground"],
+    ["TM63 Embargo", "Dark", "--", "100%", "15", "Veilstone City", "Gift from NPC"],
+    ["TM64 Explosion", "Normal", "250", "100%", "5", "Game Corner", "Gift from NPC"],
+    ["TM65 Shadow Claw", "Ghost", "80", "100%", "15", "Old Chateau", "Item on ground"],
+    ["TM66 Payback", "Dark", "50", "100%", "10", "Route 215", "Item on ground"],
+    ["TM67 Recycle", "Normal", "--", "--", "10", "Eterna City", "Gift from NPC"],
+    ["TM68 Giga Impact", "Normal", "150", "90%", "5", "Victory Road", "Item on ground"],
+    ["TM69 Rock Polish", "Rock", "--", "--", "20", "Mt. Coronet", "Item on ground"],
+    ["TM70 Flash", "Normal", "--", "100%", "20", "Oreburgh Gate", "Item on ground"],
+    ["TM71 Stone Edge", "Rock", "100", "80%", "5", "Ravaged Path", "Item on ground"],
+    ["TM72 Avalanche", "Ice", "60", "100%", "10", "Snowpoint City", "Gift from Candice"],
+    ["TM73 Thunder Wave", "Electric", "--", "100%", "20", "Eterna Galactic Bldg", "Item on ground"],
+    ["TM74 Gyro Ball", "Steel", "??", "100%", "5", "Route 206", "Item on ground"],
+    ["TM75 Swords Dance", "Normal", "--", "--", "30", "Route 208", "Item on ground"],
+    ["TM76 Stealth Rock", "Rock", "--", "--", "20", "Oreburgh Gym", "Gift from Roark"],
+    ["TM77 Psych Up", "Normal", "--", "--", "10", "Route 211", "Gift from NPC"],
+    ["TM78 Captivate", "Normal", "--", "100%", "20", "Route 204 North", "Gift from NPC"],
+    ["TM79 Dark Pulse", "Dark", "80", "100%", "15", "Veilstone City", "Item on ground"],
+    ["TM80 Rock Slide", "Rock", "75", "90%", "10", "Eterna City", "Gift from NPC"],
+    ["TM81 X-Scissor", "Bug", "80", "100%", "15", "Route 208", "Gift from Aaron"],
+    ["TM82 Sleep Talk", "Normal", "--", "--", "10", "Eterna Forest Outside", "Item on ground"],
+    ["TM83 Hyper Voice", "Normal", "90", "100%", "10", "Route 215", "Item on ground"],
+    ["TM84 Poison Jab", "Poison", "80", "100%", "20", "Route 212 (South)", "Item on ground"],
+    ["TM85 Dazzling Gleam", "Fairy", "80", "100%", "10", "Wayward Cave", "Gift from Mira"],
+    ["TM86 Grass Knot", "Grass", "??", "100%", "20", "Eterna Gym", "Gift from Gardenia"],
+    ["TM87 Swagger", "Normal", "--", "90%", "15", "Pokémon Mansion", "Gift from NPC"],
+    ["TM88 Hurricane", "Flying", "110", "70%", "10", "Route 210 (North)", "Item on ground"],
+    ["TM89 U-turn", "Bug", "70", "100%", "20", "Canalave City", "Item on ground"],
+    ["TM90 Substitute", "Normal", "--", "--", "10", "Old Chateau", "Item on ground"],
+    ["TM91 Flash Cannon", "Steel", "80", "100%", "10", "Canalave Gym", "Gift from Byron"],
+    ["TM92 Trick Room", "Psychic", "--", "--", "5", "Route 213", "Gift from NPC"],
+    ["HM01 Cut", "Grass", "60", "100%", "25", "Eterna City", "Gift from Cynthia"],
+    ["HM02 Fly", "Flying", "100", "100%", "15", "Galactic Warehouse", "Item on ground"],
+    ["HM03 Surf", "Water", "95", "100%", "15", "Celestic Town", "Gift from NPC"],
+    ["HM04 Strength", "Normal", "100", "100%", "15", "Iron Island", "Gift from Riley"],
+    ["HM05 Defog", "Flying", "--", "--", "15", "Solaceon Ruins", "Item on ground"],
+    ["HM06 Rock Smash", "Fighting", "60", "100%", "15", "Oreburgh Gate", "Gift from NPC"],
+    ["HM07 Waterfall", "Water", "80", "100%", "15", "Pastoria Gym", "Gift from Wake"],
+    ["HM08 Rock Climb", "Rock", "80", "95%", "20", "Snowpoint City", "Gift from Candice"]
+  ];
+  // Sheet "KEY ITEM LOCATIONS" -- columns: ITEM | LOCATION | OBTAINED
+  var RENEGADE_KEY_ITEMS = [
+    ["Azure Flute", "Hearthome City - Foreign Building", "Gift from NPC"],
+    ["Vs. Recorder", "Jubilife City", "Gift from Looker"],
+    ["Bicycle", "Twinleaf Town", "Gift from Mom"],
+    ["Blue Orb", "Oreburgh City", "Gift from Steven"],
+    ["Coin Case", "Veilstone City", "Gift from NPC"],
+    ["Fashion Case", "Jubilife City", "Gift from NPC"],
+    ["Galactic Key", "Galactic HQ", "Item on ground"],
+    ["Gracidea Flower", "Floaroma Town", "Gift from NPC"],
+    ["Good Rod", "Route 209", "Gift from NPC"],
+    ["GS Ball", "Celestic Town", "Gift from event"],
+    ["Jade Orb", "Oreburgh City", "Gift from Steven"],
+    ["Journal", "Twinleaf Town", "Gift from Mom"],
+    ["Lunar Wing", "Fullmoon Island", "Gift from event"],
+    ["Member Card", "Route 217", "Gift from NPC"],
+    ["Mysterious Invitation", "Survival Area - Battleground", "Gift from NPC"],
+    ["Oak's Letter", "Eterna City", "Gift from Oak"],
+    ["Old Charm", "Route 210", "Gift from Cynthia"],
+    ["Old Rod", "Route 218", "Gift from NPC"],
+    ["Pal Pad", "Pokémon Center Basement", "Gift from NPC"],
+    ["Parcel", "Twinleaf Town", "Gift from NPC"],
+    ["Poffin Case", "Hearthome City", "Gift from NPC"],
+    ["Poké Radar", "Sandgem Town", "Gift from Rowan"],
+    ["Rainbow Wing", "Eterna City", "Gift from Oak"],
+    ["Red Orb", "Oreburgh City", "Gift from Steven"],
+    ["Seal Case", "Solaceon Town", "Gift from NPC"],
+    ["Secret Key", "Galactic Eterna Building", "Item on ground"],
+    ["Secret Potion", "Valor Lakefront", "Gift from Cynthia"],
+    ["Silver Wing", "Eterna City", "Gift from Oak"],
+    ["Sprayduck", "Floaroma Town", "Gift from NPC"],
+    ["Suite Key", "Route 213", "Hiddenontheground"],
+    ["Super Rod", "Snowpoint City", "Gift from NPC"],
+    ["Tea", "Pal Park", "Gift from Darach"]
+  ];
+  // Sheet "POKEMON EVENTS" -- columns: POKEMON | LOCATION | LEVEL | METHOD
+  var RENEGADE_POKEMON_EVENTS = [
+    ["Omanyte", "Eterna City", "20", "Undeground man’s house near Poke Center"],
+    ["Lileep", "Eterna City", "20", "Undeground man’s house near Poke Center"],
+    ["Cranidos", "Eterna City", "20", "Undeground man’s house near Poke Center"],
+    ["Kabuto", "Eterna City", "20", "Undeground man’s house near Poke Center"],
+    ["Anorith", "Eterna City", "20", "Undeground man’s house near Poke Center"],
+    ["Shieldon", "Eterna City", "20", "Undeground man’s house near Poke Center"],
+    ["Aerodactl", "Eterna City", "20", "Undeground man’s house near Poke Center"],
+    ["Lapras", "Pastoria City", "35", "Listen to old lady’s story"],
+    ["Porygon", "Eterna Galactic Building", "22", "Poke Ball behind Jupiter"],
+    ["Togepi", "Eterna City", "1", "Bike owner after defeating Jupiter"],
+    ["Gengar", "Old Chateau", "20", "Talk to the painting with the glowing red ones in one of the rooms at the back of the Old Chateau, then leave the room"],
+    ["Drifloon", "Valley Windworks", "15", "Come back on Fridays"],
+    ["Spiritomb", "Route 209", "30", "Get the Odd Keystone from a man on Route 208, hidden in Twinleaf Town or from the Underground. Talk to the broken stone tower to encounter #442 Spiritomb."],
+    ["Gabite", "Wayward Cave", "25", "Go through the basement and up the stairs into the small room. Walk forward."],
+    ["Rotom", "Old Chateau", "20", "Talk to TV in one of the rooms at the back"],
+    ["Rotom Forms", "Eterna Galactic Building", "n/a", "Visit secret room after beating Jupiter"]
+  ];
+  // Sheet "KEY NPCs" -- columns: Name | Location | Notes
+  var RENEGADE_KEY_NPCS = [
+    ["EVOLUTION ITEM SELLER (NEW)", "Snowpoint City", "The top left house is now occupied by an NPC who will sell evolution items to you. She only sells items that are not available in the Veilstone Dept. Store or the Game Corner."],
+    ["HIDDEN POWER TELLER (NEW)", "Jubilife Trainer School", ""],
+    ["Move Tutors", "Route 212 (South)", "Multiple tutors in house on Route 212"],
+    ["Rare Berry Seller", "Route 208", "The house just left of the gatehouse to Hearthome City where the Berry Master lives now has a female scientist NPC. This NPC will sell you rare berries that can't be obtained in Platinum normally, such as the Liechi and Salac Berries."],
+    ["Move Deleter", "Oreburgh City", "House left of the Poke Center"],
+    ["Move Relearner", "Pastoria City", ""],
+    ["Item Fanatic", "Floaroma Town", "- Talk to him with a #025 Pikachu in your party to get a Light Ball.\n- Talk to him with a #083 Farfetch'd in your party to get a Stick.\n- Talk to him with a #104 Cubone or #105 Marowak in your party to get a Thick Club.\n- Talk to him with a #113 Chansey in your party to get a Lucky Punch.\n- Talk to him with a #132 Ditto in your party to get a Quick Powder and Metal Powder.\n- Talk to him with a #366 Clamperl in your party to get a Deep Sea Tooth and Deep Sea Scale."],
+    ["Training NPCs", "Solaceon Town", "Train Evs or Experience"]
+  ];
   var RENEGADE_TIPS = [
     { title: "Move Deleter — Oreburgh City",
       body: "Found in Oreburgh City — visit if you need to forget an HM move or clear a move slot without waiting for a level-up relearn." }
@@ -5151,10 +5540,17 @@
   // against the spreadsheet's column bands, so rewriting the literal would
   // break that audit for no gain.
   //
-  // Exactly-identical rows (same species, method, level, time) are dropped as
-  // true duplicates. Rows that differ are ALL kept: Starly really does appear
-  // at Lv 6 in the south of Route 204 and Lv 13 in the north, the chips show
-  // their own level, and collapsing those into one "Lv 6-13" would invent
+  // Each merged encounter is a COPY of the raw row tagged with `sub`, the
+  // sub-area it came from (the raw name's parenthetical: "South", "B1F",
+  // "Route 211 Entry", ...), so the Checklist can still show which patch
+  // holds which species ("South · Grass" vs "North · Grass") inside the one
+  // location. `sub` is only set when a group really has 2+ raw parts; a
+  // lone location (every Emerald one) gets no `sub` and renders as before.
+  //
+  // Exactly-identical rows (same species, method, level, time, tier) are
+  // dropped only WITHIN one sub-area — the same row in both halves is two
+  // real patches and both are kept. Rows that differ are ALL kept:
+  // collapsing Lv 6 south and Lv 13 north into "Lv 6-13" would invent
   // intermediate levels the game never offers.
   function mergeSplitLocations(guide){
     var out = [], byBase = {};
@@ -5170,13 +5566,21 @@
       var target = byBase[base];
       if(part) target.parts.push(part);
       loc.encounters.forEach(function(e){
-        var key = e.sp + "|" + e.m + "|" + e.lv + "|" + (e.t || "") + "|" + (e.tier || "");
+        var key = (part || "") + "|" + e.sp + "|" + e.m + "|" + e.lv + "|" + (e.t || "") + "|" + (e.tier || "");
         if(target.seen[key]) return;
         target.seen[key] = true;
-        target.encounters.push(e);
+        // Copy, never mutate: RENEGADE_GUIDE stays the raw audited shape.
+        var copy = {};
+        for(var k in e) if(Object.prototype.hasOwnProperty.call(e, k)) copy[k] = e[k];
+        if(part) copy.sub = part;
+        target.encounters.push(copy);
       });
     });
-    out.forEach(function(l){ delete l.seen; });
+    out.forEach(function(l){
+      delete l.seen;
+      // A single-part location has nothing to distinguish — drop the label.
+      if(l.parts.length < 2) l.encounters.forEach(function(e){ delete e.sub; });
+    });
     return out;
   }
 
@@ -5231,9 +5635,32 @@
         { key: "tips", label: "Tips", type: "cards", data: RENEGADE_TIPS },
         { key: "changedmoves", label: "Changed Moves", type: "cards", data: RENEGADE_CHANGED_MOVES },
         { key: "trades", label: "Trades", type: "cards", data: RENEGADE_TRADES },
-        { key: "items", label: "Items", type: "cards", data: RENEGADE_ITEMS },
-        { key: "tms", label: "TMs", type: "cards", data: RENEGADE_TMS },
-        { key: "gifts", label: "Gifts/Events", type: "cards", data: RENEGADE_GIFTS }
+        // "tables" sections: each table is a collapsible <details> block.
+        // cols[].f lists row indices shown in that column (or [index, label]
+        // to prefix the value) — the first as the main line, the rest as
+        // smaller lines below it (all on one line with cols[].subJoin) —
+        // which is what keeps the 7-column TM sheet readable at 375px
+        // without dropping any field.
+        { key: "evolutions", label: "Evolutions", type: "tables", data: [
+          { title: "Item Evolutions", cols: [{h:"Pokémon", f:[0]}, {h:"Evolution", f:[1]}], rows: RENEGADE_ITEM_EVOLUTIONS },
+          { title: "Level Requirement Changes", cols: [{h:"Pokémon", f:[0]}, {h:"New Evolution Level", f:[1]}], rows: RENEGADE_LEVEL_EVOLUTIONS }
+        ] },
+        { key: "items", label: "Items", type: "tables", data: [
+          { title: "Item Locations", cols: [{h:"Item", f:[0]}, {h:"Location", f:[1]}], rows: RENEGADE_ITEM_LOCATIONS },
+          { title: "Items to Steal", cols: [{h:"Notes", f:[0]}], rows: RENEGADE_ITEMS_TO_STEAL, collapsed: true }
+        ] },
+        { key: "tms", label: "TMs", type: "tables", data: [
+          { title: "TM / HM Locations", cols: [{h:"TM", f:[0, 1, [2,"BP"], [3,"Acc"], [4,"PP"]], subJoin:" · "}, {h:"Location", f:[5,6]}], rows: RENEGADE_TM_LOCATIONS }
+        ] },
+        { key: "keyitems", label: "Key Items", type: "tables", data: [
+          { title: "Key Item Locations", cols: [{h:"Item", f:[0]}, {h:"Location", f:[1,2]}], rows: RENEGADE_KEY_ITEMS }
+        ] },
+        { key: "gifts", label: "Gifts/Events", type: "tables", cards: RENEGADE_GIFTS, data: [
+          { title: "Pokémon Events", cols: [{h:"Pokémon", f:[0]}, {h:"Lv", f:[2]}, {h:"Location · Method", f:[1,3]}], rows: RENEGADE_POKEMON_EVENTS }
+        ] },
+        { key: "npcs", label: "Key NPCs", type: "tables", data: [
+          { title: "Key NPCs", cols: [{h:"Name", f:[0]}, {h:"Location · Notes", f:[1,2]}], rows: RENEGADE_KEY_NPCS }
+        ] }
       ],
       rivalLabel: "Rival Battles (Barry)",
       otherBattlesLabel: "Other Battles",
@@ -5796,22 +6223,37 @@
       var caughtSpecies = {};
       loggedMons.forEach(function(m){ caughtSpecies[m.species] = true; });
 
+      // Group by method, then (for merged split locations) by sub-area within
+      // it — "Grass" becomes "South · Grass" / "North · Grass", in
+      // first-appearance order. Encounters with no `sub` (every unmerged
+      // location, all of Emerald) group by method exactly as before. Every
+      // chip still logs to loc.name, so one encounter per route holds and a
+      // species listed in both halves shows caught on both.
       var groups = {};
-      var order = [];
+      var methodOrder = [], keysByMethod = {};
       visibleEncounters.forEach(function(e){
-        if(!groups[e.m]){ groups[e.m] = []; order.push(e.m); }
-        groups[e.m].push(e);
+        var sub = e.sub || "";
+        if(!keysByMethod[e.m]){ keysByMethod[e.m] = []; methodOrder.push(e.m); }
+        var key = sub + " " + e.m;
+        if(!groups[key]){ groups[key] = { sub: sub, m: e.m, list: [] }; keysByMethod[e.m].push(key); }
+        groups[key].list.push(e);
       });
+      var order = [];
+      methodOrder.forEach(function(m){ order = order.concat(keysByMethod[m]); });
 
-      var groupsHtml = order.map(function(method){
-        var chips = groups[method].map(function(e){
+      var groupsHtml = order.map(function(key){
+        var g = groups[key];
+        var heading = g.sub
+          ? '<span class="cl-sub">'+escapeHTML(g.sub)+'</span> · '+escapeHTML(g.m)
+          : escapeHTML(g.m);
+        var chips = g.list.map(function(e){
           var isCaught = !!caughtSpecies[e.sp];
           var badge = e.tier ? ' <span class="chip-lv">'+escapeHTML(letterDivide(e.tier))+'</span>'
             : ((e.lv && e.lv !== "—") ? ' <span class="chip-lv">Lv '+escapeHTML(e.lv)+'</span>' : '');
           var timeBadge = (e.t && e.t.length < 3) ? ' <span class="chip-time">'+escapeHTML(letterDivide(e.t))+'</span>' : '';
           return '<button type="button" class="chip'+(isCaught?" chip-caught":"")+'" data-act="mark-species" data-route="'+escapeHTML(loc.name)+'" data-species="'+escapeHTML(e.sp)+'">'+(isCaught?"✓ ":"")+escapeHTML(e.sp)+badge+timeBadge+'</button>';
         }).join("");
-        return '<div class="cl-method">'+escapeHTML(method)+'</div><div class="cl-species">'+chips+'</div>';
+        return '<div class="cl-method">'+heading+'</div><div class="cl-species">'+chips+'</div>';
       }).join("");
 
       return (
@@ -7433,6 +7875,10 @@
       route: m.metLocationName || (existing && existing.route) || "Unknown Location",
       species: saveSpeciesToDex(m.species),
       nick: nick,
+      // The save's own level wins. metLevel is only a last resort (a species
+      // the growth-rate table doesn't cover) and is deliberately last: it is
+      // the level the mon was CAUGHT at, and it is 0 for a hatched egg -- a 0
+      // ahead of a real level here is what left imported eggs with no level.
       level: m.level || (existing && existing.level) || m.metLevel || null,
       status: dead ? "dead" : (m.box === undefined ? "alive" : "boxed"),
       // Preserve a cause the user typed; a save can't tell us how it died.
@@ -7673,6 +8119,33 @@
       if(!section.data.length) return '<div class="empty">No EV spots loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
       return section.data.map(function(e){
         return '<div class="guide-card"><div class="guide-card-title">'+escapeHTML(e.stat)+'</div><div class="guide-card-body"><b>Where:</b> '+escapeHTML(e.spot)+'<br><b>Note:</b> '+escapeHTML(e.note)+'</div></div>';
+      }).join("");
+    }
+    if(section.type === "tables"){
+      var cardsHtml = (section.cards && section.cards.length) ? guideCardsHTML(section.cards, section.label.toLowerCase(), game) : "";
+      var tables = (section.data || []).filter(function(t){ return t.rows && t.rows.length; });
+      if(!tables.length && !cardsHtml) return '<div class="empty">No ' + escapeHTML(section.label.toLowerCase()) + ' loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
+      return cardsHtml + tables.map(function(t){
+        var head = '<tr>' + t.cols.map(function(c){ return '<th>' + escapeHTML(c.h) + '</th>'; }).join("") + '</tr>';
+        var body = t.rows.map(function(r){
+          if(!Array.isArray(r)) r = [r];
+          return '<tr>' + t.cols.map(function(c){
+            // f entries are a row index, or [index, "Label"] to prefix the value.
+            var vals = c.f.map(function(i){
+              var label = Array.isArray(i) ? i[1] : "";
+              var v = r[Array.isArray(i) ? i[0] : i];
+              v = v == null ? "" : String(v);
+              return (v !== "" && label) ? label + " " + v : v;
+            }).filter(function(v){ return v !== ""; });
+            if(c.subJoin && vals.length > 2) vals = [vals[0], vals.slice(1).join(c.subJoin)];
+            return '<td>' + vals.map(function(v, k){
+              return k === 0 ? '<div class="gt-main">' + escapeHTML(v) + '</div>' : '<div class="gt-sub">' + escapeHTML(v) + '</div>';
+            }).join("") + '</td>';
+          }).join("") + '</tr>';
+        }).join("");
+        return '<details class="guide-card guide-table-card"' + (t.collapsed ? '' : ' open') + '><summary class="guide-card-title">' +
+          escapeHTML(t.title) + ' <span class="gt-count">(' + t.rows.length + ')</span></summary>' +
+          '<table class="nature-table guide-table">' + head + body + '</table></details>';
       }).join("");
     }
     return guideCardsHTML(section.data, section.label.toLowerCase(), game, section.intro);

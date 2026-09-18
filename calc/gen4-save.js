@@ -192,6 +192,74 @@
     return out;
   }
 
+  // ---- experience curves --------------------------------------------------
+  // A PARTY Pokemon carries its level as a byte in the party-only stats block.
+  // A BOXED one does not -- storage holds experience and nothing else -- so a
+  // boxed mon's level has to be derived, which needs its experience group.
+  // Without this the Route Log showed boxed imports with no level at all, and
+  // "Load team into Calculator" fell back to level 50.
+  //
+  // (metLevel is NOT a substitute: it is the level the Pokemon was caught at,
+  // it does not move as the mon levels up, and it is 0 for a hatched egg --
+  // which is exactly how the sample save's Mantyke ended up with no level.)
+  //
+  // Total experience required to REACH level n, from the published Gen 3/4
+  // formulas. Everything floors; level 1 is 0 by definition (medium-slow's
+  // polynomial is negative there).
+  var EXP_CURVES = {
+    "medium-fast": function(n){ return n * n * n; },
+    "fast":        function(n){ return Math.floor(4 * n * n * n / 5); },
+    "slow":        function(n){ return Math.floor(5 * n * n * n / 4); },
+    "medium-slow": function(n){
+      return Math.floor(6 * n * n * n / 5) - 15 * n * n + 100 * n - 140;
+    },
+    "erratic": function(n){
+      var c = n * n * n;
+      if(n <= 50) return Math.floor(c * (100 - n) / 50);
+      if(n <= 68) return Math.floor(c * (150 - n) / 100);
+      if(n <= 98){
+        var m = n % 3;
+        return Math.floor(c * (1274 + m * m - 9 * m - 20 * Math.floor(n / 3)) / 1000);
+      }
+      return Math.floor(c * (160 - n) / 100);
+    },
+    "fluctuating": function(n){
+      var c = n * n * n;
+      if(n <= 15) return Math.floor(c * (Math.floor((n + 1) / 3) + 24) / 50);
+      if(n <= 36) return Math.floor(c * (n + 14) / 50);
+      return Math.floor(c * (Math.floor(n / 2) + 32) / 50);
+    }
+  };
+
+  // Species id -> curve name, via the packed growth_rates string in the enums.
+  // Returns null for anything outside the national dex 1-493 (forme ids and
+  // the Egg/Bad Egg entries), which leaves the level unknown rather than
+  // guessing one.
+  function growthRateFor(speciesId){
+    var E = enums();
+    var packed = E.growth_rates, names = E.growth_rate_names;
+    if(!packed || !names || !(speciesId >= 1) || speciesId >= packed.length) return null;
+    var idx = parseInt(packed.charAt(speciesId), 10);
+    return isNaN(idx) ? null : (names[idx] || null);
+  }
+
+  function expAt(rate, n){
+    var fn = EXP_CURVES[rate];
+    if(!fn) return null;
+    return n <= 1 ? 0 : fn(n);
+  }
+
+  // Highest level whose experience requirement the mon has met. Linear from
+  // the top: 100 iterations worst case, once per Pokemon.
+  function levelFromExp(speciesId, exp){
+    var rate = growthRateFor(speciesId);
+    if(!rate || !(exp >= 0)) return null;
+    for(var n = 100; n > 1; n--){
+      if(exp >= expAt(rate, n)) return n;
+    }
+    return 1;
+  }
+
   function decodePkm(bytes, offset, isParty){
     var E = enums();
     var size = isParty ? PARTY_PKM_SIZE : BOX_PKM_SIZE;
@@ -276,6 +344,12 @@
       checksumOk: calcChecksum === storedChecksum
     };
 
+    // Derived for every Pokemon, party or boxed. For a party mon it is a
+    // cross-check on the growth-rate table rather than the value used (the
+    // stored byte wins below); for a boxed one it IS the level.
+    mon.levelFromExp = levelFromExp(mon.speciesId, mon.exp);
+    if(mon.levelFromExp !== null) mon.level = mon.levelFromExp;
+
     if(isParty && offset + size <= bytes.length){
       var pstats = decrypt(bytes, offset + 0x88, 0x64, pv);
       var raw = [];
@@ -324,8 +398,18 @@
     for(k in mon.evs) evTotal += mon.evs[k];
     if(evTotal > 510) p.push("EV total " + evTotal + " exceeds 510");
     for(k in mon.ivs){ if(mon.ivs[k] > 31){ p.push("IV above 31"); break; } }
-    if(mon.level !== undefined && (mon.level < 1 || mon.level > 100)){
+    if(mon.level !== undefined && mon.level !== null &&
+       (mon.level < 1 || mon.level > 100)){
       p.push("level " + mon.level + " out of range");
+    }
+    // The game stores a party mon's level AND its experience, so they have to
+    // agree. A mismatch means the species' experience group in the enums table
+    // is wrong -- which would otherwise show up only as silently wrong levels
+    // on BOXED Pokemon, where nothing can contradict it.
+    if(mon.currentHp !== undefined && mon.levelFromExp !== null &&
+       mon.levelFromExp !== mon.level){
+      p.push("level " + mon.level + " disagrees with experience (" + mon.exp +
+             " gives level " + mon.levelFromExp + ")");
     }
     return p;
   }
