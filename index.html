@@ -765,6 +765,8 @@
   .modal-input:focus{ border-color: var(--lcd); }
   .modal-actions{ display:flex; gap:8px; }
   .modal-actions button{ flex:1; }
+  .modal-choices{ display:flex; flex-direction:column; gap:8px; margin-bottom: 12px; }
+  .modal-choices button{ width:100%; }
 
   /* ---------- phone width ----------
      MUST STAY LAST in this stylesheet. A media query adds no specificity, so
@@ -1075,6 +1077,7 @@
     <button class="btn-ghost" id="exportBtn">⭳ Export Backup</button>
     <button class="btn-ghost" id="importBtn">⭱ Import Backup</button>
     <input type="file" id="fileInput" accept=".json">
+    <button class="btn-ghost" id="endRunBtn">End Run…</button>
     <button class="btn-danger" id="resetBtn">Reset Run</button>
   </div>
 </div>
@@ -1085,7 +1088,8 @@
   <div class="modal-box">
     <div class="modal-msg" id="modalMsg"></div>
     <input type="text" class="modal-input" id="modalInput" style="display:none;">
-    <div class="modal-actions">
+    <div class="modal-choices" id="modalChoices" style="display:none;"></div>
+    <div class="modal-actions" id="modalActions">
       <button type="button" class="btn-ghost" id="modalCancel">Cancel</button>
       <button type="button" class="btn-primary" id="modalOk">OK</button>
     </div>
@@ -5688,7 +5692,8 @@
       mons: [], // {id, route, species, nick, level, status, cause, causeLevel, createdAt}
       beatenBosses: {}, // key -> true
       collapsedRoutes: {}, // route name -> true
-      collapsedSplits: {} // trainer-fight split name -> true
+      collapsedSplits: {}, // trainer-fight split name -> true
+      pastRuns: [] // {id, endedAt, result, note, attempt, runName, badges, mons, beatenBosses} — see "End Run"
     };
   }
 
@@ -5728,7 +5733,8 @@
         beatenBosses: r.beatenBosses || {},
         collapsedRoutes: r.collapsedRoutes || {},
         collapsedSplits: r.collapsedSplits || {},
-        saveImportMeta: r.saveImportMeta || null
+        saveImportMeta: r.saveImportMeta || null,
+        pastRuns: Array.isArray(r.pastRuns) ? r.pastRuns : []
       };
     }
 
@@ -5821,6 +5827,56 @@
 
   function showPrompt(message, placeholder, onSubmit){
     showModal({ message: message, showInput: true, inputPlaceholder: placeholder, onConfirm: onSubmit });
+  }
+
+  // A 3(+)-way choice reusing the same modal overlay. `options` is
+  // [{label, value}, ...]; clicking one calls onPick(value) and closes the
+  // modal. Cancel (or Escape) calls onCancel if given. Hides the normal
+  // input/OK/Cancel row and shows one button per option instead.
+  function showChoice(message, options, onPick, onCancel){
+    var overlay = document.getElementById("modalOverlay");
+    var msgEl = document.getElementById("modalMsg");
+    var input = document.getElementById("modalInput");
+    var choicesEl = document.getElementById("modalChoices");
+    var actionsEl = document.getElementById("modalActions");
+
+    msgEl.textContent = message;
+    input.style.display = "none";
+    actionsEl.style.display = "none";
+    choicesEl.style.display = "";
+    choicesEl.innerHTML = "";
+
+    var buttons = [];
+    function cleanup(){
+      overlay.classList.remove("show");
+      choicesEl.style.display = "none";
+      actionsEl.style.display = "";
+      buttons.forEach(function(b){ b.el.removeEventListener("click", b.handler); });
+      document.removeEventListener("keydown", onKeydown);
+    }
+    function onKeydown(e){ if(e.key === "Escape"){ cleanup(); if(onCancel) onCancel(); } }
+
+    options.forEach(function(opt){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn-primary";
+      btn.textContent = opt.label;
+      var handler = function(){ cleanup(); onPick(opt.value); };
+      btn.addEventListener("click", handler);
+      choicesEl.appendChild(btn);
+      buttons.push({ el: btn, handler: handler });
+    });
+    var cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "btn-ghost";
+    cancelBtn.textContent = "Cancel";
+    var cancelHandler = function(){ cleanup(); if(onCancel) onCancel(); };
+    cancelBtn.addEventListener("click", cancelHandler);
+    choicesEl.appendChild(cancelBtn);
+    buttons.push({ el: cancelBtn, handler: cancelHandler });
+
+    document.addEventListener("keydown", onKeydown);
+    overlay.classList.add("show");
   }
 
   // ---------- rendering ----------
@@ -5966,15 +6022,78 @@
     el.innerHTML = html;
   }
 
+  // Read-only rendering for a mon that belongs to a PAST attempt, not the
+  // current run — no action buttons, since none of them (kill/box/delete/…)
+  // are valid against history. Tolerates every optional field's absence,
+  // same as cardHTML, since a past attempt can hold hand-added or
+  // save-imported mons alike.
+  function pastMonLineHTML(m){
+    var statusLabel = m.status === "alive" ? "Active" : (m.status === "boxed" ? "Boxed" : "Fallen");
+    var cause = m.status === "dead" && m.cause ? '<div class="cause" title="'+escapeHTML(m.cause)+'">☠ ' + escapeHTML(m.cause) + '</div>' : "";
+    var speciesLine = m.nick ? '<div class="species">'+escapeHTML(m.species || "?")+'</div>' : "";
+    var routeLine = '<div class="route-tag">'+escapeHTML(m.route || "Unknown Location")+'</div>';
+    return (
+      '<div class="card status-'+m.status+'">' +
+        '<div class="card-top">' +
+          '<span class="dot status-'+m.status+'"></span>' +
+          '<span class="nick">'+escapeHTML(m.nick || m.species || "Unnamed")+'</span>' +
+        '</div>' +
+        speciesLine +
+        routeLine +
+        '<div class="meta">'+statusLabel+(m.level ? ' · Lv '+escapeHTML(String(m.level)) : '')+'</div>' +
+        cause +
+      '</div>'
+    );
+  }
+
+  var PAST_RUN_RESULT_LABEL = { wiped: "Wiped", won: "Won", abandoned: "Abandoned" };
+
+  function pastRunCardHTML(p){
+    var mons = Array.isArray(p.mons) ? p.mons : [];
+    var dead = mons.filter(function(m){ return m.status === "dead"; });
+    var team = mons.filter(function(m){ return m.status === "alive"; });
+    var resultLabel = PAST_RUN_RESULT_LABEL[p.result] || p.result || "Ended";
+    var dateStr = "";
+    try{ dateStr = p.endedAt ? new Date(p.endedAt).toISOString().slice(0,10) : ""; }catch(e){ dateStr = ""; }
+    var summary = "Attempt " + (p.attempt || "?") + " — " + escapeHTML(resultLabel) +
+      " · " + (p.badges || 0) + " badges" + (dateStr ? " · " + dateStr : "");
+    if(p.runName) summary += " · " + escapeHTML(p.runName);
+
+    var body = "";
+    if(p.note) body += '<div class="guide-card-body" style="margin-bottom:8px;">' + escapeHTML(p.note) + '</div>';
+    body += '<div class="roster-group-title">Final team<span class="roster-count">' + team.length + '</span></div>';
+    body += team.length
+      ? '<div class="route-cards">' + team.map(pastMonLineHTML).join("") + '</div>'
+      : '<div class="empty">Nobody in the team when this attempt ended.</div>';
+    body += '<div class="roster-group-title">Graveyard<span class="roster-count">' + dead.length + '</span></div>';
+    body += dead.length
+      ? '<div class="route-cards">' + dead.map(pastMonLineHTML).join("") + '</div>'
+      : '<div class="empty">No losses this attempt.</div>';
+    body += '<div style="margin-top:8px;"><button type="button" class="btn-ghost" data-act="delete-past-run" data-past-id="'+p.id+'">Delete this attempt</button></div>';
+
+    return '<details class="guide-card guide-table-card"><summary class="guide-card-title">' +
+      summary + '</summary><div class="guide-card-body">' + body + '</div></details>';
+  }
+
   function renderGraveyard(){
-    var dead = currentRun().mons.filter(function(m){ return m.status === "dead"; });
+    var run = currentRun();
+    var dead = run.mons.filter(function(m){ return m.status === "dead"; });
     var el = document.getElementById("graveyardList");
+
+    var html = "";
     if(dead.length === 0){
-      el.innerHTML = '<div class="empty">No losses yet. Long may it last.</div>';
-      return;
+      html += '<div class="empty">No losses yet. Long may it last.</div>';
+    } else {
+      html += dead.slice().reverse().map(cardHTML).join("");
     }
-    dead = dead.slice().reverse();
-    el.innerHTML = dead.map(cardHTML).join("");
+
+    var pastRuns = run.pastRuns || [];
+    if(pastRuns.length){
+      html += '<div class="roster-group-title" style="margin-top:16px;">Past attempts<span class="roster-count">' + pastRuns.length + '</span></div>';
+      html += pastRuns.slice().reverse().map(pastRunCardHTML).join("");
+    }
+
+    el.innerHTML = html;
   }
 
   function renderAll(){
@@ -6234,7 +6353,7 @@
       visibleEncounters.forEach(function(e){
         var sub = e.sub || "";
         if(!keysByMethod[e.m]){ keysByMethod[e.m] = []; methodOrder.push(e.m); }
-        var key = sub + " " + e.m;
+        var key = sub + "|" + e.m;
         if(!groups[key]){ groups[key] = { sub: sub, m: e.m, list: [] }; keysByMethod[e.m].push(key); }
         groups[key].list.push(e);
       });
@@ -8338,6 +8457,18 @@
       return;
     }
 
+    if(act === "delete-past-run"){
+      var pastId = btn.getAttribute("data-past-id");
+      showConfirm("Delete this past attempt permanently? This cannot be undone.", function(){
+        var run = currentRun();
+        run.pastRuns = (run.pastRuns || []).filter(function(p){ return p.id !== pastId; });
+        save();
+        renderGraveyard();
+        showToast("Past attempt deleted");
+      });
+      return;
+    }
+
     var id = btn.getAttribute("data-id");
     var mon = findMon(id);
     if(!mon) return;
@@ -8384,8 +8515,12 @@
 
   document.getElementById("resetBtn").addEventListener("click", function(){
     var game = currentGame();
-    showConfirm("This clears your " + game.shortLabel + " run: roster, graveyard, badges. Other games' runs are untouched. Export a backup first if you want to keep it. Continue?", function(){
-      state.runs[state.selectedGame] = defaultRunState();
+    showConfirm("This clears your " + game.shortLabel + " run: roster, graveyard, badges. Past attempts recorded with \"End Run\" are kept. Other games' runs are untouched. Export a backup first if you want to keep this attempt — or use End Run instead to record it as a past attempt first. Continue?", function(){
+      var run = currentRun();
+      var fresh = defaultRunState();
+      fresh.pastRuns = run.pastRuns || [];
+      fresh.rules = run.rules; // house rules persist across a reset too
+      state.runs[state.selectedGame] = fresh;
       // Same reason as the game-switch handler: the foe row is a cache, and a
       // Simulated team that outlives the run it was opened against is exactly
       // the staleness the ally row was rewritten to avoid.
@@ -8394,6 +8529,53 @@
       renderAll();
       showToast(game.shortLabel + " run reset");
     });
+  });
+
+  // ---------- End Run: record the current attempt as history, then start fresh ----------
+  var END_RUN_RESULTS = [
+    { label: "Wiped", value: "wiped" },
+    { label: "Won", value: "won" },
+    { label: "Abandoned", value: "abandoned" }
+  ];
+
+  document.getElementById("endRunBtn").addEventListener("click", function(){
+    var game = currentGame();
+    var run = currentRun();
+    showConfirm(
+      "End this " + game.shortLabel + " attempt and start a fresh run? " +
+      "This attempt (roster, graveyard, badges — even with no Pokémon logged) " +
+      "will be saved under Graveyard > Past attempts, then your " + game.shortLabel +
+      " run resets. House rules carry over. Continue?",
+      function(){
+        showChoice("How did this attempt end?", END_RUN_RESULTS, function(result){
+          showPrompt("Add a note for this attempt? (optional)", "e.g. Fantina's Mismagius", function(note){
+            var entry = {
+              id: uid(),
+              endedAt: new Date().toISOString(),
+              result: result,
+              note: note || "",
+              attempt: (run.pastRuns || []).length + 1,
+              runName: run.runName || "",
+              badges: run.badges || 0,
+              mons: JSON.parse(JSON.stringify(run.mons || [])),
+              beatenBosses: JSON.parse(JSON.stringify(run.beatenBosses || {}))
+            };
+            var fresh = defaultRunState();
+            fresh.pastRuns = (run.pastRuns || []).concat([entry]);
+            fresh.rules = run.rules; // house rules persist across attempts
+            // Deliberately NOT carried over: runName, badges, mons, beatenBosses,
+            // collapsedRoutes/Splits, saveImportMeta — this is a brand new attempt,
+            // and the next .sav import should fill it cleanly with no stale
+            // fromSave mons or saveImportMeta lingering from the ended run.
+            state.runs[state.selectedGame] = fresh;
+            calcTeamState.Atk = calcTeamState.Def = null;
+            save();
+            renderAll();
+            showToast("Attempt " + entry.attempt + " saved — new run started");
+          });
+        });
+      }
+    );
   });
 
   document.getElementById("exportBtn").addEventListener("click", function(){
