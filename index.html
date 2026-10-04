@@ -936,7 +936,7 @@
            container whose innerHTML gets replaced loses its value.
            The parser (calc/gen4-save.js) is loaded on demand by
            loadSaveParser(), separately from the engine bundle. -->
-      <div class="save-panel">
+      <div class="save-panel" id="savePanel">
         <div class="save-panel-head">
           <label class="save-file-label" for="saveFileInput">📂 Import save file…</label>
           <input type="file" id="saveFileInput" accept=".sav,.dsv,.dat,application/octet-stream">
@@ -975,7 +975,6 @@
     </div>
 
     <div id="panel-calculator" style="display:none;">
-      <div id="calcUnavailable" class="empty" style="display:none;">The Calculator only supports Renegade Platinum right now — switch games above to use it.</div>
       <!-- Shown while the vendored calc/ engine bundle (~1.3MB, see the
            lazy-loader comment near loadCalcBundle()) is still being
            fetched/parsed. Only reachable via renderCalculator(), never
@@ -1104,7 +1103,6 @@
     </div>
 
     <div id="panel-pokedex" style="display:none;">
-      <div id="pokedexUnavailable" class="empty" style="display:none;">The Pokédex only supports Renegade Platinum and SoulGold right now — switch games above to use it.</div>
       <!-- Same 4-panel loading pattern as the Calc tab (see renderCalculator()'s
            comment) — the Pokédex reads window.RP_BACKUP_DATA.poks from the
            same lazily-loaded ~1.3MB calc/ bundle, so it goes through
@@ -8996,6 +8994,10 @@
       guideComplete: true,
       bosses: EMERALD_BOSSES,
       trainerFights: [], // Emerald folds every trainer into Bosses; no separate split data
+      // Optional tabs/panels this game supports. Anything not listed is
+      // hidden outright (applyGameFeatures) rather than shown as an empty
+      // "not supported" placeholder. Keys: trainers, calc, pokedex, saveImport.
+      features: [],
       // Guide subtabs are per-game because the sections themselves differ,
       // not just their content — Emerald's Tips/Cheats/Natures/EV Spots
       // don't map cleanly onto Renegade's Items/TMs/Gifts&Events, so each
@@ -9024,6 +9026,7 @@
       guideComplete: true,
       bosses: RENEGADE_BOSSES,
       trainerFights: RENEGADE_TRAINER_FIGHTS,
+      features: ["trainers", "calc", "pokedex", "saveImport"],
       // Natures are shown directly in-game for Renegade Platinum, so no
       // Natures subtab is needed here (Emerald's UI never shows nature,
       // hence its reference chart). No EV Spots subtab either — nothing
@@ -9079,6 +9082,7 @@
       badgeCount: 16,
       bosses: HGR_BOSSES,
       trainerFights: [],
+      features: [],
       guideSections: [
         { key: "tips", label: "Tips", type: "cards", data: HGR_TIPS },
         { key: "items", label: "Items", type: "tables", data: [
@@ -9109,6 +9113,7 @@
       badgeCount: 8,
       bosses: SG_BOSSES,
       trainerFights: SG_TRAINER_FIGHTS,
+      features: ["trainers", "pokedex"],
       // Blind playthrough: boss/trainer teams stay behind a tap until the
       // player asks (run.revealedBosses). Opt-in per game.
       hideTeams: true,
@@ -9139,6 +9144,28 @@
 
   function currentGame(){
     return GAMES[state.selectedGame] || GAMES[DEFAULT_GAME];
+  }
+
+  function gameHas(feature){
+    return (currentGame().features || []).indexOf(feature) !== -1;
+  }
+
+  // Hides the tabs and the save-import panel the current game doesn't
+  // support. If the open tab just disappeared (game switch), fall back to
+  // the Route Log so the player never lands on a blank panel.
+  function applyGameFeatures(){
+    ["trainers", "calculator", "pokedex"].forEach(function(tabId){
+      var tab = document.querySelector('.tab[data-tab="' + tabId + '"]');
+      if(!tab) return;
+      var on = gameHas(tabId === "calculator" ? "calc" : tabId);
+      tab.style.display = on ? "" : "none";
+      if(!on && tab.classList.contains("active")){
+        var roster = document.querySelector('.tab[data-tab="roster"]');
+        if(roster) roster.click();
+      }
+    });
+    var panel = document.getElementById("savePanel");
+    if(panel) panel.style.display = gameHas("saveImport") ? "" : "none";
   }
 
   // One run's worth of state — kept per-game (see `runs` below) so
@@ -9572,6 +9599,7 @@
   function renderAll(){
     var run = currentRun();
     document.body.setAttribute("data-game", state.selectedGame);
+    applyGameFeatures();
     var themeMeta = document.querySelector('meta[name="theme-color"]');
     if(themeMeta) themeMeta.setAttribute("content", ({ renegade: "#141e26", hgretiled: "#211910", soulgold: "#1a1710" })[state.selectedGame] || "#16241b");
     document.getElementById("runName").value = run.runName || "";
@@ -9655,7 +9683,7 @@
     // The Calc tab's DOM is static (not re-rendered from state by
     // renderAll() — see the comment above renderCalculator()), so if
     // it's already open when the game switches, its own re-render has
-    // to be triggered explicitly — otherwise calcUnavailable/calcBody
+    // to be triggered explicitly — otherwise calcBody
     // and the team bar would keep showing the previous game's state
     // until the next tab click.
     renderCalculator();
@@ -9969,7 +9997,7 @@
     return { name: m.name, level: m.level, ability: m.ability, item: m.item, moves: m.moves, stats: m.stats || null };
   }
   function monSimButtonHTML(m, team){
-    if(state.selectedGame !== "renegade") return "";
+    if(!gameHas("calc")) return "";
     // Resolve through dexSpeciesName(), NOT the raw m.name: a possessive
     // display prefix ("Mars's Crobat") misses the dex, and this guard runs
     // BEFORE applyMonToSide() ever gets a chance to strip it — so keying
@@ -10652,17 +10680,15 @@
 
   // Renders the Calc tab. Unlike most render*() functions this one is
   // asynchronous under the hood — the vendored engine bundle may still
-  // need to be fetched (see loadCalcBundle()) — so it juggles four
-  // panels (#calcUnavailable / #calcLoading / #calcLoadError /
-  // #calcBody) instead of the usual two-state show/hide.
+  // need to be fetched (see loadCalcBundle()) — so it juggles three
+  // panels (#calcLoading / #calcLoadError / #calcBody) instead of the
+  // usual two-state show/hide. Games without "calc" never see this tab.
   function renderCalculator(){
-    var unavailable = document.getElementById("calcUnavailable");
     var loading = document.getElementById("calcLoading");
     var loadError = document.getElementById("calcLoadError");
     var body = document.getElementById("calcBody");
 
-    if(state.selectedGame !== "renegade"){
-      unavailable.style.display = "";
+    if(!gameHas("calc")){
       loading.style.display = "none";
       loadError.style.display = "none";
       body.style.display = "none";
@@ -10673,7 +10699,6 @@
       // Already loaded (either a prior visit to this tab, or the
       // background idle-load kicked off at startup already finished) —
       // show the real calculator immediately, no loading flash.
-      unavailable.style.display = "none";
       loading.style.display = "none";
       loadError.style.display = "none";
       body.style.display = "";
@@ -10684,7 +10709,6 @@
       return;
     }
 
-    unavailable.style.display = "none";
     loadError.style.display = "none";
     body.style.display = "none";
     loading.style.display = "";
@@ -11030,19 +11054,17 @@
       : '<div class="empty">No species match "' + escapeHTML(filterInput ? filterInput.value.trim() : "") + '".</div>';
   }
 
-  // Same four-panel-state pattern as renderCalculator() (see that
+  // Same three-panel-state pattern as renderCalculator() (see that
   // function's comment) — the Pokédex reads the identical lazily-loaded
-  // bundle, so it needs the identical unavailable/loading/error/body
+  // bundle, so it needs the identical loading/error/body
   // states rather than assuming the data is already there.
   function renderPokedex(){
-    var unavailable = document.getElementById("pokedexUnavailable");
     var loading = document.getElementById("pokedexLoading");
     var loadError = document.getElementById("pokedexLoadError");
     var body = document.getElementById("pokedexBody");
     var game = state.selectedGame;
 
-    if(game !== "renegade" && game !== "soulgold"){
-      unavailable.style.display = "";
+    if(!gameHas("pokedex")){
       loading.style.display = "none";
       loadError.style.display = "none";
       body.style.display = "none";
@@ -11055,7 +11077,6 @@
     var ready = game === "renegade" ? (typeof window.RPCalc !== "undefined") : !!window.SG_DEX;
     if(ready){
       // Already loaded — show the real Pokédex immediately.
-      unavailable.style.display = "none";
       loading.style.display = "none";
       loadError.style.display = "none";
       body.style.display = "";
@@ -11063,7 +11084,6 @@
       return;
     }
 
-    unavailable.style.display = "none";
     loadError.style.display = "none";
     body.style.display = "none";
     loading.style.display = "";
@@ -11372,7 +11392,7 @@
   // live slot. Recomputing is O(6) and cannot go stale, so there is nothing to
   // invalidate and no invalidation to forget.
   function currentCalcParty(){
-    if(state.selectedGame !== "renegade") return [];
+    if(!gameHas("calc")) return [];
     return currentRun().mons.filter(function(m){ return m.status === "alive"; }).slice(0, 6);
   }
 
@@ -11713,19 +11733,9 @@
   function handleSaveFile(file){
     var summary = document.getElementById("saveSummary");
     if(!file) return;
-    // The parser is Platinum-layout only (calc/gen4-save.js); a HeartGold
-    // save fails on block magic with a message that means nothing to the
-    // player, so say what's actually wrong. Scoped to HeartGold Retiled on
-    // purpose: Emerald has always accepted the import (tools/
-    // browser_test_save_import.js step 1a relies on it from a cold load).
-    if(state.selectedGame === "hgretiled"){
-      if(summary) summary.textContent = "Save import only supports Renegade Platinum right now.";
-      return;
-    }
-    if(state.selectedGame === "soulgold"){
-      if(summary) summary.textContent = "Save import isn't available for SoulGold (a GBA hack) — it only supports Renegade Platinum right now.";
-      return;
-    }
+    // The parser is Platinum-layout only (calc/gen4-save.js). The panel is
+    // hidden for every other game (applyGameFeatures); this is a backstop.
+    if(!gameHas("saveImport")) return;
     if(summary) summary.textContent = "Reading " + file.name + "…";
 
     var reader = new FileReader();
