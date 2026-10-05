@@ -841,6 +841,8 @@
   .boss-reveal:hover{ background: var(--lcd-dim); color: #0d1712; }
   .guide-table tr[hidden], .guide-table-card[hidden]{ display: none; }
   .guide-filter-note{ font-size: 13px; color: var(--cream-dim); margin: -4px 0 10px; }
+  .dex-form{ border-top: 1px dashed var(--line); padding-top: 4px; margin-top: 4px; }
+  .dex-form-name{ font-size: 13px; color: var(--gold); overflow-wrap: anywhere; }
   .dex-innates{ font-size: 13px; margin-top: 3px; color: var(--gold); overflow-wrap: anywhere; }
   .dex-tutors{ display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
   .dex-chip{ font-size: 12px; padding: 2px 6px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--cream); }
@@ -11272,6 +11274,25 @@
       var howHtml = p.how
         ? '<div class="dex-section-title">How to get</div><div class="dex-abilities">'+escapeHTML(p.how)+'</div>'
         : "";
+      // Origin HeartGold folds every alternate form into its base species'
+      // card (one card per species). Each entry lists the form names that
+      // share it and only the fields that differ from the main entry.
+      var formsHtml = (p.forms && p.forms.length)
+        ? '<div class="dex-section-title">Forms</div>' + p.forms.map(function(f){
+            var lines = [];
+            if(f.types) lines.push(f.types.join(" / "));
+            if(f.bs) lines.push("HP " + f.bs.hp + " · Atk " + f.bs.at + " · Def " + f.bs.df + " · SpA " + f.bs.sa + " · SpD " + f.bs.sd + " · Spe " + f.bs.sp +
+              " (Total " + (f.bs.hp + f.bs.at + f.bs.df + f.bs.sa + f.bs.sd + f.bs.sp) + ")");
+            if(f.abilities) lines.push("Abilities: " + Object.keys(f.abilities).map(function(k){
+              return f.abilities[k] + (k === "H" ? " (Hidden)" : "");
+            }).join(" / "));
+            if(f.learnset) lines.push("Level-up: " + f.learnset.map(function(m){ return "Lv " + m[0] + " " + m[1]; }).join(", "));
+            if(f.how) lines.push("How to get: " + f.how);
+            if(!lines.length) lines.push("Same data as the main entry.");
+            return '<div class="dex-form"><div class="dex-form-name">' + escapeHTML(f.names.join(", ")) + '</div>' +
+              lines.map(function(l){ return '<div class="dex-abilities">' + escapeHTML(l) + '</div>'; }).join("") + '</div>';
+          }).join("")
+        : "";
       var tutorsHtml = (p.tutors && p.tutors.length)
         ? '<div class="dex-section-title">Move Tutor</div><div class="dex-tutors">' +
             p.tutors.map(function(t){ return '<span class="dex-chip">'+escapeHTML(t)+'</span>'; }).join("") + '</div>'
@@ -11284,6 +11305,7 @@
           innatesHtml +
           evosHtml +
           howHtml +
+          formsHtml +
           '<div class="dex-section-title">Level-up Learnset</div>' +
           learnsetHtml +
           '<div class="dex-section-title">TMs</div>' +
@@ -11350,7 +11372,11 @@
       var qIsType = ALL_TYPES.some(function(t){ return t.toLowerCase() === q; });
       names = names.filter(function(n){
         if(n.toLowerCase().indexOf(q) !== -1) return true;
-        if(qIsType) return poks[n].types.some(function(t){ return t.toLowerCase() === q; });
+        var forms = poks[n].forms || [];
+        // A form's name ("Alolan Geodude") or type finds its species' card.
+        if(forms.some(function(f){ return f.names.some(function(fn){ return fn.toLowerCase().indexOf(q) !== -1; }); })) return true;
+        if(qIsType) return poks[n].types.concat.apply(poks[n].types, forms.map(function(f){ return f.types || []; }))
+          .some(function(t){ return t.toLowerCase() === q; });
         return false;
       });
     }
