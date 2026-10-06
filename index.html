@@ -10536,7 +10536,7 @@
     msgEl.textContent = opts.message;
     if(opts.showInput){
       input.style.display = "";
-      input.value = "";
+      input.value = opts.inputValue || "";
       input.placeholder = opts.inputPlaceholder || "";
     } else {
       input.style.display = "none";
@@ -10563,8 +10563,8 @@
     showModal({ message: message, showInput: false, onConfirm: onConfirm });
   }
 
-  function showPrompt(message, placeholder, onSubmit){
-    showModal({ message: message, showInput: true, inputPlaceholder: placeholder, onConfirm: onSubmit });
+  function showPrompt(message, placeholder, onSubmit, value){
+    showModal({ message: message, showInput: true, inputPlaceholder: placeholder, inputValue: value, onConfirm: onSubmit });
   }
 
   // A 3(+)-way choice reusing the same modal overlay. `options` is
@@ -10707,6 +10707,7 @@
       actions += '<button data-act="unbox" data-id="'+m.id+'" class="btn-ghost" title="Un-box">📤</button>';
     }
     if(m.status === "dead"){
+      actions += '<button data-act="edit-cause" data-id="'+m.id+'" class="btn-ghost" title="Edit note">✏️</button>';
       actions += '<button data-act="revive" data-id="'+m.id+'" class="btn-ghost" title="Undo faint">↩️</button>';
     }
     actions += '<button data-act="delete" data-id="'+m.id+'" class="btn-ghost" title="Delete">🗑️</button>';
@@ -13876,10 +13877,7 @@
       showPrompt("How did " + (mon.nick || mon.species || "it") + " fall? (optional)", "", function(cause){
         mon.status = "dead";
         mon.cause = cause || "";
-        addTimelineEntry("death",
-          (mon.nick ? mon.nick + (mon.species ? " (" + mon.species + ")" : "") : (mon.species || "A Pokémon")) + " died" +
-          (mon.level ? " at Lv " + mon.level : "") + (mon.cause ? " — " + mon.cause : ""),
-          { monId: mon.id });
+        addTimelineEntry("death", deathEntryText(mon), { monId: mon.id });
         showToast((mon.nick || mon.species) + " has fallen");
         save();
         renderAll();
@@ -13899,6 +13897,20 @@
       }
       mon.status = "alive";
       showToast((mon.nick || mon.species) + " back in the party");
+    } else if(act === "edit-cause"){
+      // The note on a fallen mon (user, 2026-10-06). Its auto Timeline entry
+      // follows along unless that entry was hand-edited.
+      showPrompt("Note for " + (mon.nick || mon.species || "this Pokémon") + ":", "e.g. Crit from Whitney's Miltank", function(val){
+        var before = deathEntryText(mon);
+        mon.cause = (val || "").trim();
+        (currentRun().timeline || []).forEach(function(t){
+          if(t.kind === "death" && t.monId === mon.id && t.text === before) t.text = deathEntryText(mon);
+        });
+        save();
+        renderAll();
+        showToast("Note saved");
+      }, mon.cause || "");
+      return;
     } else if(act === "revive"){
       mon.status = "alive";
       mon.cause = "";
@@ -13945,6 +13957,11 @@
     var champ = (game.bosses || {}).champion;
     if(champ && champ.name && run.beatenBosses["champion-" + champ.name]) return "Postgame";
     return "Elite Four";
+  }
+
+  function deathEntryText(mon){
+    return (mon.nick ? mon.nick + (mon.species ? " (" + mon.species + ")" : "") : (mon.species || "A Pokémon")) + " died" +
+      (mon.level ? " at Lv " + mon.level : "") + (mon.cause ? " — " + mon.cause : "");
   }
 
   function addTimelineEntry(kind, text, extra, split){
