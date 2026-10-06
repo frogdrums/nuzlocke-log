@@ -121,7 +121,8 @@
   .tl-split-now{ font-size: 13px; color: var(--cream-dim); margin-bottom: 6px; }
   .tl-add-row{ display:flex; gap: 6px; }
   .tl-add-row input{ flex: 1; min-width: 0; }
-  .tl-split{ font-size: 14px; color: var(--gold); font-weight: 700; margin: 14px 0 6px; }
+  .tl-split{ font-size: 14px; color: var(--gold); font-weight: 700; margin: 14px 0 6px; display:flex; justify-content:space-between; align-items:baseline; gap: 8px; cursor:pointer; -webkit-tap-highlight-color: transparent; }
+  .tl-split .split-caret{ color: var(--cream-dim); }
   .tl-entry{ border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; margin-bottom: 6px; background: var(--panel-raised); }
   .tl-entry-top{ display:flex; justify-content:space-between; gap: 8px; font-size: 12px; color: var(--cream-dim); }
   .tl-entry-text{ font-size: 15px; margin-top: 3px; overflow-wrap: anywhere; }
@@ -10398,6 +10399,7 @@
       completedQuests: {}, // quest id -> true; Quests tab ("quests" feature)
       collapsedRoutes: {}, // route name -> true
       collapsedSplits: {}, // trainer-fight split name -> true
+      collapsedTimelineSplits: {}, // timeline split label -> true
       pastRuns: [] // {id, endedAt, result, note, attempt, runName, badges, mons, beatenBosses} — see "End Run"
     };
   }
@@ -10470,6 +10472,7 @@
         completedQuests: r.completedQuests || {},
         collapsedRoutes: r.collapsedRoutes || {},
         collapsedSplits: r.collapsedSplits || {},
+        collapsedTimelineSplits: r.collapsedTimelineSplits || {},
         saveImportMeta: r.saveImportMeta || null,
         pastRuns: Array.isArray(r.pastRuns) ? r.pastRuns : []
       };
@@ -10859,6 +10862,7 @@
   }
 
   function renderGraveyard(){
+    if(deferPanel("graveyard", renderGraveyard)) return;
     var run = currentRun();
     var dead = run.mons.filter(function(m){ return m.status === "dead"; });
     var el = document.getElementById("graveyardList");
@@ -10877,6 +10881,22 @@
     }
 
     el.innerHTML = html;
+  }
+
+  // Only the visible tab renders; a hidden one is marked dirty and renders
+  // when its tab is opened (flushPanel). Every action used to re-render all
+  // tabs — ~18k elements on SoulGold now that teams are open — which blocked
+  // taps for 600ms+ at 6x CPU throttle (Mark Defeated, Route Log actions).
+  function deferPanel(name, fn){
+    var dirty = deferPanel.dirty || (deferPanel.dirty = {});
+    var panel = document.getElementById("panel-" + name);
+    if(panel && panel.style.display === "none"){ dirty[name] = fn; return true; }
+    delete dirty[name];
+    return false;
+  }
+  function flushPanel(name){
+    var fn = deferPanel.dirty && deferPanel.dirty[name];
+    if(fn) fn();
   }
 
   function renderAll(){
@@ -11077,6 +11097,7 @@
       document.getElementById("panel-guide").style.display = which === "guide" ? "" : "none";
       document.getElementById("panel-graveyard").style.display = which === "graveyard" ? "" : "none";
       document.getElementById("panel-timeline").style.display = which === "timeline" ? "" : "none";
+      flushPanel(which);
       if(which === "calculator") renderCalculator();
       if(which === "timeline") renderTimeline();
       if(which === "pokedex") renderPokedex();
@@ -11094,6 +11115,7 @@
   }
 
   function renderChecklist(){
+    if(deferPanel("checklist", renderChecklist)) return;
     var game = currentGame();
 
     var el = document.getElementById("checklistList");
@@ -11500,6 +11522,7 @@
   }
 
   function renderBosses(){
+    if(deferPanel("bosses", renderBosses)) return;
     var el = document.getElementById("bossesList");
     var game = currentGame();
     var bosses = game.bosses || {};
@@ -11599,6 +11622,7 @@
   }
 
   function renderTrainers(){
+    if(deferPanel("trainers", renderTrainers)) return;
     var el = document.getElementById("trainersList");
     var game = currentGame();
     var groups = game.trainerFights || [];
@@ -13469,6 +13493,7 @@
   }
 
   function renderQuests(){
+    if(deferPanel("quests", renderQuests)) return;
     var el = document.getElementById("questsList");
     var game = currentGame();
     if(!gameHas("quests")){ el.innerHTML = ""; return; }
@@ -13596,6 +13621,7 @@
   }
 
   function renderGuide(){
+    if(deferPanel("guide", renderGuide)) return;
     var game = currentGame();
     var sections = game.guideSections || [];
     var subtabsEl = document.getElementById("guideSubtabs");
@@ -14035,11 +14061,25 @@
     }
     // Oldest first; ties keep insertion order. One heading per run of the same split.
     tl.sort(function(a, b){ var d = new Date(a.t.at) - new Date(b.t.at); return d || a.i - b.i; });
-    var html = "", last = null;
+    var groups = [], lastG = null;
     tl.forEach(function(x){
       var sp = x.t.split || "";
-      if(sp !== last){ html += '<div class="tl-split">' + escapeHTML(sp || "No split") + '</div>'; last = sp; }
-      html += timelineEntryHTML(x.t);
+      if(!lastG || lastG.sp !== sp){ lastG = { sp: sp, items: [] }; groups.push(lastG); }
+      lastG.items.push(x.t);
+    });
+    var collapsedMap = currentRun().collapsedTimelineSplits || {};
+    var html = "";
+    groups.forEach(function(g){
+      var collapsed = !!collapsedMap[g.sp];
+      var n = g.items.length;
+      html += '<div class="tl-split' + (collapsed ? ' split-collapsed' : '') + '" data-act="tl-toggle-split" data-split="' + escapeHTML(g.sp) + '">' +
+        '<span>' + escapeHTML(g.sp || "No split") + '</span>' +
+        '<span class="split-caret">' + (collapsed ? '▸ ' + n + (n === 1 ? ' entry' : ' entries') : '▾') + '</span></div>';
+      g.items.forEach(function(t){
+        // An entry open for editing stays visible even inside a collapsed split.
+        if(collapsed && timelineEditing !== t.id) return;
+        html += timelineEntryHTML(t);
+      });
     });
     el.innerHTML = html;
   }
@@ -14064,6 +14104,15 @@
     var act = btn.getAttribute("data-act");
     var id = btn.getAttribute("data-id");
     var run = currentRun();
+    if(act === "tl-toggle-split"){
+      var sk = btn.getAttribute("data-split") || "";
+      if(!run.collapsedTimelineSplits) run.collapsedTimelineSplits = {};
+      if(run.collapsedTimelineSplits[sk]) delete run.collapsedTimelineSplits[sk];
+      else run.collapsedTimelineSplits[sk] = true;
+      save();
+      renderTimeline();
+      return;
+    }
     var entry = (run.timeline || []).filter(function(t){ return t.id === id; })[0];
     if(act === "tl-edit"){ timelineEditing = id; renderTimeline(); return; }
     if(act === "tl-cancel"){ timelineEditing = null; renderTimeline(); return; }
