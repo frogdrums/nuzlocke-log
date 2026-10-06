@@ -848,6 +848,34 @@
   .dex-chip{ font-size: 12px; padding: 2px 6px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--cream); }
   .dex-move-desc{ font-size: 12px; color: var(--cream-dim); margin-top: 3px; line-height: 1.35; }
 
+  /* ---------- quests tab ---------- */
+  .quest-list{ margin-bottom: 14px; }
+  .quest-list > summary, .quest-card > summary{ cursor: pointer; list-style: none; }
+  .quest-list > summary::-webkit-details-marker, .quest-card > summary::-webkit-details-marker{ display: none; }
+  .quest-list > summary::before, .quest-card > summary::before{ content: "▸ "; color: var(--cream-dim); }
+  .quest-list[open] > summary::before, .quest-card[open] > summary::before{ content: "▾ "; }
+  .quest-list > summary{ font-weight: 700; font-size: 16px; color: var(--lcd); text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 8px 0; border-bottom: 2px solid var(--line); margin-bottom: 8px; }
+  .quest-chapter{ font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--cream-dim); margin: 14px 0 6px; }
+  .quest-card > summary{ display: flex; align-items: flex-start; gap: 8px; font-weight: 700; font-size: 15px;
+    color: var(--cream); line-height: 1.35; }
+  .quest-title{ flex: 1; min-width: 0; overflow-wrap: break-word; }
+  .quest-card[open] > summary{ color: var(--lcd); margin-bottom: 8px; }
+  .quest-card.done > summary{ color: var(--cream-dim); }
+  .quest-body{ font-size: 14px; line-height: 1.5; color: var(--cream); overflow-wrap: break-word; }
+  .quest-body p{ margin: 0 0 8px; }
+  .quest-body ol, .quest-body ul{ margin: 0 0 8px; padding-left: 22px; }
+  .quest-body li{ margin-bottom: 4px; }
+  .quest-body b{ color: var(--gold); }
+  .quest-h{ font-weight: 700; color: var(--lcd); margin: 10px 0 4px; }
+  .quest-table-wrap{ overflow-x: auto; margin: 0 0 8px; }
+  .quest-table{ font-size: 13px; }
+  .quest-table td{ vertical-align: top; }
+  .quest-done{ flex: 0 0 auto; font-size: 12px; padding: 4px 8px; background: transparent;
+    border: 1px dashed var(--lcd-dim); color: var(--lcd); }
+  .quest-card.done .quest-done{ border-color: var(--line); color: var(--cream-dim); }
+  .quest-done:hover{ background: var(--lcd-dim); color: #0d1712; }
+
   /* ---------- phone width ----------
      MUST STAY LAST in this stylesheet. A media query adds no specificity, so
      any equal-specificity rule further down the file wins over it regardless
@@ -922,6 +950,7 @@
     <div class="tab" data-tab="trainers">Trainers</div>
     <div class="tab" data-tab="calculator">Calc</div>
     <div class="tab" data-tab="pokedex">Pokédex</div>
+    <div class="tab" data-tab="quests">Quests</div>
     <div class="tab" data-tab="guide">Guide</div>
     <div class="tab" data-tab="graveyard">Graveyard</div>
   </div>
@@ -1139,6 +1168,14 @@
         </div>
         <div id="pokedexList"></div>
       </div>
+    </div>
+
+    <div id="panel-quests" style="display:none;">
+      <div class="filter-box">
+        <input type="text" id="questsFilter" placeholder="Filter quests (e.g. &quot;Viridian&quot;)…" autocomplete="off">
+        <button type="button" class="filter-clear" id="questsFilterClear">×</button>
+      </div>
+      <div id="questsList"></div>
     </div>
 
     <div id="panel-guide" style="display:none;">
@@ -9331,7 +9368,7 @@
     hardMode: true,
     // Blind run (user, 2026-10-05): teams hidden until tapped, like SoulGold.
     hideTeams: true,
-    features: ["trainers", "pokedex"],
+    features: ["trainers", "pokedex", "quests"],
     guideSections: [
       { key: "levelcaps", label: "Level Caps", type: "tables",
         cards: [{ title: "How these caps work", body: "Each cap is that boss's highest level: the usual Nuzlocke rule of not out-levelling the next boss. The game doesn't enforce them; the Hard mode patch does have its own caps, which aren't documented yet. Johto opens after the first Hall of Fame, so its first Gyms sit below the Kanto Elite Four." }],
@@ -9339,13 +9376,6 @@
           { title: "Level Caps", cols: [{h:"Boss", f:[0]}, {h:"Cap", f:[1]}, {h:"Hard ≈", f:[2]}],
             rows: OHG_LEVEL_CAPS.map(function(r){ return [r.boss, r.cap, Math.min(100, Math.floor(r.cap * 1.1))]; }) }
         ] },
-      { key: "quests", label: "Quests", type: "lazytables",
-        tablesFromData: function(d){
-          return d.quests.map(function(ch){
-            return { title: ch.chapter, cols: [{h:"Quest", f:[0, 1]}], collapsed: true,
-                     rows: ch.cards.map(function(c){ return [c.title, c.body]; }) };
-          });
-        } },
       { key: "items", label: "Items", type: "tables", data: [
         { title: "Items (not shops)", cols: [{h:"Item", f:[0]}, {h:"Where · How", f:[1, 2]}], rows: OHG_ITEM_ROWS, collapsed: true },
         { title: "TMs / HMs", cols: [{h:"TM", f:[0]}, {h:"Where · How", f:[1, 2]}], rows: OHG_TM_ROWS, collapsed: true }
@@ -9375,7 +9405,7 @@
   // support. If the open tab just disappeared (game switch), fall back to
   // the Route Log so the player never lands on a blank panel.
   function applyGameFeatures(){
-    ["trainers", "calculator", "pokedex"].forEach(function(tabId){
+    ["trainers", "calculator", "pokedex", "quests"].forEach(function(tabId){
       var tab = document.querySelector('.tab[data-tab="' + tabId + '"]');
       if(!tab) return;
       var on = gameHas(tabId === "calculator" ? "calc" : tabId);
@@ -9406,6 +9436,7 @@
       mons: [], // {id, route, species, nick, level, status, cause, causeLevel, createdAt}
       beatenBosses: {}, // key -> true
       revealedBosses: {}, // key -> true; hideTeams games only (same keys as beatenBosses)
+      completedQuests: {}, // quest id -> true; Quests tab ("quests" feature)
       collapsedRoutes: {}, // route name -> true
       collapsedSplits: {}, // trainer-fight split name -> true
       pastRuns: [] // {id, endedAt, result, note, attempt, runName, badges, mons, beatenBosses} — see "End Run"
@@ -9475,6 +9506,7 @@
         mons: Array.isArray(r.mons) ? r.mons : [],
         beatenBosses: r.beatenBosses || {},
         revealedBosses: r.revealedBosses || {},
+        completedQuests: r.completedQuests || {},
         collapsedRoutes: r.collapsedRoutes || {},
         collapsedSplits: r.collapsedSplits || {},
         saveImportMeta: r.saveImportMeta || null,
@@ -9869,6 +9901,7 @@
     renderBosses();
     renderTrainers();
     renderGuide();
+    renderQuests();
     renderGraveyard();
   }
 
@@ -9905,6 +9938,7 @@
   // through renderPokedex() on every keystroke would re-check
   // window.RPCalc and re-branch for nothing.
   wireFilterBox("pokedexFilter", "pokedexFilterClear", renderPokedexList);
+  wireFilterBox("questsFilter", "questsFilterClear", renderQuests);
 
   // Retry reloads the page rather than re-running the loader: see
   // calcBundleFailed's comment near loadCalcBundle() for why a failed
@@ -9985,6 +10019,10 @@
       "..111111....",".1........1.",".1.111111.1.",".1.1....1.1.",
       ".1.1....1.1.",".1.111111.1.",".1........1.",".1...11...1.",
       ".1........1.",".1........1.",".1111111111.","............"],
+    quests: [            // speech bubble with a "!": the usual quest marker
+      "............",".111111111..","1....1....1.","1....1....1.",
+      "1....1....1.","1....1....1.","1.........1.","1....1....1.",
+      ".111111111..","...11.......","..1.........","............"],
     guide: [             // magnifying lens
       "...11111....","..1.....1...",".1.......1..",".1.......1..",
       ".1.......1..","..1.....1...","...11111....","......11....",
@@ -10031,10 +10069,12 @@
       document.getElementById("panel-trainers").style.display = which === "trainers" ? "" : "none";
       document.getElementById("panel-calculator").style.display = which === "calculator" ? "" : "none";
       document.getElementById("panel-pokedex").style.display = which === "pokedex" ? "" : "none";
+      document.getElementById("panel-quests").style.display = which === "quests" ? "" : "none";
       document.getElementById("panel-guide").style.display = which === "guide" ? "" : "none";
       document.getElementById("panel-graveyard").style.display = which === "graveyard" ? "" : "none";
       if(which === "calculator") renderCalculator();
       if(which === "pokedex") renderPokedex();
+      if(which === "quests") renderQuests();
     });
   });
 
@@ -12232,25 +12272,136 @@
     if(clear) clear.style.display = q ? "" : "none";
   }
 
-  function renderGuideSection(section, game){
-    // A section whose tables come from the game's lazily loaded data file
-    // (Origin HeartGold's quest guide): render a loading line, fetch, then
-    // re-render if the player is still looking at this section.
-    if(section.type === "lazytables"){
-      var data = window[game.lazyData.global];
-      if(!data){
-        loadGameData(game).then(function(){
-          if(currentGame() === game && activeGuideKey === section.key) renderGuide();
-        }).catch(function(err){
-          console.warn("Guide data failed to load", err);
-          if(currentGame() === game && activeGuideKey === section.key){
-            document.getElementById("guideContent").innerHTML = '<div class="empty">Couldn\'t load this section. Reload the page to retry.</div>';
-          }
-        });
-        return '<div class="empty">Loading ' + escapeHTML(section.label.toLowerCase()) + '…</div>';
+  // ---------- Quests tab (games with the "quests" feature) ----------
+  // Origin HeartGold's quest guide (OHG_DATA.quests from the lazily loaded
+  // ohg-data.js, already filtered for the player's starter by the builder)
+  // in guide order. Every quest starts collapsed (blind run); "Completed"
+  // moves it to the Completed list at the bottom. Completion lives in
+  // run.completedQuests keyed by the quest's stable id; which cards and
+  // lists are open is in-memory only, so a re-render keeps it. A quest's
+  // body is only built while it is open, to keep the list light.
+  var questOpen = {};                          // quest id -> true while open
+  var questListOpen = { todo: true, done: false };
+
+  function questInlineHTML(s){
+    return escapeHTML(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  }
+
+  function questBodyHTML(q){
+    return q.blocks.map(function(b){
+      if(b[0] === "p") return "<p>" + questInlineHTML(b[1]) + "</p>";
+      if(b[0] === "h") return '<div class="quest-h">' + questInlineHTML(b[1]) + "</div>";
+      if(b[0] === "ol" || b[0] === "ul"){
+        return "<" + b[0] + ">" + b[1].map(function(li){ return "<li>" + questInlineHTML(li) + "</li>"; }).join("") + "</" + b[0] + ">";
       }
-      return renderGuideSection(Object.assign({}, section, { type: "tables", data: section.tablesFromData(data) }), game);
+      if(b[0] === "table"){
+        var cells = function(r, tag){ return "<tr>" + r.map(function(c){ return "<" + tag + ">" + questInlineHTML(c) + "</" + tag + ">"; }).join("") + "</tr>"; };
+        return '<div class="quest-table-wrap"><table class="nature-table quest-table">' + cells(b[1], "th") +
+          b[2].map(function(r){ return cells(r, "td"); }).join("") + "</table></div>";
+      }
+      return "";
+    }).join("");
+  }
+
+  function questText(q){
+    if(q._text == null){
+      q._text = (q.title + " " + q.blocks.map(function(b){
+        return b[0] === "table" ? [b[1]].concat(b[2]).map(function(r){ return r.join(" "); }).join(" ")
+             : Array.isArray(b[1]) ? b[1].join(" ") : b[1];
+      }).join(" ")).toLowerCase();
     }
+    return q._text;
+  }
+
+  function questCardHTML(q, done){
+    var open = !!questOpen[q.id];
+    return '<details class="guide-card quest-card' + (done ? " done" : "") + '" data-quest="' + escapeHTML(q.id) + '"' + (open ? " open" : "") + ">" +
+      '<summary><span class="quest-title">' + escapeHTML(q.title) + "</span>" +
+      '<button type="button" class="quest-done" data-act="' + (done ? "quest-undo" : "quest-done") + '" data-id="' + escapeHTML(q.id) + '">' +
+      (done ? "↺ Undo" : "✓ Completed") + "</button></summary>" +
+      '<div class="quest-body">' + (open ? questBodyHTML(q) : "") + "</div></details>";
+  }
+
+  function renderQuests(){
+    var el = document.getElementById("questsList");
+    var game = currentGame();
+    if(!gameHas("quests")){ el.innerHTML = ""; return; }
+    var data = window[game.lazyData.global];
+    if(!data){
+      // Only fetch once the player is looking at the tab.
+      if(document.getElementById("panel-quests").style.display === "none") return;
+      el.innerHTML = '<div class="empty">Loading quests…</div>';
+      loadGameData(game).then(function(){
+        if(currentGame() === game) renderQuests();
+      }).catch(function(err){
+        console.warn("Quest data failed to load", err);
+        if(currentGame() === game) el.innerHTML = '<div class="empty">Couldn\'t load the quests. Reload the page to retry.</div>';
+      });
+      return;
+    }
+    var completed = currentRun().completedQuests;
+    var q = document.getElementById("questsFilter").value.trim().toLowerCase();
+    var todo = [], done = [], nTodo = 0, nDone = 0;
+    data.quests.forEach(function(ch){
+      var chTodo = [];
+      ch.cards.forEach(function(c){
+        if(q && questText(c).indexOf(q) === -1) return;
+        if(completed[c.id]){ done.push(questCardHTML(c, true)); nDone++; }
+        else { chTodo.push(questCardHTML(c, false)); nTodo++; }
+      });
+      if(chTodo.length) todo.push('<div class="quest-chapter">' + escapeHTML(ch.chapter) + "</div>" + chTodo.join(""));
+    });
+    var list = function(key, title, count, body, empty){
+      return '<details class="quest-list" data-list="' + key + '"' + (questListOpen[key] ? " open" : "") + ">" +
+        "<summary>" + title + ' <span class="gt-count">(' + count + ")</span></summary>" +
+        (body || '<div class="empty">' + empty + "</div>") + "</details>";
+    };
+    el.innerHTML =
+      list("todo", "Quests", nTodo, todo.join(""), q ? "No open quests match." : "Every quest is completed.") +
+      list("done", "Completed quests", nDone, done.join(""), q ? "No completed quests match." : "Nothing completed yet.");
+  }
+
+  function findQuest(id){
+    var data = window[currentGame().lazyData.global];
+    for(var i = 0; data && i < data.quests.length; i++){
+      for(var j = 0; j < data.quests[i].cards.length; j++){
+        if(data.quests[i].cards[j].id === id) return data.quests[i].cards[j];
+      }
+    }
+    return null;
+  }
+
+  // Wired once at init on the static #questsList (never in the lazy path).
+  // `toggle` doesn't bubble, hence the capture listener.
+  document.getElementById("questsList").addEventListener("toggle", function(e){
+    var d = e.target;
+    if(d.classList.contains("quest-list")){ questListOpen[d.getAttribute("data-list")] = d.open; return; }
+    if(!d.classList.contains("quest-card")) return;
+    var id = d.getAttribute("data-quest");
+    if(d.open){
+      questOpen[id] = true;
+      var body = d.querySelector(".quest-body");
+      var quest = findQuest(id);
+      if(body && !body.innerHTML && quest) body.innerHTML = questBodyHTML(quest);
+    } else {
+      delete questOpen[id];
+    }
+  }, true);
+  document.getElementById("questsList").addEventListener("click", function(e){
+    var btn = e.target.closest("[data-act]");
+    if(!btn) return;
+    var act = btn.getAttribute("data-act");
+    if(act !== "quest-done" && act !== "quest-undo") return;
+    e.preventDefault();            // the button sits in the <summary>: don't toggle
+    var id = btn.getAttribute("data-id");
+    var completed = currentRun().completedQuests;
+    if(act === "quest-done") completed[id] = true; else delete completed[id];
+    delete questOpen[id];          // it lands collapsed in its new list
+    save();
+    renderQuests();
+  });
+
+  function renderGuideSection(section, game){
     if(section.type === "natures"){
       var rows = section.data.map(function(n){
         return '<tr><td>'+escapeHTML(n.nature)+'</td><td class="'+(n.up!=='—'?'ev-up':'')+'">'+escapeHTML(n.up)+'</td><td class="'+(n.down!=='—'?'ev-down':'')+'">'+escapeHTML(n.down)+'</td></tr>';
