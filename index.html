@@ -328,6 +328,8 @@
   .dot.status-boxed{ background: var(--cream-dim); }
   .nick{ font-weight:700; font-size: 13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
   .species{ color: var(--cream-dim); font-size: 11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  /* A species name that opens its Pokédex entry (dexLinkHTML). */
+  .dex-link{ cursor:pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
   .route-tag{
     font-size: 9.5px; color: var(--gold); text-transform:uppercase; letter-spacing:0.3px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
@@ -10526,6 +10528,15 @@
     document.getElementById("statBadges").textContent = run.badges + "/" + (currentGame().badgeCount || 8);
   }
 
+  // Tap a species name (Route Log, Graveyard, Bosses, Trainers) to open its
+  // Pokédex entry (user, 2026-10-06). Plain text on games without a
+  // Pokédex, and for a blank species.
+  function dexLinkHTML(species, inner, cls, tag){
+    tag = tag || "span";
+    if(!species || !gameHas("pokedex")) return '<'+tag+' class="'+cls+'">'+inner+'</'+tag+'>';
+    return '<'+tag+' class="'+(cls ? cls+' ' : '')+'dex-link" data-act="open-dex" data-species="'+escapeHTML(species)+'" title="Open in Pokédex">'+inner+'</'+tag+'>';
+  }
+
   function cardHTML(m){
     var statusLabel = m.status === "alive" ? "Active" : (m.status === "boxed" ? "Boxed" : "Fallen");
     var actions = "";
@@ -10544,7 +10555,7 @@
     actions += '<button data-act="delete" data-id="'+m.id+'" class="btn-ghost" title="Delete">🗑️</button>';
 
     var cause = m.status === "dead" && m.cause ? '<div class="cause" title="'+escapeHTML(m.cause)+'">☠ ' + escapeHTML(m.cause) + '</div>' : "";
-    var speciesLine = m.nick ? '<div class="species">'+escapeHTML(m.species || "?")+'</div>' : "";
+    var speciesLine = m.nick ? dexLinkHTML(m.species, escapeHTML(m.species || "?"), "species", "div") : "";
     // Cards no longer sit under a per-route section header (mons from
     // different routes/encounters now share the same grid — see
     // renderRoster), so the route has to live on the card itself.
@@ -10554,7 +10565,7 @@
       '<div class="card status-'+m.status+'">' +
         '<div class="card-top">' +
           '<span class="dot status-'+m.status+'"></span>' +
-          '<span class="nick">'+escapeHTML(m.nick || m.species || "Unnamed")+'</span>' +
+          (m.nick ? '<span class="nick">'+escapeHTML(m.nick)+'</span>' : dexLinkHTML(m.species, escapeHTML(m.species || "Unnamed"), "nick")) +
         '</div>' +
         speciesLine +
         routeLine +
@@ -10644,13 +10655,13 @@
   function pastMonLineHTML(m){
     var statusLabel = m.status === "alive" ? "Active" : (m.status === "boxed" ? "Boxed" : "Fallen");
     var cause = m.status === "dead" && m.cause ? '<div class="cause" title="'+escapeHTML(m.cause)+'">☠ ' + escapeHTML(m.cause) + '</div>' : "";
-    var speciesLine = m.nick ? '<div class="species">'+escapeHTML(m.species || "?")+'</div>' : "";
+    var speciesLine = m.nick ? dexLinkHTML(m.species, escapeHTML(m.species || "?"), "species", "div") : "";
     var routeLine = '<div class="route-tag">'+escapeHTML(m.route || "Unknown Location")+'</div>';
     return (
       '<div class="card status-'+m.status+'">' +
         '<div class="card-top">' +
           '<span class="dot status-'+m.status+'"></span>' +
-          '<span class="nick">'+escapeHTML(m.nick || m.species || "Unnamed")+'</span>' +
+          (m.nick ? '<span class="nick">'+escapeHTML(m.nick)+'</span>' : dexLinkHTML(m.species, escapeHTML(m.species || "Unnamed"), "nick")) +
         '</div>' +
         speciesLine +
         routeLine +
@@ -11163,7 +11174,7 @@
   function monBlockHTML(m, team){
     return (
       '<div class="boss-mon">' +
-        '<div class="boss-mon-top"><span>'+escapeHTML(m.name)+'</span><span>Lv. '+levelText(m.level)+'</span></div>' +
+        '<div class="boss-mon-top">'+dexLinkHTML(m.name, escapeHTML(m.name), "")+'<span>Lv. '+levelText(m.level)+'</span></div>' +
         '<div class="boss-mon-meta">Ability: '+escapeHTML(m.ability)+' · Item: '+escapeHTML(m.item)+(m.nature ? ' · '+escapeHTML(m.nature) : '')+'</div>' +
         '<div class="boss-mon-moves">'+escapeHTML(m.moves)+'</div>' +
         statLineHTML(m) +
@@ -11974,6 +11985,62 @@
   // before.
   var pokedexExpanded = {};
 
+  // Set by openInPokedex(); consumed by the next renderPokedexList(), which
+  // only runs once the game's dex data is loaded (renderPokedex gates it).
+  var pendingDexTarget = null;
+
+  // Displayed names don't always equal dex keys: forms show as
+  // "Exeggutor-Alola" (Showdown style), "Alolan Exeggutor" or
+  // "Exeggutor (Alola)" depending on the game's data. Exact key first,
+  // then a form's own name, then the base species.
+  function resolveDexSpecies(name){
+    var poks = dexData().poks;
+    var keys = getPokedexSpeciesList();
+    // Loose spelling: "Nidoran ♂" = "Nidoran-M", "Farfetch’d" = "Farfetch'd".
+    var loose = function(x){ return String(x).toLowerCase().replace(/♂/g, "m").replace(/♀/g, "f").replace(/[^a-z0-9]/g, ""); };
+    var find = function(n){
+      var ln = loose(n);
+      n = n.toLowerCase();
+      return keys.filter(function(k){ return k.toLowerCase() === n; })[0] ||
+        keys.filter(function(k){ return loose(k) === ln; })[0] ||
+        keys.filter(function(k){
+          return (poks[k].forms || []).some(function(f){
+            return (f.names || []).some(function(fn){ return fn.toLowerCase() === n; });
+          });
+        })[0] || null;
+    };
+    var n = String(name || "").trim();
+    var REGION = { alolan: "Alola", galarian: "Galar", hisuian: "Hisui", paldean: "Paldea" };
+    var cands = [n];
+    var owner = n.match(/^\S.*?['’]s\s+(.+)$/);              // "Mars's Crobat"
+    if(owner) cands.push(owner[1]);
+    var dash = n.match(/^(.+)-([^-]+)$/);                  // "Exeggutor-Alola"
+    if(dash) cands.push(dash[1] + " (" + dash[2] + ")", regionAdj(dash[2]) + " " + dash[1]);
+    var pre = n.match(/^(alolan|galarian|hisuian|paldean)\s+(.+)$/i);   // "Alolan Exeggutor"
+    if(pre) cands.push(pre[2] + " (" + REGION[pre[1].toLowerCase()] + ")");
+    var paren = n.match(/^(.+?)\s*\(([^)]*)\)$/);          // "Exeggutor (Alola)"
+    if(paren) cands.push(regionAdj(paren[2]) + " " + paren[1]);
+    // Base species last: a form we can't place still lands on its species.
+    cands.push(n.replace(/\s*\([^)]*\)\s*$/, "").replace(/^(alolan|galarian|hisuian|paldean)\s+/i, "").replace(/-[^-]+$/, ""));
+    function regionAdj(r){
+      var k = Object.keys(REGION).filter(function(a){ return REGION[a].toLowerCase() === String(r).toLowerCase(); })[0];
+      return k ? k.charAt(0).toUpperCase() + k.slice(1) : r;
+    }
+    for(var i = 0; i < cands.length; i++){
+      var hit = find(cands[i]);
+      if(hit) return hit;
+    }
+    return null;
+  }
+
+  function openInPokedex(name){
+    if(!gameHas("pokedex") || !name) return;
+    pendingDexTarget = name;
+    var dexTab = document.querySelector('.tab[data-tab="pokedex"]');
+    if(dexTab) dexTab.click();
+    window.scrollTo(0, 0);
+  }
+
   function pokedexStatBarHTML(label, value){
     // 255 is the practical ceiling for a single base stat across every
     // mainline Pokémon (Blissey's HP) — used as the bar's 100% reference
@@ -12220,6 +12287,17 @@
   function renderPokedexList(){
     var el = document.getElementById("pokedexList");
     var filterInput = document.getElementById("pokedexFilter");
+    var dexScrollKey = null;
+    if(pendingDexTarget !== null){
+      var target = resolveDexSpecies(pendingDexTarget);
+      if(filterInput) filterInput.value = target || pendingDexTarget;
+      pendingDexTarget = null;
+      if(target){
+        pokedexExpanded = {};
+        pokedexExpanded[target] = true;
+        dexScrollKey = target;
+      }
+    }
     var q = filterInput ? filterInput.value.trim().toLowerCase() : "";
 
     var sig = pokedexListSignature(q);
@@ -12263,6 +12341,10 @@
     var token = ++pokedexRenderToken;
     var first = Math.min(names.length, POKEDEX_BATCH);
     el.innerHTML = names.slice(0, first).map(pokedexCardHTML).join("");
+    if(dexScrollKey){
+      var hit = Array.prototype.filter.call(el.querySelectorAll(".dex-top"), function(t){ return t.getAttribute("data-species") === dexScrollKey; })[0];
+      if(hit) hit.parentNode.scrollIntoView({ block: "start" });
+    }
     (function appendFrom(i){
       if(i >= names.length) return;
       setTimeout(function(){
@@ -13355,6 +13437,11 @@
     var btn = e.target.closest("[data-act]");
     if(!btn) return;
     var act = btn.getAttribute("data-act");
+
+    if(act === "open-dex"){
+      openInPokedex(btn.getAttribute("data-species"));
+      return;
+    }
 
     if(act === "toggle-beaten"){
       var key = btn.getAttribute("data-key");
