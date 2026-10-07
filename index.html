@@ -1199,6 +1199,7 @@
       <div id="pokedexLoading" class="empty" style="display:none;">Loading Pokédex…</div>
       <div id="pokedexLoadError" class="empty" style="display:none;">Couldn't load the Pokédex (network error). <button type="button" id="pokedexLoadRetry">Retry</button></div>
       <div id="pokedexBody" style="display:none;">
+        <div class="hard-note" id="pokedexNote" style="display:none;"></div>
         <div class="filter-box">
           <input type="text" id="pokedexFilter" placeholder="Filter by species or type (e.g. &quot;Charmander&quot; or &quot;Fire&quot;)…" autocomplete="off">
           <button type="button" class="filter-clear" id="pokedexFilterClear">×</button>
@@ -11401,34 +11402,936 @@
     },
     "rival": [
       {
+        "stage": "Shauna — Aquacorde Town",
+        "location": "Aquacorde Town",
+        "note": "Right after you pick your starter, before Viola. Shauna takes the starter weak to yours (Froakie, if you chose Chespin). Team from the Eternal X trainer doc: may run a level or two high for your game.",
+        "mons": [
+          {
+            "name": "Froakie",
+            "level": 5,
+            "ability": "Protean",
+            "item": "None",
+            "moves": "Last four level-up moves",
+            "ivs": [
+              15,
+              15,
+              15,
+              15,
+              15,
+              15
+            ]
+          }
+        ]
+      },
+      {
+        "stage": "Tierno — Route 5",
+        "location": "Route 5: Versant Road",
+        "note": "On Route 5, after Viola and before Grant. Team from the Eternal X trainer doc: may run a level or two high for your game.",
+        "mons": [
+          {
+            "name": "Corphish",
+            "level": 18,
+            "ability": "Adaptability",
+            "item": "None",
+            "moves": "Swords Dance, Aqua Jet, Knock Off",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Lombre",
+            "level": 18,
+            "ability": "Swift Swim",
+            "item": "None",
+            "moves": "Swords Dance, Ice Punch, Fake Out, Fire Punch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Lilligant",
+            "level": 18,
+            "ability": "Own Tempo",
+            "item": "None",
+            "moves": "Sleep Powder, Leech Seed, Mega Drain, Synthesis",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Farfetch'd",
+            "level": 18,
+            "ability": "Super Luck",
+            "item": "Stick",
+            "moves": "Swords Dance, Aerial Ace, Knock Off, Fury Cutter",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
         "stage": "Route 7 (Multi Battle)",
         "location": "Route 7: Rivière Walk",
-        "note": "West of the Battle Chateau, after Parfum Palace and before Connecting Cave (between Viola and Grant). A Multi Battle: you and Calem against Tierno and Trevor. Teams not documented for Wilting Y. Calem's starter is the one strong against yours (Fennekin line vs Chespin) in vanilla Y."
+        "note": "West of the Battle Chateau, after Parfum Palace and before Connecting Cave (between Viola and Grant). A Multi Battle: you and Calem against Tierno and Trevor. Team from the Eternal X trainer doc: may run a level or two high for your game.",
+        "mons": [
+          {
+            "name": "Corphish",
+            "level": 25,
+            "ability": "Adaptability",
+            "item": "None",
+            "moves": "Swords Dance, Aqua Jet, Knock Off, Protect",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Farfetch'd",
+            "level": 25,
+            "ability": "Super Luck",
+            "item": "Stick",
+            "moves": "Karate Chop, Aerial Ace, Knock Off, Swords Dance",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Lilligant",
+            "level": 26,
+            "ability": "Own Tempo",
+            "item": "None",
+            "moves": "Stun Spore, Synthesis, Giga Drain, Sleep Powder",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Pikachu",
+            "level": 25,
+            "ability": "Lightning Rod",
+            "item": "Light Ball",
+            "moves": "Thunder Wave, Quick Attack, Electro Ball, Thunder Punch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Floette",
+            "level": 25,
+            "ability": "Natural Cure",
+            "item": "None",
+            "moves": "Magical Leaf, Fairy Wind, Wish, Protect",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Breloom",
+            "level": 25,
+            "ability": "Technician",
+            "item": "None",
+            "moves": "Mach Punch, Stun Spore, Mega Drain, Headbutt",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
       },
       {
         "stage": "Tower of Mastery",
         "location": "Shalour City",
-        "note": "After beating Korrina, at the Tower of Mastery; the winner gets the Mega Ring. Next boss: Ramos. Teams not documented for Wilting Y. Calem's starter is the one strong against yours (Fennekin line vs Chespin) in vanilla Y."
+        "note": "After beating Korrina, at the Tower of Mastery; the winner gets the Mega Ring. Next boss: Ramos. Team from the Eternal X trainer doc: may run a level or two high for your game.",
+        "mons": [
+          {
+            "name": "Meowstic",
+            "level": 35,
+            "ability": "Prankster",
+            "item": "Light Clay",
+            "moves": "Psyshock, Charm, Light Screen, Reflect",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Kangaskhan",
+            "level": 35,
+            "ability": "Scrappy",
+            "item": "Chople Berry",
+            "moves": "Dizzy Punch, Fake Out, Ice Punch, Bulldoze",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Dragonair",
+            "level": 35,
+            "ability": "Marvel Scale",
+            "item": "Eviolite",
+            "moves": "Aqua Tail, Dragon Tail, Sleep Talk, Rest",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Jolteon",
+            "level": 35,
+            "ability": "Volt Absorb",
+            "item": "Air Balloon",
+            "moves": "Thunder Wave, Baton Pass, Charge Beam, Light Screen",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Delphox",
+            "level": 36,
+            "ability": "Magic Guard",
+            "item": "Life Orb",
+            "moves": "Mystical Fire, Psyshock, Light Screen, Shadow Ball",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
       },
       {
         "stage": "Coumarine City",
         "location": "Coumarine City",
-        "note": "Waiting outside the Gym: right before Ramos. Teams not documented for Wilting Y. Calem's starter is the one strong against yours (Fennekin line vs Chespin) in vanilla Y."
+        "note": "Waiting outside the Gym: right before Ramos. Team from the Eternal X trainer doc: may run a level or two high for your game.",
+        "mons": [
+          {
+            "name": "Meowstic",
+            "level": 41,
+            "ability": "Prankster",
+            "item": "Light Clay",
+            "moves": "Psychic, Reflect, Thunder Wave, Light Screen",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Kangaskhan",
+            "level": 40,
+            "ability": "Scrappy",
+            "item": "Life Orb",
+            "moves": "Return, Crunch, Bulldoze, Ice Punch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Dragonair",
+            "level": 40,
+            "ability": "Marvel Scale",
+            "item": "Eviolite",
+            "moves": "Dragon Tail, Thunder Wave, Rest, Sleep Talk",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Jolteon",
+            "level": 40,
+            "ability": "Volt Absorb",
+            "item": "Shuca Berry",
+            "moves": "Discharge, Agility, Baton Pass, Shadow Ball",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Delphox",
+            "level": 42,
+            "ability": "Magic Guard",
+            "item": "Sitrus Berry",
+            "moves": "Flamethrower, Psyshock, Flame Charge, Thunder Punch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
       },
       {
         "stage": "Route 14",
         "location": "Route 14: Laverre Nature Trail",
-        "note": "Just outside the Lumiose City gate, after Clemont and before Valerie. Teams not documented for Wilting Y. Calem's starter is the one strong against yours (Fennekin line vs Chespin) in vanilla Y."
+        "note": "Just outside the Lumiose City gate, after Clemont and before Valerie. Team from the Eternal X trainer doc: may run a level or two high for your game.",
+        "mons": [
+          {
+            "name": "Meowstic",
+            "level": 47,
+            "ability": "Prankster",
+            "item": "Light Clay",
+            "moves": "Psychic, Thunder Wave, Reflect, Light Screen",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Kangaskhan",
+            "level": 47,
+            "ability": "Scrappy",
+            "item": "Kangaskhanite",
+            "moves": "Sucker Punch, Return, Ice Punch, Crunch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Dragonair",
+            "level": 48,
+            "ability": "Marvel Scale",
+            "item": "Eviolite",
+            "moves": "Dragon Rush, Aqua Tail, Fire Blast, Thunder",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Jolteon",
+            "level": 47,
+            "ability": "Volt Absorb",
+            "item": "Air Balloon",
+            "moves": "Thunder, Baton Pass, Thunder Wave, Shadow Ball",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Clefable",
+            "level": 47,
+            "ability": "Magic Guard",
+            "item": "Leftovers",
+            "moves": "Moonblast, Cosmic Power, Charge Beam, Soft-Boiled",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Delphox",
+            "level": 49,
+            "ability": "Magic Guard",
+            "item": "Passho Berry",
+            "moves": "Psyshock, Sunny Day, Flamethrower, Solar Beam",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
       },
       {
         "stage": "Anistar City",
         "location": "Anistar City",
-        "note": "In front of the Anistar Gym, right before Olympia. Teams not documented for Wilting Y. Calem's starter is the one strong against yours (Fennekin line vs Chespin) in vanilla Y."
+        "note": "In front of the Anistar Gym, right before Olympia. Team from the Eternal X trainer doc: may run a level or two high for your game.",
+        "mons": [
+          {
+            "name": "Meowstic",
+            "level": 60,
+            "ability": "Prankster",
+            "item": "Sitrus Berry",
+            "moves": "Psychic, Thunder Wave, Calm Mind, Shadow Ball",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Jolteon",
+            "level": 59,
+            "ability": "Volt Absorb",
+            "item": "Air Balloon",
+            "moves": "Thunder, Signal Beam, Shadow Ball, Baton Pass",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Kangaskhan",
+            "level": 60,
+            "ability": "Scrappy",
+            "item": "Kangaskhanite",
+            "moves": "Return, Seismic Toss, Sucker Punch, Drain Punch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Clefable",
+            "level": 59,
+            "ability": "Magic Guard",
+            "item": "Leftovers",
+            "moves": "Moonblast, Flamethrower, Calm Mind, Soft-Boiled",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Dragonite",
+            "level": 60,
+            "ability": "Multiscale",
+            "item": "Weakness Policy",
+            "moves": "Dragon Rush, Extreme Speed, Fire Punch, Hurricane",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Delphox",
+            "level": 61,
+            "ability": "Magic Guard",
+            "item": "Life Orb",
+            "moves": "Flamethrower, Psychic, Dazzling Gleam, Shadow Ball",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "stage": "Shauna — Route 19",
+        "location": "Route 19: Grande Vallée Way",
+        "note": "After Olympia and Team Flare, before Wulfric. Shauna, Tierno and Trevor battle you one after another (you are healed before Trevor). Team from the Eternal X trainer doc: may run a level or two high for your game.",
+        "mons": [
+          {
+            "name": "Sylveon",
+            "level": 67,
+            "ability": "Pixilate",
+            "item": "Life Orb",
+            "moves": "Hyper Voice, Quick Attack, Shadow Ball, Psyshock",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Goodra",
+            "level": 67,
+            "ability": "Sap Sipper",
+            "item": "Assault Vest",
+            "moves": "Dragon Pulse, Sludge Wave, Power Whip, Earthquake",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Cinccino",
+            "level": 67,
+            "ability": "Skill Link",
+            "item": "King’s Rock",
+            "moves": "Tail Slap, Bullet Seed, Rock Blast, Knock Off",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Rapidash",
+            "level": 67,
+            "ability": "Reckless",
+            "item": "Sitrus Berry",
+            "moves": "Flare Blitz, Jump Kick, Wild Charge, Poison Jab",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Roserade",
+            "level": 67,
+            "ability": "Natural Cure",
+            "item": "Black Sludge",
+            "moves": "Giga Drain, Sleep Powder, Shadow Ball, Sludge Bomb",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Greninja",
+            "level": 69,
+            "ability": "Protean",
+            "item": "Flying Gem",
+            "moves": "Acrobatics, Hydro Pump, Gunk Shot, Grass Knot",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "stage": "Tierno — Route 19",
+        "location": "Route 19: Grande Vallée Way",
+        "note": "Right after Shauna; no heal in between. Team from the Eternal X trainer doc: may run a level or two high for your game.",
+        "mons": [
+          {
+            "name": "Talonflame",
+            "level": 67,
+            "ability": "Gale Wings",
+            "item": "Flying Gem",
+            "moves": "Swords Dance, Acrobatics, Roost, Flare Blitz",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Lilligant",
+            "level": 67,
+            "ability": "Own Tempo",
+            "item": "Leftovers",
+            "moves": "Petal Dance, Quiver Dance, Sleep Powder, Earth Power",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Ludicolo",
+            "level": 67,
+            "ability": "Swift Swim",
+            "item": "Damp Rock",
+            "moves": "Rain Dance, Hydro Pump, Giga Drain, Ice Beam",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Volcarona",
+            "level": 67,
+            "ability": "Flame Body",
+            "item": "Life Orb",
+            "moves": "Quiver Dance, Fiery Dance, Giga Drain, Bug Buzz",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Kingdra",
+            "level": 67,
+            "ability": "Swift Swim",
+            "item": "Roseli Berry",
+            "moves": "Dragon Dance, Waterfall, Outrage, Return",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Crawdaunt",
+            "level": 69,
+            "ability": "Adaptability",
+            "item": "Focus Sash",
+            "moves": "Crabhammer, Crunch, Swords Dance, Aqua Jet",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "stage": "Trevor — Route 19",
+        "location": "Route 19: Grande Vallée Way",
+        "note": "After Tierno, once you have been healed. Next boss: Wulfric. Team from the Eternal X trainer doc: may run a level or two high for your game.",
+        "mons": [
+          {
+            "name": "Raichu",
+            "level": 70,
+            "ability": "Lightning Rod",
+            "item": "Expert Belt",
+            "moves": "Thunderbolt, Focus Blast, Grass Knot, Surf",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Aerodactyl",
+            "level": 70,
+            "ability": "Rock Head",
+            "item": "Focus Sash",
+            "moves": "Stone Edge, Aqua Tail, Earthquake, Hone Claws",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Breloom",
+            "level": 70,
+            "ability": "Poison Heal",
+            "item": "Toxic Orb",
+            "moves": "Spore, Substitute, Focus Punch, Seed Bomb",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Froslass",
+            "level": 70,
+            "ability": "Cursed Body",
+            "item": "Life Orb",
+            "moves": "Ice Beam, Shadow Ball, Thunder, Destiny Bond",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Bastiodon",
+            "level": 71,
+            "ability": "Sturdy",
+            "item": "Custap Berry",
+            "moves": "Metal Burst, Fissure, Smack Down, Slack Off",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Florges",
+            "level": 72,
+            "ability": "Natural Cure",
+            "item": "Leftovers",
+            "moves": "Moonblast, Calm Mind, Leech Seed, Earth Power",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
       },
       {
         "stage": "Victory Road",
         "location": "Victory Road",
-        "note": "Partway through Victory Road, before the Elite Four. Teams not documented for Wilting Y. Calem's starter is the one strong against yours (Fennekin line vs Chespin) in vanilla Y."
+        "note": "Partway through Victory Road, before the Elite Four. Team from the Eternal X trainer doc: may run a level or two high for your game.",
+        "mons": [
+          {
+            "name": "Clefable",
+            "level": 77,
+            "ability": "Unaware",
+            "item": "Leftovers",
+            "moves": "Moonblast, Stealth Rock, Thunder Wave, Soft-Boiled",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Celebi",
+            "level": 76,
+            "ability": "Natural Cure",
+            "item": "Salac Berry",
+            "moves": "Earth Power, Giga Drain, Nasty Plot, Baton Pass",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Dragonite",
+            "level": 77,
+            "ability": "Multiscale",
+            "item": "Lum Berry",
+            "moves": "Dragon Dance, Earthquake, Outrage, Waterfall",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Scizor",
+            "level": 76,
+            "ability": "Technician",
+            "item": "Leftovers",
+            "moves": "Bullet Punch, U-turn, Knock Off, Swords Dance",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Delphox",
+            "level": 78,
+            "ability": "Magic Guard",
+            "item": "Life Orb",
+            "moves": "Psychic, Fire Blast, Thunderbolt, Aura Sphere",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Kangaskhan",
+            "level": 78,
+            "ability": "Scrappy",
+            "item": "Kangaskhanite",
+            "moves": "Double-Edge, Power-Up Punch, Sucker Punch, Earthquake",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
       }
     ],
     "otherBattles": [
@@ -12008,7 +12911,7 @@
             ]
           },
           {
-            "name": "Klingklang",
+            "name": "Klinklang",
             "level": 63,
             "ability": "Motor Drive",
             "item": "Air Balloon",
@@ -13830,6 +14733,7 @@
         ] }
       ],
       rivalLabel: "Rival Battles (Barry)",
+      rivalName: "Barry",
       otherBattlesLabel: "Other Battles",
       evilTeamLabel: "Team Galactic"
     },
@@ -13846,6 +14750,7 @@
       guide: HGR_GUIDE,
       guideComplete: true,
       badgeCount: 16,
+      leagueAfterGyms: 8,   // Johto, the League, then Kanto
       bosses: HGR_BOSSES,
       trainerFights: [],
       features: [],
@@ -13928,6 +14833,7 @@
     guide: OHG_GUIDE,
     guideComplete: true,
     badgeCount: 16,
+    leagueAfterGyms: 8,   // Kanto, Indigo Conference, then Johto
     bosses: OHG_BOSSES,
     trainerFights: [],
     lazyData: { src: "./ohg-data.js", global: "OHG_DATA" },
@@ -13973,10 +14879,16 @@
     badgeCount: 8,
     bosses: WY_BOSSES,
     trainerFights: [],
-    features: [],
+    features: ["pokedex"],
+    // Pokédex in two lazy files (user's idea, 2026-10-07): species, stats,
+    // abilities and evolutions on opening the tab; learnsets, TMs and move
+    // data only once a card is expanded. tools/build_wy_dex.py.
+    lazyData: { src: "./wy-dex.js", global: "WY_DEX" },
+    dexMoves: { src: "./wy-moves.js", global: "WY_MOVES" },
+    pokedexNote: "Vanilla X/Y species with the hack's documented changes (stats, types, abilities, added moves) and its own level-up learnsets. Where the docs list no abilities the vanilla ones are shown, but the hack makes most hidden abilities a regular one. Seven TMs teach new moves (Sucker Punch, Ice/Fire/Thunder/Drain Punch, Giga Drain, Freeze-Dry): only the Pokémon the docs name are listed as learning them.",
     // Same as SoulGold: teams open, each card foldable (user, 2026-10-07).
     collapsibleTeams: true,
-    bossesNote: "Teams are the Rebalanced documentation's. Rival teams aren't documented (the Rivals section says when each battle happens, from vanilla Y); the docs only warn that the rival has a Multiscale Dragonite holding a Weakness Policy. Every boss but the rivals and Team Flare carries healing items.",
+    bossesNote: "Teams are the Rebalanced documentation's, except rivals and friends (Calem, Shauna, Tierno, Trevor): those come from the Eternal X trainer doc, the sister hack, which looks like a harder mode, so treat them as a close guide. Calem's timing is from vanilla Y. Every boss but the rivals and Team Flare carries healing items.",
     guideSections: [
       { key: "levelcaps", label: "Level Caps", type: "tables",
         cards: [{ title: "How these caps work", body: "Each cap is that boss's highest level, the usual Nuzlocke rule of not out-levelling the next boss; the game doesn't enforce them. Team Flare battles are listed where they fall in the story." }],
@@ -13989,7 +14901,8 @@
       { key: "moves", label: "Move Changes", type: "tables", data: WY_MOVE_TABLES },
       { key: "natures", label: "Natures", type: "natures", data: NATURE_GUIDE }
     ],
-    rivalLabel: "Rival Calem",
+    rivalLabel: "Rival Calem & Friends",
+    rivalName: "Calem",
     otherBattlesLabel: "Other Battles",
     evilTeamLabel: "Team Flare"
   };
@@ -15875,7 +16788,37 @@
   function dexData(){
     if(state.selectedGame === "soulgold") return window.SG_DEX;
     if(state.selectedGame === "originhg") return window.OHG_DATA;
+    if(state.selectedGame === "wiltingy") return window.WY_DEX;
     return window.RP_BACKUP_DATA;
+  }
+  // Move rows: the game's move table. Wilting Y keeps it (and every
+  // learnset) in wy-moves.js, loaded on the first card expand.
+  function dexMoveTable(){
+    var g = currentGame();
+    if(g.dexMoves) return (window[g.dexMoves.global] || {}).moves || {};
+    return dexData().moves;
+  }
+  // A species' learnset_info, wherever the game keeps it; null while a
+  // separately loaded moves file is still on its way.
+  function dexLearnInfo(name){
+    var g = currentGame();
+    if(!g.dexMoves) return dexData().poks[name].learnset_info || {};
+    var m = window[g.dexMoves.global];
+    return m ? (m.learn[name] || {}) : null;
+  }
+  function loadDexMoves(){
+    var g = currentGame(), game = state.selectedGame;
+    loadLazyScript(g.dexMoves.src, g.dexMoves.global).then(function(){
+      if(state.selectedGame !== game) return;
+      invalidatePokedexList();
+      renderPokedexList();
+    }).catch(function(err){
+      console.warn("Pokédex moves failed to load", err);
+      if(state.selectedGame !== game) return;
+      Array.prototype.forEach.call(document.querySelectorAll("#pokedexList .dex-moves-loading"), function(el){
+        el.textContent = "Couldn't load moves — check your connection and reopen the card.";
+      });
+    });
   }
   function getPokedexSpeciesList(){
     var g = state.selectedGame;
@@ -15911,7 +16854,9 @@
     var poks = dexData().poks;
     var keys = getPokedexSpeciesList();
     // Loose spelling: "Nidoran ♂" = "Nidoran-M", "Farfetch’d" = "Farfetch'd".
-    var loose = function(x){ return String(x).toLowerCase().replace(/♂/g, "m").replace(/♀/g, "f").replace(/[^a-z0-9]/g, ""); };
+    // Accents are stripped first: "Flabébé" can arrive with é as one
+    // character or as e + a combining mark (Wilting Y's PDFs do the latter).
+    var loose = function(x){ return String(x).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/♂/g, "m").replace(/♀/g, "f").replace(/[^a-z0-9]/g, ""); };
     var find = function(n){
       var ln = loose(n);
       n = n.toLowerCase();
@@ -16005,6 +16950,10 @@
     // Origin HeartGold's export has no contact flag: show no chip at all
     // rather than the vanilla RP engine's answer for a different game.
     if(state.selectedGame === "originhg") return false;
+    if(currentGame().dexMoves){
+      var wm = dexMoveTable()[moveName];
+      return !!(wm && wm.contact);
+    }
     var mv = window.RPCalc && window.RPCalc.getMove(moveName);
     return !!(mv && mv.flags && mv.flags.contact);
   }
@@ -16029,7 +16978,7 @@
   // call site) — it suppresses the label and border so same-level moves
   // read as one visual group instead of N identical-looking "Lv 5" rows.
   function pokedexMoveRowHTML(moveName, levelLabel, grouped){
-    var mv = dexData().moves[moveName];
+    var mv = dexMoveTable()[moveName];
     if(!mv) return "";   // defensive only — verified 0/507 species reference an unknown move
 
     var bp = mv.basePower ? mv.basePower + " BP" : "—";
@@ -16087,7 +17036,9 @@
       // only the first row of a level shows "Lv N", the rest share its
       // visual group via the `grouped` flag instead of repeating an
       // identical-looking label N times.
-      var learnset = (p.learnset_info && p.learnset_info.learnset) || [];
+      var info = dexLearnInfo(name);
+      if(!info) loadDexMoves();
+      var learnset = (info && info.learnset) || [];
       var learnsetHtml = learnset.map(function(pair, i){
         var sameLevelAsPrev = i > 0 && learnset[i-1][0] === pair[0];
         // Every row carries its own "Lv N" even when it repeats the row
@@ -16099,7 +17050,7 @@
         return pokedexMoveRowHTML(pair[1], "Lv " + pair[0], sameLevelAsPrev);
       }).join("");
 
-      var tms = (p.learnset_info && p.learnset_info.tms) || [];
+      var tms = (info && info.tms) || [];
       var tmsHtml = tms.length
         ? tms.map(function(mv){ return pokedexMoveRowHTML(mv, "", false); }).join("")
         : '<div class="dex-move-row-empty">No TMs learned</div>';
@@ -16152,14 +17103,21 @@
           '<div class="dex-stats">'+statsHtml+'<div class="dex-stat-total">Total: '+total+'</div></div>' +
           '<div class="dex-section-title">Abilities</div>' +
           '<div class="dex-abilities">'+(abilities.length ? escapeHTML(abilities.join(" / ")) : "—")+'</div>' +
+          (p.abilityNote ? '<div class="dex-move-desc">'+escapeHTML(p.abilityNote)+'</div>' : "") +
           innatesHtml +
           evosHtml +
           howHtml +
           formsHtml +
-          '<div class="dex-section-title">Level-up Learnset</div>' +
-          learnsetHtml +
-          '<div class="dex-section-title">TMs</div>' +
-          tmsHtml +
+          (info ?
+            '<div class="dex-section-title">Level-up Learnset</div>' +
+            learnsetHtml +
+            '<div class="dex-section-title">TMs</div>' +
+            tmsHtml +
+            ((info.extra && info.extra.length)
+              ? '<div class="dex-section-title">Other new moves (docs; how is not stated)</div><div class="dex-tutors">' +
+                  info.extra.map(function(t){ return '<span class="dex-chip">'+escapeHTML(t)+'</span>'; }).join("") + '</div>'
+              : "")
+          : '<div class="dex-section-title">Moves</div><div class="dex-move-row-empty dex-moves-loading">Loading moves…</div>') +
           tutorsHtml +
         '</div>'
       );
@@ -16292,8 +17250,12 @@
     // Renegade reads the calc bundle's RP data (gated on window.RPCalc);
     // SoulGold reads sg-dex.js (gated on window.SG_DEX). Each loader only
     // resolves once its global exists, so the .then() below can never loop.
+    var lazy = GAMES[game].lazyData;
     var ready = game === "renegade" ? (typeof window.RPCalc !== "undefined")
-      : game === "originhg" ? !!window.OHG_DATA : !!window.SG_DEX;
+      : lazy ? !!window[lazy.global] : !!window.SG_DEX;
+    var dexNote = document.getElementById("pokedexNote");
+    dexNote.textContent = GAMES[game].pokedexNote || "";
+    dexNote.style.display = GAMES[game].pokedexNote ? "" : "none";
     if(ready){
       // Already loaded — show the real Pokédex immediately.
       loading.style.display = "none";
@@ -16306,7 +17268,7 @@
     loadError.style.display = "none";
     body.style.display = "none";
     loading.style.display = "";
-    (game === "renegade" ? loadCalcBundle() : game === "originhg" ? loadGameData(GAMES.originhg) : loadSgDex()).then(function(){
+    (game === "renegade" ? loadCalcBundle() : lazy ? loadGameData(GAMES[game]) : loadSgDex()).then(function(){
       // Same reasoning as renderCalculator()'s equivalent .then() — the
       // user may have navigated away (or switched game) while loading.
       renderPokedex();
@@ -17620,7 +18582,9 @@
   var timelineEditing = null;   // entry id being edited (transient)
 
   // The split = the stretch before the next gym leader (by badge count), then
-  // the Elite Four, then postgame once the Champion falls.
+  // the Elite Four, then postgame once the Champion falls. Games with the
+  // League between two regions (`leagueAfterGyms`: Origin HG, HG Retiled)
+  // get the Elite Four split there, until the Champion falls.
   function currentSplitLabel(){
     var game = currentGame(), run = currentRun();
     var persons = gymPersons(game);
@@ -17628,6 +18592,9 @@
     var beaten = beatenGymPersons(run, game);
     var n = Object.keys(beaten).length;
     var left = persons.filter(function(p){ return !beaten[p]; });
+    var champ = (game.bosses || {}).champion;
+    var champBeaten = !!(champ && champ.name && run.beatenBosses["champion-" + champ.name]);
+    if(left.length && game.leagueAfterGyms && n >= game.leagueAfterGyms && !champBeaten) return "Elite Four";
     if(left.length){
       // Leaders listed as badge-slot variants ("Chuck (as 5th badge)", …) can
       // be taken in any order, so name every one still unbeaten.
@@ -17635,9 +18602,7 @@
       var next = flexibleGymPerson(game, left[0]) ? any.join(" / ") : left[0];
       return "Split " + (n + 1) + " · before " + next;
     }
-    var champ = (game.bosses || {}).champion;
-    if(champ && champ.name && run.beatenBosses["champion-" + champ.name]) return "Postgame";
-    return "Elite Four";
+    return champBeaten ? "Postgame" : "Elite Four";
   }
 
   function deathEntryText(mon){
@@ -17658,6 +18623,9 @@
     var run = currentRun();
     if(nowBeaten){
       var isGym = key.indexOf("gym-") === 0;
+      // Rival cards are named by stage; most games' stages are only a place
+      // ("Route 203"), so name the rival (SoulGold/Origin HG's carry it).
+      if(key.indexOf("rival-") === 0 && label.indexOf(" — ") === -1) label = (currentGame().rivalName || "Rival") + " — " + label;
       var text = "Defeated " + (isGym ? gymPerson(label) : label) + (isGym ? " — badge " + badgesEarned(run) : "");
       addTimelineEntry(isGym ? "gym" : "boss", text, { key: key }, splitBefore);
     } else {
