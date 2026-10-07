@@ -115,6 +115,24 @@
     --frame-border: #100809;
     --frame-ring: #4f2a2f;
   }
+  /* Wilting Y — dusky violet with a faded-rose LCD. */
+  body[data-game="wiltingy"]{
+    --bg: #18141d;
+    --panel: #241e2b;
+    --panel-raised: #322a3b;
+    --lcd: #e48fa8;
+    --lcd-dim: #84506a;
+    --cream: #f1e6ee;
+    --cream-dim: #ae9aab;
+    --dead: #e0705e;
+    --dead-dim: #5e2c28;
+    --gold: #f5d58a;
+    --line: #43384d;
+    --lcd-rgb: 228,143,168;
+    --bezel-top: #1f1a26;
+    --frame-border: #0c0a0f;
+    --frame-ring: #463a52;
+  }
   .hard-note{ font-size: 13px; color: var(--gold); border: 1px dashed var(--line); padding: 6px 8px; margin: 0 0 10px; }
   /* Timeline tab */
   .tl-add{ margin-bottom: 12px; }
@@ -10056,6 +10074,3579 @@
   var OHG_TRADE_ROWS = [["Pidgeot","Pidgeot","Viridian Forest (loan)"],["Onix “Orochimaru”","Beedrill","Pewter City"],["Mudkip “Nessie”","Shellder","Cerulean City"],["Raticate","Butterfree","S.S. Anne"],["Butterfree","Raticate","S.S. Anne"],["Rhyhorn “BattleRex”","Bonsly","Diglett’s Cave"],["Gyarados","Dugtrio","Celadon City (loan)"],["Torkoal","Bagon","Resort Zone"],["Skarmory","Exeggutor","Violet City"],["Ditto","Budew","Goldenrod City"],["Feebas “Mimi”","Goldeen","Ecruteak City"],["Pineco “Iron Egg”","Hoothoot","Mahogany Town"],["Porygon2 “Poly”","Dragonair","Blackthorn City"]];
   // END GENERATED: tools/build_ohg_data.py
 
+  // BEGIN GENERATED: tools/build_wy_data.py — do not hand-edit, re-run the script
+  // Wilting Y (Pokémon Y hack), Rebalanced docs. Parsed from the PDFs in
+  // "Wilting Y References/". Legendaries left out of WY_GUIDE (user rule):
+  // Arceus, Articuno, Azelf, Celebi, Cobalion, Cresselia, Darkrai, Deoxys, Dialga, Diancie, Entei, Genesect, Giratina, Groudon, Heatran, Ho-Oh, Hoopa, Jirachi, Keldeo, Kyogre, Kyurem, Landorus, Latias, Latios, Lugia, Manaphy, Meloetta, Mesprit, Mew, Moltres, Palkia, Phione, Raikou, Rayquaza, Regice, Regigigas, Regirock, Registeel, Reshiram, Shaymin, Suicune, Terrakion, Thundurus, Tornadus, Uxie, Victini, Virizion, Volcanion, Xerneas, Yveltal, Zapdos, Zekrom
+  var WY_GUIDE = [
+    {"name": "Route 2: Avance Trail", "encounters": [{"sp": "Bunnelby", "m": "Grass", "lv": "2-3"}, {"sp": "Fletchling", "m": "Grass", "lv": "2-3"}, {"sp": "Pidgey", "m": "Grass", "lv": "2-3"}, {"sp": "Zigzagoon", "m": "Grass", "lv": "2-3"}, {"sp": "Kricketot", "m": "Grass", "lv": "2-3"}, {"sp": "Poochyena", "m": "Grass", "lv": "2-3"}, {"sp": "Patrat", "m": "Grass", "lv": "2-3"}, {"sp": "Purrloin", "m": "Grass", "lv": "2-3"}, {"sp": "Weedle", "m": "Grass", "lv": "2-3"}, {"sp": "Bonsly", "m": "Grass", "lv": "2-3"}, {"sp": "Surskit", "m": "Grass", "lv": "2-3"}]},
+    {"name": "Santalune Forest", "encounters": [{"sp": "Wurmple", "m": "Grass", "lv": "3-5"}, {"sp": "Scatterbug", "m": "Grass", "lv": "3-5"}, {"sp": "Cottonee", "m": "Grass", "lv": "3-5"}, {"sp": "Petilil", "m": "Grass", "lv": "3-5"}, {"sp": "Shroomish", "m": "Grass", "lv": "3-5"}, {"sp": "Pansage", "m": "Grass", "lv": "3-5"}, {"sp": "Pansear", "m": "Grass", "lv": "3-5"}, {"sp": "Panpour", "m": "Grass", "lv": "3-5"}, {"sp": "Sewaddle", "m": "Grass", "lv": "3-5"}, {"sp": "Pikachu", "m": "Grass", "lv": "3-5"}, {"sp": "Slakoth", "m": "Grass", "lv": "3-5"}]},
+    {"name": "Route 3: Ouvert Way", "encounters": [{"sp": "Rattata", "m": "Grass", "lv": "6-7"}, {"sp": "Shinx", "m": "Grass", "lv": "6-7"}, {"sp": "Bidoof", "m": "Grass", "lv": "6-7"}, {"sp": "Caterpie", "m": "Grass", "lv": "6-7"}, {"sp": "Pidove", "m": "Grass", "lv": "6-7"}, {"sp": "Tympole", "m": "Grass", "lv": "6-7"}, {"sp": "Lillipup", "m": "Grass", "lv": "6-7"}, {"sp": "Hoothoot", "m": "Grass", "lv": "6-7"}, {"sp": "Jigglypuff", "m": "Grass", "lv": "6-7"}, {"sp": "Smoochum", "m": "Grass", "lv": "6-7"}, {"sp": "Zorua", "m": "Grass", "lv": "6-7"}, {"sp": "Magikarp", "m": "Old Rod", "lv": "19-24"}, {"sp": "Corphish", "m": "Old Rod", "lv": "19-24"}, {"sp": "Goldeen", "m": "Old Rod", "lv": "19-24"}, {"sp": "Goldeen", "m": "Good Rod", "lv": "35"}, {"sp": "Corphish", "m": "Good Rod", "lv": "35"}, {"sp": "Gyarados", "m": "Super Rod", "lv": "45"}, {"sp": "Seaking", "m": "Super Rod", "lv": "45"}, {"sp": "Crawdaunt", "m": "Super Rod", "lv": "45"}, {"sp": "Masquerain", "m": "Surf", "lv": "32-35"}, {"sp": "Marill", "m": "Surf", "lv": "32-35"}, {"sp": "Azumarill", "m": "Surf", "lv": "32-35"}]},
+    {"name": "Route 22: Détourner Way", "encounters": [{"sp": "Spearow", "m": "Grass", "lv": "9-10"}, {"sp": "Mankey", "m": "Grass", "lv": "9-10"}, {"sp": "Litleo", "m": "Grass", "lv": "9-10"}, {"sp": "Starly", "m": "Grass", "lv": "9-10"}, {"sp": "Psyduck", "m": "Grass", "lv": "9-10"}, {"sp": "Lotad", "m": "Grass", "lv": "9-10"}, {"sp": "Seedot", "m": "Grass", "lv": "9-10"}, {"sp": "Azurill", "m": "Grass", "lv": "9-10"}, {"sp": "Farfetch'd", "m": "Grass", "lv": "9-10"}, {"sp": "Dunsparce", "m": "Grass", "lv": "9-10"}, {"sp": "Riolu", "m": "Grass", "lv": "9-10"}, {"sp": "Bibarel", "m": "Yellow Flowers", "lv": "70-72 (requires Waterfall)"}, {"sp": "Golduck", "m": "Yellow Flowers", "lv": "70-72 (requires Waterfall)"}, {"sp": "Azumarill", "m": "Yellow Flowers", "lv": "70-72 (requires Waterfall)"}, {"sp": "Pyroar", "m": "Yellow Flowers", "lv": "70-72 (requires Waterfall)"}, {"sp": "Diggersby", "m": "Yellow Flowers", "lv": "70-72 (requires Waterfall)"}, {"sp": "Farfetch'd", "m": "Yellow Flowers", "lv": "70-72 (requires Waterfall)"}, {"sp": "Dunsparce", "m": "Yellow Flowers", "lv": "70-72 (requires Waterfall)"}, {"sp": "Lucario", "m": "Yellow Flowers", "lv": "70-72 (requires Waterfall)"}, {"sp": "Magikarp", "m": "Old Rod", "lv": "19-24"}, {"sp": "Carvanha", "m": "Old Rod", "lv": "19-24"}, {"sp": "Goldeen", "m": "Good Rod", "lv": "35"}, {"sp": "Carvanha", "m": "Good Rod", "lv": "35"}, {"sp": "Gyarados", "m": "Super Rod", "lv": "45"}, {"sp": "Seaking", "m": "Super Rod", "lv": "45"}, {"sp": "Sharpedo", "m": "Super Rod", "lv": "45"}, {"sp": "Psyduck", "m": "Surf", "lv": "40-42"}, {"sp": "Azumarill", "m": "Surf", "lv": "40-42"}]},
+    {"name": "Route 4: Paterre Way", "encounters": [{"sp": "Flabébé", "m": "Yellow Flowers", "lv": "11-13"}, {"sp": "Sunkern", "m": "Yellow Flowers", "lv": "11-13"}, {"sp": "Togepi", "m": "Yellow Flowers", "lv": "11-13"}, {"sp": "Combee", "m": "Yellow Flowers", "lv": "11-13"}, {"sp": "Munna", "m": "Yellow Flowers", "lv": "11-13"}, {"sp": "Skitty", "m": "Yellow Flowers", "lv": "11-13"}, {"sp": "Ralts", "m": "Yellow Flowers", "lv": "11-13"}, {"sp": "Flabébé", "m": "Red Flowers", "lv": "11-13"}, {"sp": "Natu", "m": "Red Flowers", "lv": "11-13"}, {"sp": "Buneary", "m": "Red Flowers", "lv": "11-13"}, {"sp": "Spinda", "m": "Red Flowers", "lv": "11-13"}, {"sp": "Ledyba", "m": "Red Flowers", "lv": "11-13"}, {"sp": "Budew", "m": "Red Flowers", "lv": "11-13"}, {"sp": "Happiny", "m": "Red Flowers", "lv": "11-13"}, {"sp": "Glameow", "m": "Red Flowers", "lv": "11-13"}]},
+    {"name": "Route 5: Versant Road", "encounters": [{"sp": "Meowth", "m": "Grass", "lv": "14-16"}, {"sp": "Blitzle", "m": "Grass", "lv": "14-16"}, {"sp": "Skiddo", "m": "Grass", "lv": "14-16"}, {"sp": "Furfrou", "m": "Grass", "lv": "14-16"}, {"sp": "Pancham", "m": "Grass", "lv": "14-16"}, {"sp": "Doduo", "m": "Grass", "lv": "14-16"}, {"sp": "Phanpy", "m": "Grass", "lv": "14-16"}, {"sp": "Abra", "m": "Grass", "lv": "14-16"}, {"sp": "Plusle", "m": "Grass", "lv": "14-16"}, {"sp": "Minun", "m": "Grass", "lv": "14-16"}, {"sp": "Gulpin", "m": "Purple Flowers", "lv": "14-16"}, {"sp": "Pancham", "m": "Purple Flowers", "lv": "14-16"}, {"sp": "Skiddo", "m": "Purple Flowers", "lv": "14-16"}, {"sp": "Blitzle", "m": "Purple Flowers", "lv": "14-16"}, {"sp": "Elekid", "m": "Purple Flowers", "lv": "14-16"}, {"sp": "Magby", "m": "Purple Flowers", "lv": "14-16"}, {"sp": "Doduo", "m": "Purple Flowers", "lv": "14-16"}, {"sp": "Abra", "m": "Purple Flowers", "lv": "14-16"}, {"sp": "Minun", "m": "Purple Flowers", "lv": "14-16"}, {"sp": "Plusle", "m": "Purple Flowers", "lv": "14-16"}, {"sp": "Cyndaquil", "m": "Horde", "lv": ""}, {"sp": "Scraggy", "m": "Horde", "lv": ""}, {"sp": "Plusle", "m": "Horde", "lv": ""}, {"sp": "Minun", "m": "Horde", "lv": ""}]},
+    {"name": "Route 6: Palais Lane", "encounters": [{"sp": "Espurr", "m": "Grass", "lv": "17-19"}, {"sp": "Oddish", "m": "Grass", "lv": "17-19"}, {"sp": "Aipom", "m": "Grass", "lv": "17-19"}, {"sp": "Tangela", "m": "Grass", "lv": "17-19"}, {"sp": "Sentret", "m": "Grass", "lv": "17-19"}, {"sp": "Venonat", "m": "Grass", "lv": "17-19"}, {"sp": "Nincada", "m": "Grass", "lv": "17-19"}, {"sp": "Ekans", "m": "Grass", "lv": "17-19"}, {"sp": "Honedge", "m": "Grass", "lv": "17-19"}, {"sp": "Kecleon", "m": "Grass", "lv": "17-19"}]},
+    {"name": "Parfum Palace", "encounters": [{"sp": "Feebas", "m": "Old Rod", "lv": "19-24"}, {"sp": "Dratini", "m": "Old Rod", "lv": "19-24"}, {"sp": "Magikarp", "m": "Old Rod", "lv": "19-24"}, {"sp": "Feebas", "m": "Good Rod", "lv": "35"}, {"sp": "Corphish", "m": "Good Rod", "lv": "35"}, {"sp": "Dragonair", "m": "Good Rod", "lv": "35"}, {"sp": "Gyarados", "m": "Super Rod", "lv": "45"}, {"sp": "Crawdaunt", "m": "Super Rod", "lv": "45"}, {"sp": "Milotic", "m": "Super Rod", "lv": "45"}]},
+    {"name": "Route 7: Rivière Walk", "encounters": [{"sp": "Croagunk", "m": "Grass", "lv": "19-21"}, {"sp": "Smeargle", "m": "Grass", "lv": "19-21"}, {"sp": "Buizel", "m": "Grass", "lv": "19-21"}, {"sp": "Hoppip", "m": "Grass", "lv": "19-21"}, {"sp": "Volbeat", "m": "Grass", "lv": "19-21"}, {"sp": "Illumise", "m": "Grass", "lv": "19-21"}, {"sp": "Ducklett", "m": "Grass", "lv": "19-21"}, {"sp": "Flabébé", "m": "Grass", "lv": "19-21"}, {"sp": "Shellos", "m": "Yellow Flowers", "lv": "19-21"}, {"sp": "Swirlix", "m": "Yellow Flowers", "lv": "19-21"}, {"sp": "Flabébé", "m": "Yellow Flowers", "lv": "19-21"}, {"sp": "Volbeat", "m": "Yellow Flowers", "lv": "19-21"}, {"sp": "Minccino", "m": "Yellow Flowers", "lv": "19-21"}, {"sp": "Swablu", "m": "Yellow Flowers", "lv": "19-21"}, {"sp": "Roselia", "m": "Yellow Flowers", "lv": "19-21"}, {"sp": "Croagunk", "m": "Yellow Flowers", "lv": "19-21"}, {"sp": "Shellos", "m": "Purple Flowers", "lv": "19-21"}, {"sp": "Spritzee", "m": "Purple Flowers", "lv": "19-21"}, {"sp": "Flabébé", "m": "Purple Flowers", "lv": "19-21"}, {"sp": "Minccino", "m": "Purple Flowers", "lv": "19-21"}, {"sp": "Illumise", "m": "Purple Flowers", "lv": "19-21"}, {"sp": "Ducklett", "m": "Purple Flowers", "lv": "19-21"}, {"sp": "Roselia", "m": "Purple Flowers", "lv": "19-21"}, {"sp": "Croagunk", "m": "Purple Flowers", "lv": "19-21"}, {"sp": "Munchlax", "m": "Purple Flowers", "lv": "19-21"}, {"sp": "Turtwig", "m": "Horde", "lv": ""}, {"sp": "Piplup", "m": "Horde", "lv": ""}, {"sp": "Roselia", "m": "Horde", "lv": ""}]},
+    {"name": "Connecting Cave: Zubat Roost", "encounters": [{"sp": "Zubat", "m": "Cave", "lv": "18-20"}, {"sp": "Meditite", "m": "Cave", "lv": "18-20"}, {"sp": "Whismur", "m": "Cave", "lv": "18-20"}, {"sp": "Teddiursa", "m": "Cave", "lv": "18-20"}, {"sp": "Lickitung", "m": "Cave", "lv": "18-20"}, {"sp": "Aron", "m": "Cave", "lv": "18-20"}, {"sp": "Axew", "m": "Cave", "lv": "18-20"}, {"sp": "Larvitar", "m": "Cave", "lv": "18-20"}, {"sp": "Charmander", "m": "Horde", "lv": ""}, {"sp": "Drilbur", "m": "Horde", "lv": ""}, {"sp": "Axew", "m": "Horde", "lv": ""}]},
+    {"name": "Route 8: Muraille Coast", "encounters": [{"sp": "Drifloon", "m": "Grass", "lv": "20-22"}, {"sp": "Spoink", "m": "Grass", "lv": "20-22"}, {"sp": "Inkay", "m": "Grass", "lv": "20-22"}, {"sp": "Taillow", "m": "Grass", "lv": "20-22"}, {"sp": "Absol", "m": "Grass", "lv": "20-22"}, {"sp": "Sneasel", "m": "Grass", "lv": "20-22"}, {"sp": "Seviper", "m": "Grass", "lv": "20-22"}, {"sp": "Bagon", "m": "Grass", "lv": "20-22"}, {"sp": "Mienfoo", "m": "Yellow Flowers", "lv": "19-22"}, {"sp": "Absol", "m": "Yellow Flowers", "lv": "19-22"}, {"sp": "Inkay", "m": "Yellow Flowers", "lv": "19-22"}, {"sp": "Taillow", "m": "Yellow Flowers", "lv": "19-22"}, {"sp": "Spoink", "m": "Yellow Flowers", "lv": "19-22"}, {"sp": "Gligar", "m": "Yellow Flowers", "lv": "19-22"}, {"sp": "Zangoose", "m": "Yellow Flowers", "lv": "19-22"}, {"sp": "Skarmory", "m": "Yellow Flowers", "lv": "19-22"}, {"sp": "Dwebble", "m": "Rock Smash", "lv": "20-23"}, {"sp": "Binacle", "m": "Rock Smash", "lv": "20-23"}, {"sp": "Clauncher", "m": "Old Rod", "lv": "24"}, {"sp": "Skrelp", "m": "Old Rod", "lv": "24"}, {"sp": "Skrelp", "m": "Good Rod", "lv": "35"}, {"sp": "Clauncher", "m": "Good Rod", "lv": "35"}, {"sp": "Qwilfish", "m": "Super Rod", "lv": "45"}, {"sp": "Clawitzer", "m": "Super Rod", "lv": "45"}, {"sp": "Dragalge", "m": "Super Rod", "lv": "45"}, {"sp": "Frillish", "m": "Surf", "lv": "32-34"}, {"sp": "Wailmer", "m": "Surf", "lv": "32-34"}, {"sp": "Tentacool", "m": "Surf", "lv": "32-34"}, {"sp": "Chimchar", "m": "Horde", "lv": ""}, {"sp": "Zangoose", "m": "Horde", "lv": ""}, {"sp": "Seviper", "m": "Horde", "lv": ""}, {"sp": "Rufflet", "m": "Horde", "lv": ""}, {"sp": "Vullaby", "m": "Horde", "lv": ""}]},
+    {"name": "Ambrette Town", "encounters": [{"sp": "Dwebble", "m": "Rock Smash", "lv": "18-20"}, {"sp": "Binacle", "m": "Rock Smash", "lv": "18-20"}, {"sp": "Luvdisc", "m": "Old Rod", "lv": "21-22"}, {"sp": "Relicanth", "m": "Old Rod", "lv": "21-22"}, {"sp": "Horsea", "m": "Good Rod", "lv": "35"}, {"sp": "Relicanth", "m": "Good Rod", "lv": "35"}, {"sp": "Relicanth", "m": "Super Rod", "lv": "45"}, {"sp": "Clawitzer", "m": "Super Rod", "lv": "45"}, {"sp": "Seadra", "m": "Super Rod", "lv": "45"}, {"sp": "Tentacool", "m": "Surf", "lv": "32-34"}, {"sp": "Wailmer", "m": "Surf", "lv": "32-34"}]},
+    {"name": "Route 9: Spikes Passage", "encounters": [{"sp": "Sandile", "m": "Rough Terrain", "lv": "21-23"}, {"sp": "Hippopotas", "m": "Rough Terrain", "lv": "21-23"}, {"sp": "Helioptile", "m": "Rough Terrain", "lv": "21-23"}, {"sp": "Maractus", "m": "Rough Terrain", "lv": "21-23"}, {"sp": "Cacnea", "m": "Rough Terrain", "lv": "21-23"}, {"sp": "Torkoal", "m": "Rough Terrain", "lv": "21-23"}, {"sp": "Numel", "m": "Rough Terrain", "lv": "21-23"}, {"sp": "Larvesta", "m": "Rough Terrain", "lv": "21-23"}]},
+    {"name": "Glittering Cave", "encounters": [{"sp": "Machop", "m": "Cave", "lv": "22-24"}, {"sp": "Paras", "m": "Cave", "lv": "22-24"}, {"sp": "Rhyhorn", "m": "Cave", "lv": "22-24"}, {"sp": "Kangaskhan", "m": "Cave", "lv": "22-24"}, {"sp": "Cubone", "m": "Cave", "lv": "22-24"}, {"sp": "Spinarak", "m": "Cave", "lv": "22-24"}, {"sp": "Solrock", "m": "Cave", "lv": "22-24"}, {"sp": "Lunatone", "m": "Cave", "lv": "22-24"}, {"sp": "Mawile", "m": "Cave", "lv": "22-24"}, {"sp": "Druddigon", "m": "Cave", "lv": "22-24"}, {"sp": "Dwebble", "m": "Rock Smash", "lv": "23-25"}, {"sp": "Onix", "m": "Rock Smash", "lv": "23-25"}]},
+    {"name": "Cyllage City", "encounters": [{"sp": "Krabby", "m": "Rock Smash", "lv": "24-26"}, {"sp": "Onix", "m": "Rock Smash", "lv": "24-26"}, {"sp": "Dwebble", "m": "Rock Smash", "lv": "24-26"}, {"sp": "Staryu", "m": "Old Rod", "lv": "26"}, {"sp": "Shellder", "m": "Old Rod", "lv": "26"}, {"sp": "Horsea", "m": "Good Rod", "lv": "35"}, {"sp": "Finneon", "m": "Good Rod", "lv": "35"}, {"sp": "Relicanth", "m": "Good Rod", "lv": "35"}, {"sp": "Relicanth", "m": "Super Rod", "lv": "45"}, {"sp": "Clawitzer", "m": "Super Rod", "lv": "45"}, {"sp": "Seadra", "m": "Super Rod", "lv": "45"}, {"sp": "Tentacool", "m": "Surf", "lv": "32-34"}, {"sp": "Wailmer", "m": "Surf", "lv": "32-34"}, {"sp": "Wingull", "m": "Surf", "lv": "32-34"}]},
+    {"name": "Route 10: Menhir Trail", "encounters": [{"sp": "Hawlucha", "m": "Grass", "lv": "24-26"}, {"sp": "Golett", "m": "Grass", "lv": "24-26"}, {"sp": "Baltoy", "m": "Grass", "lv": "24-26"}, {"sp": "Growlithe", "m": "Grass", "lv": "24-26"}, {"sp": "Vulpix", "m": "Grass", "lv": "24-26"}, {"sp": "Sigilyph", "m": "Grass", "lv": "24-26"}, {"sp": "Nosepass", "m": "Grass", "lv": "24-26"}, {"sp": "Elgyem", "m": "Grass", "lv": "24-26"}, {"sp": "Emolga", "m": "Grass", "lv": "24-26"}, {"sp": "Electrike", "m": "Yellow Flowers", "lv": "24-26"}, {"sp": "Houndour", "m": "Yellow Flowers", "lv": "24-26"}, {"sp": "Eevee", "m": "Yellow Flowers", "lv": "24-26"}, {"sp": "Yanma", "m": "Yellow Flowers", "lv": "24-26"}, {"sp": "Snubbull", "m": "Yellow Flowers", "lv": "24-26"}, {"sp": "Darumaka", "m": "Yellow Flowers", "lv": "24-26"}, {"sp": "Tepig", "m": "Horde", "lv": ""}, {"sp": "Snivy", "m": "Horde", "lv": ""}, {"sp": "Tyrogue", "m": "Horde", "lv": ""}]},
+    {"name": "Route 11: Miroir Way", "encounters": [{"sp": "Hariyama", "m": "Grass", "lv": "26-28"}, {"sp": "Joltik", "m": "Grass", "lv": "26-28"}, {"sp": "Sawk", "m": "Grass", "lv": "26-28"}, {"sp": "Throh", "m": "Grass", "lv": "26-28"}, {"sp": "Staravia", "m": "Grass", "lv": "26-28"}, {"sp": "Cherubi", "m": "Grass", "lv": "26-28"}, {"sp": "Drowzee", "m": "Grass", "lv": "26-28"}, {"sp": "Stunky", "m": "Grass", "lv": "26-28"}, {"sp": "Nidorino", "m": "Grass", "lv": "26-28"}, {"sp": "Nidorina", "m": "Grass", "lv": "26-28"}, {"sp": "Dedenne", "m": "Grass", "lv": "26-28"}, {"sp": "Torchic", "m": "Horde", "lv": ""}, {"sp": "Nidoran ♀", "m": "Horde", "lv": ""}, {"sp": "Nidoran ♂", "m": "Horde", "lv": ""}, {"sp": "Timburr", "m": "Horde", "lv": ""}]},
+    {"name": "Reflection Cave", "encounters": [{"sp": "Mr. Mime", "m": "Cave", "lv": "29-31", "sub": "1F"}, {"sp": "Solosis", "m": "Cave", "lv": "29-31", "sub": "1F"}, {"sp": "Roggenrola", "m": "Cave", "lv": "29-31", "sub": "1F"}, {"sp": "Chingling", "m": "Cave", "lv": "29-31", "sub": "1F"}, {"sp": "Carbink", "m": "Cave", "lv": "29-31", "sub": "1F"}, {"sp": "Wobbuffet", "m": "Cave", "lv": "29-31", "sub": "1F"}, {"sp": "Sableye", "m": "Cave", "lv": "29-31", "sub": "1F"}, {"sp": "Mime Jr.", "m": "Horde", "lv": "", "sub": "1F"}, {"sp": "Clefairy", "m": "Horde", "lv": "", "sub": "1F"}, {"sp": "Roggenrola", "m": "Horde", "lv": "", "sub": "1F"}, {"sp": "Carbink", "m": "Horde", "lv": "", "sub": "1F"}, {"sp": "Gastly", "m": "Cave", "lv": "29-31", "sub": "B1F"}, {"sp": "Klink", "m": "Cave", "lv": "29-31", "sub": "B1F"}, {"sp": "Misdreavus", "m": "Cave", "lv": "29-31", "sub": "B1F"}, {"sp": "Solosis", "m": "Cave", "lv": "29-31", "sub": "B1F"}, {"sp": "Roggenrola", "m": "Cave", "lv": "29-31", "sub": "B1F"}, {"sp": "Wobbuffet", "m": "Cave", "lv": "29-31", "sub": "B1F"}, {"sp": "Sableye", "m": "Cave", "lv": "29-31", "sub": "B1F"}, {"sp": "Mime Jr.", "m": "Horde", "lv": "", "sub": "B1F"}, {"sp": "Clefairy", "m": "Horde", "lv": "", "sub": "B1F"}, {"sp": "Roggenrola", "m": "Horde", "lv": "", "sub": "B1F"}, {"sp": "Carbink", "m": "Horde", "lv": "", "sub": "B1F"}, {"sp": "Mr. Mime", "m": "Cave", "lv": "29-31", "sub": "B2F"}, {"sp": "Bronzor", "m": "Cave", "lv": "29-31", "sub": "B2F"}, {"sp": "Solosis", "m": "Cave", "lv": "29-31", "sub": "B2F"}, {"sp": "Roggenrola", "m": "Cave", "lv": "29-31", "sub": "B2F"}, {"sp": "Carbink", "m": "Cave", "lv": "29-31", "sub": "B2F"}, {"sp": "Chingling", "m": "Cave", "lv": "29-31", "sub": "B2F"}, {"sp": "Wobbuffet", "m": "Cave", "lv": "29-31", "sub": "B2F"}, {"sp": "Sableye", "m": "Cave", "lv": "29-31", "sub": "B2F"}, {"sp": "Tynamo", "m": "Horde", "lv": "", "sub": "B2F"}, {"sp": "Clefairy", "m": "Horde", "lv": "", "sub": "B2F"}, {"sp": "Roggenrola", "m": "Horde", "lv": "", "sub": "B2F"}, {"sp": "Carbink", "m": "Horde", "lv": "", "sub": "B2F"}, {"sp": "Gothita", "m": "Cave", "lv": "29-31", "sub": "B2F - Alakazite Room"}, {"sp": "Noibat", "m": "Cave", "lv": "29-31", "sub": "B2F - Alakazite Room"}, {"sp": "Mr. Mime", "m": "Cave", "lv": "29-31", "sub": "B2F - Alakazite Room"}, {"sp": "Roggenrola", "m": "Cave", "lv": "29-31", "sub": "B2F - Alakazite Room"}, {"sp": "Sableye", "m": "Cave", "lv": "29-31", "sub": "B2F - Alakazite Room"}, {"sp": "Carbink", "m": "Cave", "lv": "29-31", "sub": "B2F - Alakazite Room"}, {"sp": "Wobbuffet", "m": "Cave", "lv": "29-31", "sub": "B2F - Alakazite Room"}, {"sp": "Beldum", "m": "Cave", "lv": "29-31", "sub": "B2F - Alakazite Room"}, {"sp": "Tynamo", "m": "Horde", "lv": "", "sub": "B2F - Alakazite Room"}, {"sp": "Clefairy", "m": "Horde", "lv": "", "sub": "B2F - Alakazite Room"}, {"sp": "Roggenrola", "m": "Horde", "lv": "", "sub": "B2F - Alakazite Room"}, {"sp": "Carbink", "m": "Horde", "lv": "", "sub": "B2F - Alakazite Room"}]},
+    {"name": "Shalour City", "encounters": [{"sp": "Shellder", "m": "Old Rod", "lv": "30"}, {"sp": "Staryu", "m": "Old Rod", "lv": "30"}, {"sp": "Remoraid", "m": "Good Rod", "lv": "35"}, {"sp": "Chinchou", "m": "Good Rod", "lv": "35"}, {"sp": "Alomomola", "m": "Super Rod", "lv": "45"}, {"sp": "Octillery", "m": "Super Rod", "lv": "45"}, {"sp": "Lanturn", "m": "Super Rod", "lv": "45"}, {"sp": "Tentacool", "m": "Surf", "lv": "32-34"}, {"sp": "Frillish", "m": "Surf", "lv": "32-34"}, {"sp": "Mantyke", "m": "Surf", "lv": "32-34"}]},
+    {"name": "Route 12: Fourrage Road", "encounters": [{"sp": "Slowpoke", "m": "Grass", "lv": "30-32"}, {"sp": "Pachirisu", "m": "Grass", "lv": "30-32"}, {"sp": "Scyther", "m": "Grass", "lv": "30-32"}, {"sp": "Chatot", "m": "Grass", "lv": "30-32"}, {"sp": "Ponyta", "m": "Grass", "lv": "30-32"}, {"sp": "Miltank", "m": "Grass", "lv": "30-32"}, {"sp": "Tauros", "m": "Grass", "lv": "30-32"}, {"sp": "Exeggcute", "m": "Grass", "lv": "30-32"}, {"sp": "Tauros", "m": "Yellow Flowers", "lv": "30-32"}, {"sp": "Miltank", "m": "Yellow Flowers", "lv": "30-32"}, {"sp": "Pinsir", "m": "Yellow Flowers", "lv": "30-32"}, {"sp": "Heracross", "m": "Yellow Flowers", "lv": "30-32"}, {"sp": "Chatot", "m": "Yellow Flowers", "lv": "30-32"}, {"sp": "Slowpoke", "m": "Yellow Flowers", "lv": "30-32"}, {"sp": "Exeggcute", "m": "Yellow Flowers", "lv": "30-32"}, {"sp": "Dwebble", "m": "Rock Smash", "lv": "30-32"}, {"sp": "Binacle", "m": "Rock Smash", "lv": "30-32"}, {"sp": "Remoraid", "m": "Old Rod", "lv": "30"}, {"sp": "Clamperl", "m": "Old Rod", "lv": "30"}, {"sp": "Remoraid", "m": "Good Rod", "lv": "35"}, {"sp": "Clamperl", "m": "Good Rod", "lv": "35"}, {"sp": "Corsola", "m": "Super Rod", "lv": "45"}, {"sp": "Octillery", "m": "Super Rod", "lv": "45"}, {"sp": "Huntail", "m": "Super Rod", "lv": "45"}, {"sp": "Tentacool", "m": "Surf", "lv": "30-32"}, {"sp": "Frillish", "m": "Surf", "lv": "30-32"}, {"sp": "Mantyke", "m": "Surf", "lv": "30-32"}, {"sp": "Lapras", "m": "Surf", "lv": "30-32"}, {"sp": "Mareep", "m": "Horde", "lv": ""}, {"sp": "Chikorita", "m": "Horde", "lv": ""}, {"sp": "Tauros", "m": "Horde", "lv": ""}, {"sp": "Miltank", "m": "Horde", "lv": ""}]},
+    {"name": "Azure Bay", "encounters": [{"sp": "Chatot", "m": "Grass", "lv": "31-33"}, {"sp": "Slowpoke", "m": "Grass", "lv": "31-33"}, {"sp": "Inkay", "m": "Grass", "lv": "31-33"}, {"sp": "Exeggcute", "m": "Grass", "lv": "31-33"}, {"sp": "Gastrodon", "m": "Grass", "lv": "31-33"}, {"sp": "Spheal", "m": "Grass", "lv": "31-33"}, {"sp": "Seel", "m": "Grass", "lv": "31-33"}, {"sp": "Dwebble", "m": "Rock Smash", "lv": ""}, {"sp": "Binacle", "m": "Rock Smash", "lv": ""}, {"sp": "Krabby", "m": "Rock Smash", "lv": ""}, {"sp": "Chinchou", "m": "Old Rod", "lv": "30"}, {"sp": "Finneon", "m": "Old Rod", "lv": "30"}, {"sp": "Lumineon", "m": "Good Rod", "lv": "35"}, {"sp": "Lanturn", "m": "Good Rod", "lv": "35"}, {"sp": "Alomomola", "m": "Good Rod", "lv": "35"}, {"sp": "Alomomola", "m": "Super Rod", "lv": "45"}, {"sp": "Octillery", "m": "Super Rod", "lv": "45"}, {"sp": "Lanturn", "m": "Super Rod", "lv": "45"}, {"sp": "Pelipper", "m": "Surf", "lv": "30-33"}, {"sp": "Frillish", "m": "Surf", "lv": "30-33"}, {"sp": "Mantyke", "m": "Surf", "lv": "30-33"}, {"sp": "Lapras", "m": "Surf", "lv": "30-33"}, {"sp": "Oshawott", "m": "Horde", "lv": ""}, {"sp": "Slowpoke", "m": "Horde", "lv": ""}, {"sp": "Exeggcute", "m": "Horde", "lv": ""}]},
+    {"name": "Route 13: Lumiose Badlands", "encounters": [{"sp": "Dugtrio", "m": "Rough Terrain", "lv": "34-36"}, {"sp": "Sandslash", "m": "Rough Terrain", "lv": "34-36"}, {"sp": "Trapinch", "m": "Rough Terrain", "lv": "34-36"}, {"sp": "Gible", "m": "Rough Terrain", "lv": "34-36"}, {"sp": "Drilbur", "m": "Rough Terrain", "lv": "34-36"}, {"sp": "Durant", "m": "Rough Terrain", "lv": "34-36"}, {"sp": "Graveler", "m": "Rock Smash", "lv": ""}, {"sp": "Slugma", "m": "Rock Smash", "lv": ""}]},
+    {"name": "Route 14: Laverre Nature Trail", "encounters": [{"sp": "Skorupi", "m": "Grass", "lv": "42-44"}, {"sp": "Arbok", "m": "Grass", "lv": "42-44"}, {"sp": "Weepinbell", "m": "Grass", "lv": "42-44"}, {"sp": "Pineco", "m": "Grass", "lv": "42-44"}, {"sp": "Quagsire", "m": "Grass", "lv": "42-44"}, {"sp": "Weezing", "m": "Grass", "lv": "42-44"}, {"sp": "Karrablast", "m": "Grass", "lv": "42-44"}, {"sp": "Shelmet", "m": "Grass", "lv": "42-44"}, {"sp": "Carnivine", "m": "Grass", "lv": "42-44"}, {"sp": "Haunter", "m": "Grass", "lv": "42-44"}, {"sp": "Misdreavus", "m": "Grass", "lv": "42-44"}, {"sp": "Quagsire", "m": "Shallow Water", "lv": "42-44"}, {"sp": "Goomy", "m": "Shallow Water", "lv": "42-44"}, {"sp": "Stunfisk", "m": "Shallow Water", "lv": "42-44"}, {"sp": "Muk", "m": "Shallow Water", "lv": "42-44"}, {"sp": "Karrablast", "m": "Shallow Water", "lv": "42-44"}, {"sp": "Shelmet", "m": "Shallow Water", "lv": "42-44"}, {"sp": "Haunter", "m": "Shallow Water", "lv": "42-44"}, {"sp": "Poliwag", "m": "Old Rod", "lv": "35"}, {"sp": "Barboach", "m": "Old Rod", "lv": "35"}, {"sp": "Barboach", "m": "Good Rod", "lv": "42"}, {"sp": "Poliwhirl", "m": "Good Rod", "lv": "42"}, {"sp": "Whiscash", "m": "Good Rod", "lv": "42"}, {"sp": "Poliwhirl", "m": "Super Rod", "lv": "45"}, {"sp": "Whiscash", "m": "Super Rod", "lv": "45"}, {"sp": "Poliwrath", "m": "Super Rod", "lv": "45"}, {"sp": "Quagsire", "m": "Surf", "lv": "43-45"}, {"sp": "Stunfisk", "m": "Surf", "lv": "43-45"}, {"sp": "Goomy", "m": "Surf", "lv": "43-45"}, {"sp": "Totodile", "m": "Horde", "lv": ""}, {"sp": "Mudkip", "m": "Horde", "lv": ""}, {"sp": "Goomy", "m": "Horde", "lv": ""}]},
+    {"name": "Laverre City", "encounters": [{"sp": "Poliwag", "m": "Old Rod", "lv": "30"}, {"sp": "Basculin", "m": "Good Rod", "lv": "35"}, {"sp": "Poliwhirl", "m": "Good Rod", "lv": "35"}, {"sp": "Poliwhirl", "m": "Super Rod", "lv": "50"}, {"sp": "Basculin", "m": "Super Rod", "lv": "50"}, {"sp": "Poliwrath", "m": "Super Rod", "lv": "50"}]},
+    {"name": "Route 15: Brun Way", "encounters": [{"sp": "Mightyena", "m": "Grass", "lv": "45-47"}, {"sp": "Liepard", "m": "Grass", "lv": "45-47"}, {"sp": "Castform", "m": "Grass", "lv": "45-47"}, {"sp": "Stantler", "m": "Grass", "lv": "45-47"}, {"sp": "Deerling", "m": "Grass", "lv": "45-47"}, {"sp": "Pawniard", "m": "Grass", "lv": "45-47"}, {"sp": "Watchog", "m": "Grass", "lv": "45-47"}, {"sp": "Foongus", "m": "Grass", "lv": "45-47"}, {"sp": "Girafarig", "m": "Grass", "lv": "45-47"}, {"sp": "Klefki", "m": "Grass", "lv": "45-47"}, {"sp": "Pawniard", "m": "Red Flowers", "lv": "45-47"}, {"sp": "Watchog", "m": "Red Flowers", "lv": "45-47"}, {"sp": "Liepard", "m": "Red Flowers", "lv": "45-47"}, {"sp": "Deino", "m": "Red Flowers", "lv": "45-47"}, {"sp": "Skorupi", "m": "Red Flowers", "lv": "45-47"}, {"sp": "Mightyena", "m": "Red Flowers", "lv": "45-47"}, {"sp": "Duskull", "m": "Red Flowers", "lv": "45-47"}, {"sp": "Shuppet", "m": "Red Flowers", "lv": "45-47"}, {"sp": "Klefki", "m": "Red Flowers", "lv": "45-47"}, {"sp": "Poliwag", "m": "Old Rod", "lv": "35"}, {"sp": "Basculin", "m": "Good Rod", "lv": "40"}, {"sp": "Poliwhirl", "m": "Good Rod", "lv": "40"}, {"sp": "Poliwhirl", "m": "Super Rod", "lv": "45"}, {"sp": "Basculin", "m": "Super Rod", "lv": "45"}, {"sp": "Politoed", "m": "Super Rod", "lv": "45"}, {"sp": "Lombre", "m": "Surf", "lv": "44-46"}, {"sp": "Floatzel", "m": "Surf", "lv": "44-46"}, {"sp": "Murkrow", "m": "Horde", "lv": ""}, {"sp": "Treecko", "m": "Horde", "lv": ""}, {"sp": "Porygon", "m": "Horde", "lv": ""}]},
+    {"name": "Lost Hotel", "encounters": [{"sp": "Magneton", "m": "Building", "lv": "46-48"}, {"sp": "Yamask", "m": "Building", "lv": "46-48"}, {"sp": "Litwick", "m": "Building", "lv": "46-48"}, {"sp": "Electrode", "m": "Building", "lv": "46-48"}, {"sp": "Spiritomb", "m": "Building", "lv": "46-48"}, {"sp": "Klefki", "m": "Building", "lv": "46-48"}]},
+    {"name": "Route 16: Mélancolie Path", "encounters": [{"sp": "Skorupi", "m": "Yellow Flowers", "lv": "46-48"}, {"sp": "Phantump", "m": "Yellow Flowers", "lv": "46-48"}, {"sp": "Weepinbell", "m": "Yellow Flowers", "lv": "46-48"}, {"sp": "Bouffalant", "m": "Yellow Flowers", "lv": "46-48"}, {"sp": "Floatzel", "m": "Yellow Flowers", "lv": "46-48"}, {"sp": "Sunflora", "m": "Yellow Flowers", "lv": "46-48"}, {"sp": "Klefki", "m": "Yellow Flowers", "lv": "46-48"}, {"sp": "Pumpkaboo", "m": "Grass", "lv": "46-48"}, {"sp": "Misdreavus", "m": "Grass", "lv": "46-48"}, {"sp": "Foongus", "m": "Grass", "lv": "46-48"}, {"sp": "Tropius", "m": "Grass", "lv": "46-48"}, {"sp": "Klefki", "m": "Grass", "lv": "46-48"}, {"sp": "Poliwag", "m": "Old Rod", "lv": "35"}, {"sp": "Basculin", "m": "Good Rod", "lv": "40"}, {"sp": "Poliwhirl", "m": "Good Rod", "lv": "40"}, {"sp": "Poliwhirl", "m": "Super Rod", "lv": "45"}, {"sp": "Basculin", "m": "Super Rod", "lv": "45"}, {"sp": "Lombre", "m": "Surf", "lv": "45-47"}, {"sp": "Floatzel", "m": "Surf", "lv": "45-47"}, {"sp": "Palpitoad", "m": "Surf", "lv": "45-47"}, {"sp": "Seismitoad", "m": "Surf", "lv": "45-47"}, {"sp": "Squirtle", "m": "Horde", "lv": ""}, {"sp": "Bulbasaur", "m": "Horde", "lv": ""}, {"sp": "Tropius", "m": "Horde", "lv": ""}]},
+    {"name": "Frost Cavern", "encounters": [{"sp": "Poliwag", "m": "Old Rod", "lv": "40", "sub": "Outside"}, {"sp": "Basculin", "m": "Good Rod", "lv": "45", "sub": "Outside"}, {"sp": "Poliwhirl", "m": "Good Rod", "lv": "45", "sub": "Outside"}, {"sp": "Poliwhirl", "m": "Super Rod", "lv": "50", "sub": "Outside"}, {"sp": "Basculin", "m": "Super Rod", "lv": "50", "sub": "Outside"}, {"sp": "Dewgong", "m": "Surf", "lv": "48-50", "sub": "Outside"}, {"sp": "Floatzel", "m": "Surf", "lv": "48-50", "sub": "Outside"}, {"sp": "Poliwrath", "m": "Surf", "lv": "48-50", "sub": "Outside"}, {"sp": "Piloswine", "m": "Cave", "lv": "50-52", "sub": "1F"}, {"sp": "Bergmite", "m": "Cave", "lv": "50-52", "sub": "1F"}, {"sp": "Beartic", "m": "Cave", "lv": "50-52", "sub": "1F"}, {"sp": "Jynx", "m": "Cave", "lv": "50-52", "sub": "1F"}, {"sp": "Haunter", "m": "Cave", "lv": "50-52", "sub": "1F"}, {"sp": "Cryogonal", "m": "Cave", "lv": "50-52", "sub": "1F"}, {"sp": "Vanillite", "m": "Horde", "lv": "", "sub": "1F"}, {"sp": "Cubchoo", "m": "Horde", "lv": "", "sub": "1F"}, {"sp": "Smoochum", "m": "Horde", "lv": "", "sub": "1F"}, {"sp": "Piloswine", "m": "Cave", "lv": "50-52", "sub": "2F"}, {"sp": "Bergmite", "m": "Cave", "lv": "50-52", "sub": "2F"}, {"sp": "Sealeo", "m": "Cave", "lv": "50-52", "sub": "2F"}, {"sp": "Beartic", "m": "Cave", "lv": "50-52", "sub": "2F"}, {"sp": "Jynx", "m": "Cave", "lv": "50-52", "sub": "2F"}, {"sp": "Haunter", "m": "Cave", "lv": "50-52", "sub": "2F"}, {"sp": "Cryogonal", "m": "Cave", "lv": "50-52", "sub": "2F"}, {"sp": "Seel", "m": "Old Rod", "lv": "40", "sub": "2F"}, {"sp": "Poliwag", "m": "Old Rod", "lv": "40", "sub": "2F"}, {"sp": "Basculin", "m": "Good Rod", "lv": "45", "sub": "2F"}, {"sp": "Seel", "m": "Good Rod", "lv": "45", "sub": "2F"}, {"sp": "Dewgong", "m": "Super Rod", "lv": "50", "sub": "2F"}, {"sp": "Basculin", "m": "Super Rod", "lv": "50", "sub": "2F"}, {"sp": "Poliwhirl", "m": "Super Rod", "lv": "50", "sub": "2F"}, {"sp": "Seel", "m": "Surf", "lv": "50-52", "sub": "2F"}, {"sp": "Sealeo", "m": "Surf", "lv": "50-52", "sub": "2F"}, {"sp": "Poliwhirl", "m": "Surf", "lv": "50-52", "sub": "2F"}, {"sp": "Floatzel", "m": "Surf", "lv": "50-52", "sub": "2F"}, {"sp": "Vanillite", "m": "Horde", "lv": "", "sub": "2F"}, {"sp": "Cubchoo", "m": "Horde", "lv": "", "sub": "2F"}, {"sp": "Smoochum", "m": "Horde", "lv": "", "sub": "2F"}, {"sp": "Piloswine", "m": "Cave", "lv": "50-52", "sub": "3F & Ice Rock Room"}, {"sp": "Bergmite", "m": "Cave", "lv": "50-52", "sub": "3F & Ice Rock Room"}, {"sp": "Beartic", "m": "Cave", "lv": "50-52", "sub": "3F & Ice Rock Room"}, {"sp": "Jynx", "m": "Cave", "lv": "50-52", "sub": "3F & Ice Rock Room"}, {"sp": "Haunter", "m": "Cave", "lv": "50-52", "sub": "3F & Ice Rock Room"}, {"sp": "Cryogonal", "m": "Cave", "lv": "50-52", "sub": "3F & Ice Rock Room"}, {"sp": "Snorunt", "m": "Horde", "lv": "", "sub": "3F & Ice Rock Room"}, {"sp": "Cubchoo", "m": "Horde", "lv": "", "sub": "3F & Ice Rock Room"}, {"sp": "Smoochum", "m": "Horde", "lv": "", "sub": "3F & Ice Rock Room"}]},
+    {"name": "Route 17: Mamoswine Road", "encounters": [{"sp": "Snover", "m": "Snow", "lv": "54-56"}, {"sp": "Delibird", "m": "Snow", "lv": "54-56"}, {"sp": "Sneasel", "m": "Snow", "lv": "54-56"}, {"sp": "Abomasnow", "m": "Snow", "lv": "54-56"}]},
+    {"name": "Route 18: Vallée Étroite Way", "encounters": [{"sp": "Gurdurr", "m": "Grass", "lv": "60-62"}, {"sp": "Torkoal", "m": "Grass", "lv": "60-62"}, {"sp": "Larvesta", "m": "Grass", "lv": "60-62"}, {"sp": "Sandslash", "m": "Grass", "lv": "60-62"}, {"sp": "Lairon", "m": "Grass", "lv": "60-62"}, {"sp": "Durant", "m": "Grass", "lv": "60-62"}, {"sp": "Pupitar", "m": "Grass", "lv": "60-62"}, {"sp": "Graveler", "m": "Grass", "lv": "60-62"}, {"sp": "Heatmor", "m": "Grass", "lv": "60-62"}, {"sp": "Lairon", "m": "Red Flowers", "lv": "60-62"}, {"sp": "Sandslash", "m": "Red Flowers", "lv": "60-62"}, {"sp": "Pupitar", "m": "Red Flowers", "lv": "60-62"}, {"sp": "Torkoal", "m": "Red Flowers", "lv": "60-62"}, {"sp": "Gurdurr", "m": "Red Flowers", "lv": "60-62"}, {"sp": "Durant", "m": "Red Flowers", "lv": "60-62"}, {"sp": "Graveler", "m": "Red Flowers", "lv": "60-62"}, {"sp": "Heatmor", "m": "Red Flowers", "lv": "60-62"}, {"sp": "Graveler", "m": "Rock Smash", "lv": "60-62"}, {"sp": "Shuckle", "m": "Rock Smash", "lv": "60-62"}, {"sp": "Fennekin", "m": "Horde", "lv": ""}, {"sp": "Durant", "m": "Horde", "lv": ""}, {"sp": "Heatmor", "m": "Horde", "lv": ""}]},
+    {"name": "Terminus Cave", "encounters": [{"sp": "Lairon", "m": "Cave", "lv": "61-63", "sub": "All Areas"}, {"sp": "Sandslash", "m": "Cave", "lv": "61-63", "sub": "All Areas"}, {"sp": "Pupitar", "m": "Cave", "lv": "61-63", "sub": "All Areas"}, {"sp": "Durant", "m": "Cave", "lv": "61-63", "sub": "All Areas"}, {"sp": "Graveler", "m": "Cave", "lv": "61-63", "sub": "All Areas"}, {"sp": "Graveler", "m": "Rock Smash", "lv": "", "sub": "All Areas"}, {"sp": "Shuckle", "m": "Rock Smash", "lv": "", "sub": "All Areas"}, {"sp": "Durant", "m": "Horde", "lv": "", "sub": "1F"}, {"sp": "Aron", "m": "Horde", "lv": "", "sub": "1F"}, {"sp": "Unown", "m": "Horde", "lv": "", "sub": "1F"}, {"sp": "Durant", "m": "Horde", "lv": "", "sub": "B1F (Both Rooms)"}, {"sp": "Larvitar", "m": "Horde", "lv": "", "sub": "B1F (Both Rooms)"}, {"sp": "Unown", "m": "Horde", "lv": "", "sub": "B1F (Both Rooms)"}, {"sp": "Durant", "m": "Horde", "lv": "", "sub": "B2F"}, {"sp": "Sandshrew", "m": "Horde", "lv": "", "sub": "B2F"}, {"sp": "Unown", "m": "Horde", "lv": "", "sub": "B2F"}, {"sp": "Durant", "m": "Horde", "lv": "", "sub": "Small Room, B1F (accessible from Route 18)"}, {"sp": "Excadrill", "m": "Horde", "lv": "", "sub": "Small Room, B1F (accessible from Route 18)"}, {"sp": "Unown", "m": "Horde", "lv": "", "sub": "Small Room, B1F (accessible from Route 18)"}, {"sp": "Lairon", "m": "Cave", "lv": "61-63", "sub": "Small Room, 1F (accessible from Route 18)"}, {"sp": "Sandslash", "m": "Cave", "lv": "61-63", "sub": "Small Room, 1F (accessible from Route 18)"}, {"sp": "Pupitar", "m": "Cave", "lv": "61-63", "sub": "Small Room, 1F (accessible from Route 18)"}, {"sp": "Durant", "m": "Cave", "lv": "61-63", "sub": "Small Room, 1F (accessible from Route 18)"}, {"sp": "Graveler", "m": "Cave", "lv": "61-63", "sub": "Small Room, 1F (accessible from Route 18)"}, {"sp": "Unown", "m": "Cave", "lv": "61-63", "sub": "Small Room, 1F (accessible from Route 18)"}, {"sp": "Durant", "m": "Horde", "lv": "", "sub": "Small Room, 1F (accessible from Route 18)"}, {"sp": "Geodude", "m": "Horde", "lv": "", "sub": "Small Room, 1F (accessible from Route 18)"}, {"sp": "Unown", "m": "Horde", "lv": "", "sub": "Small Room, 1F (accessible from Route 18)"}]},
+    {"name": "Couriway Town", "encounters": [{"sp": "Poliwag", "m": "Old Rod", "lv": "25"}, {"sp": "Basculin", "m": "Good Rod", "lv": "35"}, {"sp": "Poliwhirl", "m": "Good Rod", "lv": "35"}, {"sp": "Poliwhirl", "m": "Super Rod", "lv": "45"}, {"sp": "Basculin", "m": "Super Rod", "lv": "45"}, {"sp": "Lombre", "m": "Surf", "lv": "44-46"}, {"sp": "Floatzel", "m": "Surf", "lv": "44-46"}]},
+    {"name": "Route 19: Grande Vallée Way", "encounters": [{"sp": "Quagsire", "m": "Yellow Flowers", "lv": "62-64"}, {"sp": "Sliggoo", "m": "Yellow Flowers", "lv": "62-64"}, {"sp": "Weepinbell", "m": "Yellow Flowers", "lv": "62-64"}, {"sp": "Drapion", "m": "Yellow Flowers", "lv": "62-64"}, {"sp": "Karrablast", "m": "Yellow Flowers", "lv": "62-64"}, {"sp": "Shelmet", "m": "Yellow Flowers", "lv": "62-64"}, {"sp": "Haunter", "m": "Yellow Flowers", "lv": "62-64"}, {"sp": "Carnivine", "m": "Yellow Flowers", "lv": "62-64"}, {"sp": "Drapion", "m": "Purple Flowers", "lv": "62-64"}, {"sp": "Weepinbell", "m": "Purple Flowers", "lv": "62-64"}, {"sp": "Sliggoo", "m": "Purple Flowers", "lv": "62-64"}, {"sp": "Quagsire", "m": "Purple Flowers", "lv": "62-64"}, {"sp": "Karrablast", "m": "Purple Flowers", "lv": "62-64"}, {"sp": "Shelmet", "m": "Purple Flowers", "lv": "62-64"}, {"sp": "Haunter", "m": "Purple Flowers", "lv": "62-64"}, {"sp": "Carnivine", "m": "Purple Flowers", "lv": "62-64"}, {"sp": "Palpitoad", "m": "Shallow Water", "lv": "62-63"}, {"sp": "Sliggoo", "m": "Shallow Water", "lv": "62-63"}, {"sp": "Stunfisk", "m": "Shallow Water", "lv": "62-63"}, {"sp": "Karrablast", "m": "Shallow Water", "lv": "62-63"}, {"sp": "Shelmet", "m": "Shallow Water", "lv": "62-63"}, {"sp": "Haunter", "m": "Shallow Water", "lv": "62-63"}, {"sp": "Carnivine", "m": "Shallow Water", "lv": "62-63"}, {"sp": "Goomy", "m": "Old Rod", "lv": "45"}, {"sp": "Barboach", "m": "Good Rod", "lv": "55"}, {"sp": "Poliwhirl", "m": "Good Rod", "lv": "55"}, {"sp": "Poliwhirl", "m": "Super Rod", "lv": "65"}, {"sp": "Whiscash", "m": "Super Rod", "lv": "65"}, {"sp": "Politoed", "m": "Super Rod", "lv": "65"}, {"sp": "Quagsire", "m": "Surf", "lv": "62-64"}, {"sp": "Stunfisk", "m": "Surf", "lv": "62-64"}, {"sp": "Sliggoo", "m": "Surf", "lv": "62-64"}, {"sp": "Weepinbell", "m": "Horde", "lv": ""}, {"sp": "Gligar", "m": "Horde", "lv": ""}, {"sp": "Arbok", "m": "Horde", "lv": ""}]},
+    {"name": "Route 20: Winding Woods", "encounters": [{"sp": "Noctowl", "m": "Grass", "lv": "64-66"}, {"sp": "Amoonguss", "m": "Grass", "lv": "64-66"}, {"sp": "Jigglypuff", "m": "Grass", "lv": "64-66"}, {"sp": "Misdreavus", "m": "Grass", "lv": "64-66"}, {"sp": "Trevenant", "m": "Grass", "lv": "64-66"}, {"sp": "Gothorita", "m": "Grass", "lv": "64-66"}, {"sp": "Zoroark", "m": "Grass", "lv": "64-66"}, {"sp": "Amoonguss", "m": "Red Flowers", "lv": "64-66"}, {"sp": "Gothorita", "m": "Red Flowers", "lv": "64-66"}, {"sp": "Trevenant", "m": "Red Flowers", "lv": "64-66"}, {"sp": "Zoroark", "m": "Red Flowers", "lv": "64-66"}, {"sp": "Jigglypuff", "m": "Red Flowers", "lv": "64-66"}, {"sp": "Noctowl", "m": "Red Flowers", "lv": "64-66"}, {"sp": "Chespin", "m": "Horde", "lv": ""}, {"sp": "Trevenant", "m": "Horde", "lv": ""}, {"sp": "Sudowoodo", "m": "Horde", "lv": ""}]},
+    {"name": "Pokémon Village", "encounters": [{"sp": "Ditto", "m": "Yellow Flowers", "lv": "64-66"}, {"sp": "Poliwhirl", "m": "Old Rod", "lv": "40"}, {"sp": "Basculin", "m": "Good Rod", "lv": "50"}, {"sp": "Poliwhirl", "m": "Good Rod", "lv": "50"}, {"sp": "Poliwhirl", "m": "Super Rod", "lv": "65"}, {"sp": "Basculin", "m": "Super Rod", "lv": "65"}, {"sp": "Politoed", "m": "Super Rod", "lv": "65"}, {"sp": "Lombre", "m": "Surf", "lv": "64-66"}, {"sp": "Poliwhirl", "m": "Surf", "lv": "64-66"}, {"sp": "Froakie", "m": "Horde", "lv": ""}, {"sp": "Ditto", "m": "Horde", "lv": ""}]},
+    {"name": "Route 21: Dernière Way", "encounters": [{"sp": "Floatzel", "m": "Purple Flowers", "lv": "65-67"}, {"sp": "Altaria", "m": "Purple Flowers", "lv": "65-67"}, {"sp": "Cherrim", "m": "Purple Flowers", "lv": "65-67"}, {"sp": "Spinda", "m": "Purple Flowers", "lv": "65-67"}, {"sp": "Ursaring", "m": "Purple Flowers", "lv": "65-67"}, {"sp": "Scyther", "m": "Purple Flowers", "lv": "65-67"}, {"sp": "Ursaring", "m": "Red Flowers", "lv": "65-67"}, {"sp": "Altaria", "m": "Red Flowers", "lv": "65-67"}, {"sp": "Spinda", "m": "Red Flowers", "lv": "65-67"}, {"sp": "Scyther", "m": "Red Flowers", "lv": "65-67"}, {"sp": "Floatzel", "m": "Red Flowers", "lv": "65-67"}, {"sp": "Cherrim", "m": "Red Flowers", "lv": "65-67"}, {"sp": "Poliwag", "m": "Old Rod", "lv": "50"}, {"sp": "Basculin", "m": "Good Rod", "lv": "55"}, {"sp": "Dratini", "m": "Good Rod", "lv": "55"}, {"sp": "Dragonair", "m": "Good Rod", "lv": "55"}, {"sp": "Dratini", "m": "Super Rod", "lv": "65"}, {"sp": "Dragonair", "m": "Super Rod", "lv": "65"}, {"sp": "Dragonite", "m": "Super Rod", "lv": "65"}, {"sp": "Lombre", "m": "Surf", "lv": "65-67"}, {"sp": "Floatzel", "m": "Surf", "lv": "65-67"}, {"sp": "Spinda", "m": "Horde", "lv": ""}, {"sp": "Swablu", "m": "Horde", "lv": ""}, {"sp": "Scyther", "m": "Horde", "lv": ""}]},
+    {"name": "Victory Road", "encounters": [{"sp": "Gurdurr", "m": "Cave", "lv": "70-72", "sub": "1st Cave"}, {"sp": "Graveler", "m": "Cave", "lv": "70-72", "sub": "1st Cave"}, {"sp": "Hariyama", "m": "Cave", "lv": "70-72", "sub": "1st Cave"}, {"sp": "Druddigon", "m": "Cave", "lv": "70-72", "sub": "1st Cave"}, {"sp": "Haunter", "m": "Cave", "lv": "70-72", "sub": "1st Cave"}, {"sp": "Lickitung", "m": "Cave", "lv": "70-72", "sub": "1st Cave"}, {"sp": "Zweilous", "m": "Cave", "lv": "70-72", "sub": "1st Cave"}, {"sp": "Graveler", "m": "Rock Smash", "lv": "", "sub": "1st Cave"}, {"sp": "Shuckle", "m": "Rock Smash", "lv": "", "sub": "1st Cave"}, {"sp": "Poliwag", "m": "Old Rod", "lv": "55", "sub": "1st Cave"}, {"sp": "Basculin", "m": "Good Rod", "lv": "65", "sub": "1st Cave"}, {"sp": "Poliwhirl", "m": "Good Rod", "lv": "65", "sub": "1st Cave"}, {"sp": "Whiscash", "m": "Good Rod", "lv": "65", "sub": "1st Cave"}, {"sp": "Poliwhirl", "m": "Super Rod", "lv": "75", "sub": "1st Cave"}, {"sp": "Basculin", "m": "Super Rod", "lv": "75", "sub": "1st Cave"}, {"sp": "Whiscash", "m": "Super Rod", "lv": "75", "sub": "1st Cave"}, {"sp": "Poliwhirl", "m": "Surf", "lv": "70-72", "sub": "1st Cave"}, {"sp": "Floatzel", "m": "Surf", "lv": "70-72", "sub": "1st Cave"}, {"sp": "Poliwrath", "m": "Surf", "lv": "70-72", "sub": "1st Cave"}, {"sp": "Deino", "m": "Horde", "lv": "", "sub": "1st Cave"}, {"sp": "Floatzel", "m": "Horde", "lv": "", "sub": "1st Cave"}, {"sp": "Gurdurr", "m": "Cave", "lv": "70-72", "sub": "2nd Cave"}, {"sp": "Druddigon", "m": "Cave", "lv": "70-72", "sub": "2nd Cave"}, {"sp": "Graveler", "m": "Cave", "lv": "70-72", "sub": "2nd Cave"}, {"sp": "Lickitung", "m": "Cave", "lv": "70-72", "sub": "2nd Cave"}, {"sp": "Donphan", "m": "Cave", "lv": "70-72", "sub": "2nd Cave"}, {"sp": "Haunter", "m": "Cave", "lv": "70-72", "sub": "2nd Cave"}, {"sp": "Zweilous", "m": "Cave", "lv": "70-72", "sub": "2nd Cave"}, {"sp": "Graveler", "m": "Rock Smash", "lv": "", "sub": "2nd Cave"}, {"sp": "Shuckle", "m": "Rock Smash", "lv": "", "sub": "2nd Cave"}, {"sp": "Phanpy", "m": "Horde", "lv": "", "sub": "2nd Cave"}, {"sp": "Graveler", "m": "Horde", "lv": "", "sub": "2nd Cave"}, {"sp": "Gurdurr", "m": "Cave", "lv": "70-72", "sub": "3rd Cave"}, {"sp": "Druddigon", "m": "Cave", "lv": "70-72", "sub": "3rd Cave"}, {"sp": "Graveler", "m": "Cave", "lv": "70-72", "sub": "3rd Cave"}, {"sp": "Zweilous", "m": "Cave", "lv": "70-72", "sub": "3rd Cave"}, {"sp": "Lickitung", "m": "Cave", "lv": "70-72", "sub": "3rd Cave"}, {"sp": "Haunter", "m": "Cave", "lv": "70-72", "sub": "3rd Cave"}, {"sp": "Gurdurr", "m": "Horde", "lv": "", "sub": "3rd Cave"}, {"sp": "Lickitung", "m": "Horde", "lv": "", "sub": "3rd Cave"}, {"sp": "Poliwag", "m": "Old Rod", "lv": "55", "sub": "Waterfall Area"}, {"sp": "Basculin", "m": "Good Rod", "lv": "65", "sub": "Waterfall Area"}, {"sp": "Poliwhirl", "m": "Good Rod", "lv": "65", "sub": "Waterfall Area"}, {"sp": "Poliwhirl", "m": "Super Rod", "lv": "75", "sub": "Waterfall Area"}, {"sp": "Basculin", "m": "Super Rod", "lv": "75", "sub": "Waterfall Area"}, {"sp": "Poliwrath", "m": "Super Rod", "lv": "75", "sub": "Waterfall Area"}, {"sp": "Lombre", "m": "Surf", "lv": "70-72", "sub": "Waterfall Area"}, {"sp": "Floatzel", "m": "Surf", "lv": "70-72", "sub": "Waterfall Area"}, {"sp": "Ludicolo", "m": "Surf", "lv": "70-72", "sub": "Waterfall Area"}, {"sp": "Gurdurr", "m": "Cave", "lv": "70-72", "sub": "Final Cave"}, {"sp": "Graveler", "m": "Cave", "lv": "70-72", "sub": "Final Cave"}, {"sp": "Druddigon", "m": "Cave", "lv": "70-72", "sub": "Final Cave"}, {"sp": "Lickitung", "m": "Cave", "lv": "70-72", "sub": "Final Cave"}, {"sp": "Gabite", "m": "Cave", "lv": "70-72", "sub": "Final Cave"}, {"sp": "Haunter", "m": "Cave", "lv": "70-72", "sub": "Final Cave"}, {"sp": "Zweilous", "m": "Cave", "lv": "70-72", "sub": "Final Cave"}, {"sp": "Poliwag", "m": "Old Rod", "lv": "55", "sub": "Final Cave"}, {"sp": "Basculin", "m": "Good Rod", "lv": "65", "sub": "Final Cave"}, {"sp": "Poliwhirl", "m": "Good Rod", "lv": "65", "sub": "Final Cave"}, {"sp": "Poliwhirl", "m": "Super Rod", "lv": "75-76", "sub": "Final Cave"}, {"sp": "Basculin", "m": "Super Rod", "lv": "75-76", "sub": "Final Cave"}, {"sp": "Poliwrath", "m": "Super Rod", "lv": "75-76", "sub": "Final Cave"}, {"sp": "Poliwhirl", "m": "Surf", "lv": "70-72", "sub": "Final Cave"}, {"sp": "Floatzel", "m": "Surf", "lv": "70-72", "sub": "Final Cave"}, {"sp": "Poliwrath", "m": "Surf", "lv": "70-72", "sub": "Final Cave"}, {"sp": "Haunter", "m": "Horde", "lv": "", "sub": "Final Cave"}, {"sp": "Floatzel", "m": "Horde", "lv": "", "sub": "Final Cave"}]}
+  ];
+  var WY_BOSSES = {
+    "gymLeaders": [
+      {
+        "name": "Viola",
+        "location": "Santalune City Gym",
+        "type": "Bug",
+        "cap": 16,
+        "mons": [
+          {
+            "name": "Surskit",
+            "level": 13,
+            "ability": "Swift Swim",
+            "item": "Mystic Water",
+            "moves": "Bubble, Infestation, Icy Wind, Rain Dance",
+            "ivs": [
+              25,
+              25,
+              25,
+              25,
+              25,
+              25
+            ]
+          },
+          {
+            "name": "Dustox",
+            "level": 14,
+            "ability": "Compound Eyes",
+            "item": "Binding Band",
+            "moves": "Infestation, Poison Powder, Confusion, Protect",
+            "ivs": [
+              25,
+              25,
+              25,
+              25,
+              25,
+              25
+            ]
+          },
+          {
+            "name": "Dwebble",
+            "level": 13,
+            "ability": "Sturdy",
+            "item": "Rock Gem",
+            "moves": "Smack Down, Fury Cutter, Sand Attack, Withdraw",
+            "ivs": [
+              25,
+              25,
+              25,
+              25,
+              25,
+              25
+            ]
+          },
+          {
+            "name": "Ledian",
+            "level": 14,
+            "ability": "Aerilate",
+            "item": "Black Belt",
+            "moves": "Infestation, Comet Punch, Mach Punch, Supersonic",
+            "ivs": [
+              25,
+              25,
+              25,
+              25,
+              25,
+              25
+            ]
+          },
+          {
+            "name": "Joltik",
+            "level": 13,
+            "ability": "Compound Eyes",
+            "item": "Occa Berry",
+            "moves": "Electroweb, Infestation, Screech, Cross Poison",
+            "ivs": [
+              25,
+              25,
+              25,
+              25,
+              25,
+              25
+            ]
+          },
+          {
+            "name": "Vivillon",
+            "level": 16,
+            "ability": "Compound Eyes",
+            "item": "Oran Berry",
+            "moves": "Infestation, Gust, Powder, Struggle Bug",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ],
+        "tip": "Note that a nerf “patch” is available that will remove the Dustox and Ledian, and change the levels of all the other Pokémon on Viola's team. Yes, Ledian is under levelled. It and Celosia's Hydreigon are the only instances of this, though, and you can always remove it if cheating A.I. bothers you."
+      },
+      {
+        "name": "Grant",
+        "location": "Cyllage City Gym",
+        "type": "Rock",
+        "cap": 30,
+        "mons": [
+          {
+            "name": "Amaura",
+            "level": 30,
+            "ability": "Refrigerate",
+            "item": "Focus Sash",
+            "moves": "Light Screen, Reflect, Round, Discharge",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Aerodactyl",
+            "level": 30,
+            "ability": "Pressure",
+            "item": "Yache Berry",
+            "moves": "Rock Tomb, Aerial Ace, Bulldoze, Bite",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Anorith",
+            "level": 30,
+            "ability": "Swift Swim",
+            "item": "Weakness Policy",
+            "moves": "Rock Tomb, X-scissor, Swords Dance, Aqua Jet",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Tirtouga",
+            "level": 30,
+            "ability": "Solid Rock",
+            "item": "Power Herb",
+            "moves": "Dive, Zen Headbutt, Rock Tomb, Knock Off",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Lileep",
+            "level": 30,
+            "ability": "Storm Drain",
+            "item": "Sitrus Berry",
+            "moves": "Giga Drain, Brine, Rock Tomb, Toxic",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Tyrunt",
+            "level": 30,
+            "ability": "Strong Jaw",
+            "item": "Eviolite",
+            "moves": "Fire Fang, Ice Fang, Dragon Dance, Rock Tomb",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Korrina",
+        "location": "Shalour City Gym",
+        "type": "Fighting",
+        "cap": 37,
+        "mons": [
+          {
+            "name": "Breloom",
+            "level": 35,
+            "ability": "Technician",
+            "item": "Focus Sash",
+            "moves": "Power-Up Punch, Spore, Bullet Seed, Rock Tomb",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Gallade",
+            "level": 35,
+            "ability": "Justified",
+            "item": "Scope Lens",
+            "moves": "Power-Up Punch, Leaf Blade, Psycho Cut, Night Slash",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Lopunny",
+            "level": 35,
+            "ability": "Scrappy",
+            "item": "Eject Button",
+            "moves": "Jump Kick, Retaliate, Power-Up Punch, Baton Pass",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Lucario",
+            "level": 36,
+            "ability": "Steadfast",
+            "item": "Shuca Berry",
+            "moves": "Nasty Plot, Vacuum Wave, Flash Cannon, Dark Pulse",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Pangoro",
+            "level": 35,
+            "ability": "Iron Fist",
+            "item": "Assault Vest",
+            "moves": "Power-Up Punch, Sucker Punch, Ice Punch, Thunder Punch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Hawlucha",
+            "level": 37,
+            "ability": "Unburden",
+            "item": "Flying Gem",
+            "moves": "Acrobatics, Flying Press, Fire Punch, Iron Head",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ],
+        "tip": "Yes, I'm aware this isn't boosted by Iron Fist."
+      },
+      {
+        "name": "Ramos",
+        "location": "Coumarine City Gym",
+        "type": "Grass",
+        "cap": 45,
+        "mons": [
+          {
+            "name": "Ferrothorn",
+            "level": 42,
+            "ability": "Iron Barbs",
+            "item": "Rocky Helmet",
+            "moves": "Power Whip, Thunder Wave, Iron Head, Stealth Rock",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Ludicolo",
+            "level": 42,
+            "ability": "Swift Swim",
+            "item": "Focus Sash",
+            "moves": "Rain Dance, Giga Drain, Ice Beam, Hydro Pump",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Venusaur",
+            "level": 42,
+            "ability": "Chlorophyll",
+            "item": "Venusaurite",
+            "moves": "Sleep Powder, Giga Drain, Sludge Bomb, Earthquake",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Torterra",
+            "level": 42,
+            "ability": "Sap Sipper",
+            "item": "Coba Berry",
+            "moves": "Stone Edge, Earthquake, Wood Hammer, Synthesis",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Sceptile",
+            "level": 42,
+            "ability": "Unburden",
+            "item": "Weakness Policy",
+            "moves": "Endure, Rock Slide, Dragon Claw, Earthquake",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Gogoat",
+            "level": 45,
+            "ability": "Sap Sipper",
+            "item": "Sitrus Berry",
+            "moves": "Bulk Up, Horn Leech, Earthquake, Wild Charge",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Clemont",
+        "location": "Lumiose City Gym",
+        "type": "Electric",
+        "cap": 47,
+        "mons": [
+          {
+            "name": "Rotom",
+            "level": 46,
+            "ability": "Levitate",
+            "item": "Red Card",
+            "moves": "Volt Switch, Will-O-Wisp, Hydro Pump, Confuse Ray",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Galvantula",
+            "level": 46,
+            "ability": "Compound Eyes",
+            "item": "Assault Vest",
+            "moves": "Bug Buzz, Thunder, Energy Ball, Poison Jab",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Eelektross",
+            "level": 46,
+            "ability": "Levitate",
+            "item": "Leftovers",
+            "moves": "Wild Charge, Aqua Tail, Fire Punch, Coil",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Ampharos",
+            "level": 46,
+            "ability": "Static",
+            "item": "Ampharosite",
+            "moves": "Thunderbolt, Dragon Pulse, Focus Blast, Cotton Guard",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Magnezone",
+            "level": 46,
+            "ability": "Sturdy",
+            "item": "Air Balloon",
+            "moves": "Flash Cannon, Thunder Wave, Volt Switch, Signal Beam",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Heliolisk",
+            "level": 47,
+            "ability": "Dry Skin",
+            "item": "Life Orb",
+            "moves": "Thunderbolt, Surf, Focus Blast, Grass Knot",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Valerie",
+        "location": "Laverre City Gym",
+        "type": "Fairy",
+        "cap": 52,
+        "mons": [
+          {
+            "name": "Klefki",
+            "level": 50,
+            "ability": "Prankster",
+            "item": "Black Glasses",
+            "moves": "Swagger, Foul Play, Spikes, Dazzling Gleam",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Azumarill",
+            "level": 50,
+            "ability": "Huge Power",
+            "item": "Assault Vest",
+            "moves": "Waterfall, Aqua Jet, Play Rough, Bulldoze",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Granbull",
+            "level": 50,
+            "ability": "Quick Feet",
+            "item": "Toxic Orb",
+            "moves": "Protect, Play Rough, Close Combat, Earthquake",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Togekiss",
+            "level": 50,
+            "ability": "Serene Grace",
+            "item": "Lum Berry",
+            "moves": "Air Slash, Flamethrower, Thunder Wave, Roost",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Sylveon",
+            "level": 51,
+            "ability": "Pixilate",
+            "item": "Leftovers",
+            "moves": "Hyper Voice, Psyshock, Yawn, Calm Mind",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Mawile",
+            "level": 52,
+            "ability": "Intimidate",
+            "item": "Mawilite",
+            "moves": "Iron Head, Play Rough, Sucker Punch, Foul Play",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Olympia",
+        "location": "Anistar City Gym",
+        "type": "Psychic",
+        "cap": 65,
+        "mons": [
+          {
+            "name": "Claydol",
+            "level": 63,
+            "ability": "Levitate",
+            "item": "Leftovers",
+            "moves": "Earth Power, Stealth Rock, Calm Mind, Ice Beam",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Delphox",
+            "level": 63,
+            "ability": "Magician",
+            "item": "Power Herb",
+            "moves": "Calm Mind, Solar Beam, Aura Sphere, Fire Blast",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Sigilyph",
+            "level": 63,
+            "ability": "Magic Guard",
+            "item": "Flame Orb",
+            "moves": "Stored Power, Cosmic Power, Psycho Shift, Roost",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Metagross",
+            "level": 63,
+            "ability": "Tough Claws",
+            "item": "Life Orb",
+            "moves": "Meteor Mash, Earthquake, Ice Punch, Rock Polish",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Alakazam",
+            "level": 63,
+            "ability": "Magic Guard",
+            "item": "Focus Sash",
+            "moves": "Psychic, Dazzling Gleam, Focus Blast, Shadow Ball",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Medicham",
+            "level": 65,
+            "ability": "Pure Power",
+            "item": "Medichamite",
+            "moves": "Drain Punch, Zen Headbutt, Ice Punch, Poison Jab",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Wulfric",
+        "location": "Snowbelle City Gym",
+        "type": "Ice",
+        "cap": 78,
+        "mons": [
+          {
+            "name": "Aurorus",
+            "level": 75,
+            "ability": "Snow Warning",
+            "item": "Icy Rock",
+            "moves": "Blizzard, Earth Power, Power Gem, Protect",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Beartic",
+            "level": 75,
+            "ability": "Snow Cloak",
+            "item": "Sitrus Berry",
+            "moves": "Icicle Crash, Close Combat, Waterfall, Protect",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Jynx",
+            "level": 75,
+            "ability": "Dry Skin",
+            "item": "Life Orb",
+            "moves": "Lovely Kiss, Psychic, Blizzard, Energy Ball",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Avalugg",
+            "level": 77,
+            "ability": "Sturdy",
+            "item": "Leftovers",
+            "moves": "Protect, Recover, Avalanche, Crunch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Froslass",
+            "level": 75,
+            "ability": "Snow Cloak",
+            "item": "Bright Powder",
+            "moves": "Blizzard, Thunderbolt, Shadow Ball, Psychic",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Abomasnow",
+            "level": 78,
+            "ability": "Snow Warning",
+            "item": "Abomasite",
+            "moves": "Blizzard, Giga Drain, Focus Blast, Ice Shard",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ],
+        "tip": "This is a double battle.",
+        "doubles": true
+      }
+    ],
+    "eliteFour": [
+      {
+        "name": "Malva",
+        "type": "Fire",
+        "cap": 82,
+        "mons": [
+          {
+            "name": "Ninetales",
+            "level": 80,
+            "ability": "Drought",
+            "item": "Heat Rock",
+            "moves": "Heat Wave, Solar Beam, Will-O-Wisp, Dark Pulse",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Talonflame",
+            "level": 82,
+            "ability": "Gale Wings",
+            "item": "White Herb",
+            "moves": "Brave Bird, Overheat, Roost, Will-O-Wisp",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Typhlosion",
+            "level": 80,
+            "ability": "Flash Fire",
+            "item": "Choice Scarf",
+            "moves": "Eruption, Focus Blast, Earth Power",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Heatran",
+            "level": 80,
+            "ability": "Flash Fire",
+            "item": "Life Orb",
+            "moves": "Heat Wave, Rock Slide, Dragon Pulse, Earth Power",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Chandelure",
+            "level": 80,
+            "ability": "Flame Body",
+            "item": "Air Balloon",
+            "moves": "Heat Wave, Shadow Ball, Solar Beam, Protect",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Charizard",
+            "level": 82,
+            "ability": "Blaze",
+            "item": "Charizardite Y",
+            "moves": "Heat Wave, Solar Beam, Air Slash, Dragon Pulse",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ],
+        "tip": "This is a Double Battle.",
+        "doubles": true
+      },
+      {
+        "name": "Siebold",
+        "type": "Water",
+        "cap": 82,
+        "mons": [
+          {
+            "name": "Kingdra",
+            "level": 80,
+            "ability": "Swift Swim",
+            "item": "Life Orb",
+            "moves": "Muddy Water, Ice Beam, Dragon Pulse, Flash Cannon",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Barbaracle",
+            "level": 82,
+            "ability": "Tough Claws",
+            "item": "White Herb",
+            "moves": "Shell Smash, Rock Slide, Razor Shell, Poison Jab",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Politoed",
+            "level": 80,
+            "ability": "Drizzle",
+            "item": "Damp Rock",
+            "moves": "Surf, Psychic, Rain Dance, Protect",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Gyarados",
+            "level": 80,
+            "ability": "Intimidate",
+            "item": "Wacan Berry",
+            "moves": "Waterfall, Bounce, Dragon Dance, Protect",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Ludicolo",
+            "level": 80,
+            "ability": "Swift Swim",
+            "item": "Absorb Bulb",
+            "moves": "Surf, Energy Ball, Focus Blast, Ice Beam",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Blastoise",
+            "level": 82,
+            "ability": "Rain Dish",
+            "item": "Blastoisinite",
+            "moves": "Dark Pulse, Aura Sphere, Dragon Pulse, Muddy Water",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ],
+        "tip": "This is a Triple Battle."
+      },
+      {
+        "name": "Drasna",
+        "type": "Dragon",
+        "cap": 82,
+        "mons": [
+          {
+            "name": "Hydreigon",
+            "level": 80,
+            "ability": "Levitate",
+            "item": "Choice Scarf",
+            "moves": "Dragon Pulse, Dark Pulse, Fire Blast, U-turn",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Noivern",
+            "level": 82,
+            "ability": "Infiltrator",
+            "item": "Focus Sash",
+            "moves": "Air Slash, Dragon Pulse, Flamethrower, Nasty Plot",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Salamence",
+            "level": 80,
+            "ability": "Moxie",
+            "item": "Roseli Berry",
+            "moves": "Outrage, Earthquake, Iron Tail, Fire Blast",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Dragalge",
+            "level": 80,
+            "ability": "Adaptability",
+            "item": "Assault Vest",
+            "moves": "Gunk Shot, Draco Meteor, Focus Blast, Scald",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Latias",
+            "level": 80,
+            "ability": "Levitate",
+            "item": "Soul Dew",
+            "moves": "Calm Mind, Roost, Dragon Pulse, Psyshock",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Charizard",
+            "level": 82,
+            "ability": "Blaze",
+            "item": "Charizardite X",
+            "moves": "Dragon Dance, Dragon Claw, Flare Blitz, Brick Break",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Wikstrom",
+        "type": "Steel",
+        "cap": 82,
+        "mons": [
+          {
+            "name": "Klefki",
+            "level": 80,
+            "ability": "Prankster",
+            "item": "Air Balloon",
+            "moves": "Dazzling Gleam, Foul Play, Swagger, Thunder Wave",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Aegislash",
+            "level": 82,
+            "ability": "Stance Change",
+            "item": "Weakness Policy",
+            "moves": "King's Shield, Sacred Sword, Shadow Ball, Flash Cannon",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Empoleon",
+            "level": 80,
+            "ability": "Torrent",
+            "item": "Petaya Berry",
+            "moves": "Agility, Surf, Ice Beam, Grass Knot",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Escavalier",
+            "level": 80,
+            "ability": "Overcoat",
+            "item": "Leftovers",
+            "moves": "Swords Dance, Megahorn, Iron Head, Drill Run",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Ferrothorn",
+            "level": 80,
+            "ability": "Iron Barbs",
+            "item": "Rocky Helmet",
+            "moves": "Power Whip, Bulldoze, Leech Seed, Protect",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Aggron",
+            "level": 82,
+            "ability": "Sturdy",
+            "item": "Aggronite",
+            "moves": "Heavy Slam, Earthquake, Stone Edge, Ice Punch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ],
+        "tip": "This is a Rotation Battle."
+      }
+    ],
+    "champion": {
+      "name": "Diantha",
+      "location": "Pokémon League",
+      "cap": 87,
+      "mons": [
+        {
+          "name": "Forretress",
+          "level": 85,
+          "ability": "Sturdy",
+          "item": "Red Card",
+          "moves": "Sticky Web, Stealth Rock, Counter, Earthquake",
+          "ivs": [
+            31,
+            31,
+            31,
+            31,
+            31,
+            31
+          ]
+        },
+        {
+          "name": "Gourgeist (Super-Size)",
+          "level": 85,
+          "ability": "Flash Fire",
+          "item": "Life Orb",
+          "moves": "Shadow Ball, Giga Drain, Fire Blast, Psychic",
+          "ivs": [
+            31,
+            31,
+            31,
+            31,
+            31,
+            31
+          ]
+        },
+        {
+          "name": "Blaziken",
+          "level": 85,
+          "ability": "Speed Boost",
+          "item": "Lum Berry",
+          "moves": "High Jump Kick, Fire Blast, Stone Edge, Work Up",
+          "ivs": [
+            31,
+            31,
+            31,
+            31,
+            31,
+            31
+          ]
+        },
+        {
+          "name": "Tyranitar",
+          "level": 86,
+          "ability": "Sand Stream",
+          "item": "Chople Berry",
+          "moves": "Stone Edge, Crunch, Earthquake, Dragon Dance",
+          "ivs": [
+            31,
+            31,
+            31,
+            31,
+            31,
+            31
+          ]
+        },
+        {
+          "name": "Milotic",
+          "level": 85,
+          "ability": "Multiscale",
+          "item": "Leftovers",
+          "moves": "Scald, Ice Beam, Recover, Dragon Tail",
+          "ivs": [
+            31,
+            31,
+            31,
+            31,
+            31,
+            31
+          ]
+        },
+        {
+          "name": "Gardevoir",
+          "level": 87,
+          "ability": "Trace",
+          "item": "Gardevoirite",
+          "moves": "Hyper Voice, Psyshock, Shadow Ball, Focus Blast",
+          "ivs": [
+            31,
+            31,
+            31,
+            31,
+            31,
+            31
+          ]
+        }
+      ]
+    },
+    "rival": [],
+    "otherBattles": [
+      {
+        "name": "AZ",
+        "location": "Lumiose City (after the League)",
+        "cap": 86,
+        "note": "Final story battle, after becoming Champion.",
+        "mons": [
+          {
+            "name": "Bronzong",
+            "level": 85,
+            "ability": "Heatproof",
+            "item": "Iron Ball",
+            "moves": "Gyro Ball, Grass Knot, Earthquake, Trick Room",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Sigilyph",
+            "level": 85,
+            "ability": "Magic Guard",
+            "item": "Leftovers",
+            "moves": "Air Slash, Heat Wave, Cosmic Power, Roost",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Torkoal",
+            "level": 85,
+            "ability": "Shell Armor",
+            "item": "Life Orb",
+            "moves": "Overheat, Steam Eruption, Earthquake, Shell Smash",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Aerodactyl",
+            "level": 86,
+            "ability": "Pressure",
+            "item": "Aerodactylite",
+            "moves": "Aerial Ace, Return, Strength, Earthquake",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Golurk",
+            "level": 85,
+            "ability": "Iron Fist",
+            "item": "Assault Vest",
+            "moves": "Drain Punch, Shadow Punch, Earthquake, Ice Punch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      }
+    ],
+    "evilTeam": [
+      {
+        "name": "Aliana 1",
+        "location": "Power Plant",
+        "note": "Team Flare battle.",
+        "mons": [
+          {
+            "name": "Mightyena",
+            "level": 45,
+            "ability": "Intimidate",
+            "item": "Sitrus Berry",
+            "moves": "Swagger, Foul Play, Sucker Punch, Play Rough",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Pyroar",
+            "level": 45,
+            "ability": "Competitive",
+            "item": "Chople Berry",
+            "moves": "Flamethrower, Endeavor, Crunch, Will-O-Wisp",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Druddigon",
+            "level": 45,
+            "ability": "Sheer Force",
+            "item": "Life Orb",
+            "moves": "Fire Punch, Dragon Claw, Superpower, Iron Head",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Heracross",
+            "level": 46,
+            "ability": "Moxie",
+            "item": "Heracronite",
+            "moves": "Arm Thrust, Pin Missile, Night Slash, Bullet Seed",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Diggersby",
+            "level": 45,
+            "ability": "Huge Power",
+            "item": "Silk Scarf",
+            "moves": "Swords Dance, Giga Impact, Ice Punch, Earthquake",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Bryony 1",
+        "location": "Poké Ball Factory",
+        "note": "This is a 12 v 12 multi battle with Celosia and Serena/Calem.",
+        "mons": [
+          {
+            "name": "Liepard",
+            "level": 51,
+            "ability": "Prankster",
+            "item": "Focus Sash",
+            "moves": "Fake Out, Assurance, Psych Up, Swagger",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Haxorus",
+            "level": 51,
+            "ability": "Mold Breaker",
+            "item": "Life Orb",
+            "moves": "Dragon Claw, Low Kick, Rock Slide, Poison Jab",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Bisharp",
+            "level": 51,
+            "ability": "Defiant",
+            "item": "Air Balloon",
+            "moves": "Sucker Punch, Iron Head, Low Kick, Protect",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Luxray",
+            "level": 51,
+            "ability": "Intimidate",
+            "item": "Shuca Berry",
+            "moves": "Super Fang, Thunder Wave, Wild Charge, Ice Fang",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Chandelure",
+            "level": 51,
+            "ability": "Flash Fire",
+            "item": "Sitrus Berry",
+            "moves": "Shadow Ball, Heat Wave, Protect, Energy Ball",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Pinsir",
+            "level": 53,
+            "ability": "Moxie",
+            "item": "Pinsirite",
+            "moves": "Quick Attack, Double-Edge, Close Combat, Rock Slide",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Celosia 1",
+        "location": "Poké Ball Factory",
+        "note": "This is a 12 v 12 multi battle with Bryony and Serena/Calem.",
+        "mons": [
+          {
+            "name": "Doublade",
+            "level": 51,
+            "ability": "No Guard",
+            "item": "Eviolite",
+            "moves": "Wide Guard, Sacred Sword, Shadow Claw, Gyro Ball",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Magmortar",
+            "level": 51,
+            "ability": "Vital Spirit",
+            "item": "Air Balloon",
+            "moves": "Heat Wave, Thunderbolt, Psychic, Will-O-Wisp",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Drapion",
+            "level": 51,
+            "ability": "Sniper",
+            "item": "Scope Lens",
+            "moves": "Aqua Tail, Night Slash, Cross Poison, Rock Slide",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Toxicroak",
+            "level": 51,
+            "ability": "Poison Touch",
+            "item": "Life Orb",
+            "moves": "Fake Out, Quick Guard, Gunk Shot, Drain Punch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Hydreigon",
+            "level": 51,
+            "ability": "Levitate",
+            "item": "Roseli Berry",
+            "moves": "Dark Pulse, Flamethrower, Dragon Pulse, Flash Cannon",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Manectric",
+            "level": 53,
+            "ability": "Lightning Rod",
+            "item": "Manectite",
+            "moves": "Thunderbolt, Flamethrower, Ice Fang, Light Screen",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Mable 1",
+        "location": "Frost Cavern",
+        "note": "Dugtrio only has two moves here for A.I. abuse purposes. They'll always send out a Pokémon holding a mega stone last, unless it's forced out. Other party Pokémon are sent out if they have a move that is super effective against whatever the opponent has on the field, and are sent out in order otherwise. Because Dugtrio has no damaging moves, it will almost always be sent out immediately before the Houndoom, allowing it to set up Sunny Day and faint itself (unless you KO it first).",
+        "mons": [
+          {
+            "name": "Weavile",
+            "level": 58,
+            "ability": "Technician",
+            "item": "Life Orb",
+            "moves": "Icicle Crash, Bite, Low Kick, Poison Jab",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Infernape",
+            "level": 58,
+            "ability": "Iron Fist",
+            "item": "Passho Berry",
+            "moves": "Close Combat, Overheat, Stone Edge, Thunder Punch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Electivire",
+            "level": 58,
+            "ability": "Motor Drive",
+            "item": "Expert Belt",
+            "moves": "Wild Charge, Close Combat, Ice Punch, Flamethrower",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Dugtrio",
+            "level": 58,
+            "ability": "Arena Trap",
+            "item": "Heat Rock",
+            "moves": "Sunny Day, Memento",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Mandibuzz",
+            "level": 58,
+            "ability": "Overcoat",
+            "item": "Leftovers",
+            "moves": "Brave Bird, Foul Play, Roost, Toxic",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Houndoom",
+            "level": 60,
+            "ability": "Flash Fire",
+            "item": "Houndoominite",
+            "moves": "Flamethrower, Dark Pulse, Sludge Bomb, Hidden Power",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Lysandre 1",
+        "location": "Lysandre Labs",
+        "note": "Team Flare battle.",
+        "mons": [
+          {
+            "name": "Mienshao",
+            "level": 63,
+            "ability": "Regenerator",
+            "item": "None",
+            "moves": "Swords Dance, High Jump Kick, Acrobatics, Baton Pass",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Pyroar",
+            "level": 64,
+            "ability": "Rivalry",
+            "item": "None",
+            "moves": "Hyper Voice, Fire Blast, Dark Pulse, Will-O-Wisp",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Honchkrow",
+            "level": 63,
+            "ability": "Moxie",
+            "item": "None",
+            "moves": "Sucker Punch, Brave Bird, Roost, Substitute",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Gyarados",
+            "level": 65,
+            "ability": "Intimidate",
+            "item": "None",
+            "moves": "Aqua Tail, Earthquake, Iron Head, Crunch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Aliana 2",
+        "location": "Lysandre Labs",
+        "note": "Team Flare battle.",
+        "mons": [
+          {
+            "name": "Mightyena",
+            "level": 63,
+            "ability": "Intimidate",
+            "item": "Black Glasses",
+            "moves": "Swagger, Foul Play, Sucker Punch, Play Rough",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Pyroar",
+            "level": 63,
+            "ability": "Competitive",
+            "item": "Power Herb",
+            "moves": "Solar Beam, Hyper Voice, Dark Pulse, Flamethrower",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Druddigon",
+            "level": 63,
+            "ability": "Sheer Force",
+            "item": "Life Orb",
+            "moves": "Dragon Rush, Fire Punch, Gunk Shot, Rock Slide",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Klingklang",
+            "level": 63,
+            "ability": "Motor Drive",
+            "item": "Air Balloon",
+            "moves": "Shift Gear, Gear Grind, Wild Charge, Earthquake",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Diggersby",
+            "level": 63,
+            "ability": "Huge Power",
+            "item": "Choice Scarf",
+            "moves": "Earthquake, Wild Charge, Ice Punch, Knock Off",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Heracross",
+            "level": 65,
+            "ability": "Moxie",
+            "item": "Heracronite",
+            "moves": "Arm Thrust, Pin Missile, Knock Off, Rock Blast",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Bryony 2",
+        "location": "Lysandre Labs",
+        "note": "Team Flare battle.",
+        "mons": [
+          {
+            "name": "Liepard",
+            "level": 63,
+            "ability": "Prankster",
+            "item": "Focus Sash",
+            "moves": "Nasty Plot, Dark Pulse, Copycat",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Haxorus",
+            "level": 63,
+            "ability": "Mold Breaker",
+            "item": "Life Orb",
+            "moves": "Dragon Dance, Earthquake, Iron Tail, Outrage",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Bisharp",
+            "level": 63,
+            "ability": "Defiant",
+            "item": "Choice Scarf",
+            "moves": "Knock Off, Iron Head, Low Kick, Stone Edge",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Luxray",
+            "level": 63,
+            "ability": "Strong Jaw",
+            "item": "Life Orb",
+            "moves": "Volt Tackle, Crunch, Ice Fang, Fire Fang",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Chandelure",
+            "level": 63,
+            "ability": "Flash Fire",
+            "item": "Salac Berry",
+            "moves": "Fire Blast, Shadow Ball, Energy Ball, Endure",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Pinsir",
+            "level": 65,
+            "ability": "Moxie",
+            "item": "Pinsirite",
+            "moves": "Earthquake, Quick Attack, Double-Edge, Stone Edge",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Celosia 2",
+        "location": "Lysandre Labs",
+        "note": "Team Flare battle.",
+        "mons": [
+          {
+            "name": "Aegislash",
+            "level": 63,
+            "ability": "Stance Change",
+            "item": "Weakness Policy",
+            "moves": "Autotomize, Shadow Ball, Flash Cannon, King's Shield",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Magmortar",
+            "level": 63,
+            "ability": "Mega Launcher",
+            "item": "Air Balloon",
+            "moves": "Fire Blast, Thunderbolt, Dark Pulse, Aura Sphere",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Drapion",
+            "level": 63,
+            "ability": "Sniper",
+            "item": "Scope Lens",
+            "moves": "Aqua Tail, Night Slash, Cross Poison, Swords Dance",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Toxicroak",
+            "level": 63,
+            "ability": "Poison Touch",
+            "item": "Wide Lens",
+            "moves": "Sucker Punch, Ice Punch, Gunk Shot, Cross Chop",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Hydreigon",
+            "level": 63,
+            "ability": "Levitate",
+            "item": "Life Orb",
+            "moves": "U-turn, Fire Blast, Surf, Dragon Pulse",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Manectric",
+            "level": 65,
+            "ability": "Lightning Rod",
+            "item": "Manectite",
+            "moves": "Thunderbolt, Flamethrower, Signal Beam, Charge Beam",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Mable 2",
+        "location": "Lysandre Labs",
+        "note": "Team Flare battle.",
+        "mons": [
+          {
+            "name": "Infernape",
+            "level": 63,
+            "ability": "Iron Fist",
+            "item": "Life Orb",
+            "moves": "U-turn, Overheat, Close Combat, Thunder Punch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Weavile",
+            "level": 63,
+            "ability": "Technician",
+            "item": "Focus Sash",
+            "moves": "Counter, Bite, Icicle Spear, Low Kick",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Electivire",
+            "level": 63,
+            "ability": "Motor Drive",
+            "item": "Expert Belt",
+            "moves": "Volt Tackle, Close Combat, Ice Punch, Earthquake",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Dugtrio",
+            "level": 63,
+            "ability": "Arena Trap",
+            "item": "Heat Rock",
+            "moves": "Sunny Day, Memento",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Mandibuzz",
+            "level": 63,
+            "ability": "Weak Armor",
+            "item": "Weakness Policy",
+            "moves": "Nasty Plot, Roost, Air Slash, Dark Pulse",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Houndoom",
+            "level": 65,
+            "ability": "Flash Fire",
+            "item": "Houndoominite",
+            "moves": "Dark Pulse, Sludge Bomb, Fire Blast, Nasty Plot",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Xerosic",
+        "location": "Lysandre Labs",
+        "note": "Team Flare battle.",
+        "mons": [
+          {
+            "name": "Crobat",
+            "level": 64,
+            "ability": "Infiltrator",
+            "item": "Life Orb",
+            "moves": "Brave Bird, U-turn, Heat Wave, Cross Poison",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Gengar",
+            "level": 64,
+            "ability": "Levitate",
+            "item": "Black Sludge",
+            "moves": "Shadow Ball, Sludge Wave, Hypnosis, Focus Blast",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Eelektross",
+            "level": 64,
+            "ability": "Levitate",
+            "item": "Assault Vest",
+            "moves": "Volt Switch, Giga Drain, Flamethrower, Dragon Pulse",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Malamar",
+            "level": 64,
+            "ability": "Contrary",
+            "item": "Leftovers",
+            "moves": "Superpower, Psycho Cut, Knock Off, Sucker Punch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Darmanitan",
+            "level": 64,
+            "ability": "Sheer Force",
+            "item": "Choice Scarf",
+            "moves": "Flare Blitz, Earthquake, Rock Slide, U-turn",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Scizor",
+            "level": 66,
+            "ability": "Light Metal",
+            "item": "Scizorite",
+            "moves": "Bullet Punch, Bug Bite, Strength, Swords Dance",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Lysandre 2",
+        "location": "Team Flare HQ",
+        "note": "Team Flare battle.",
+        "mons": [
+          {
+            "name": "Mienshao",
+            "level": 65,
+            "ability": "Regenerator",
+            "item": "None",
+            "moves": "Swords Dance, High Jump Kick, Stone Edge, Baton Pass",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Pyroar",
+            "level": 65,
+            "ability": "Rivalry",
+            "item": "None",
+            "moves": "Hyper Voice, Fire Blast, Dark Pulse, Wild Charge",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Honchkrow",
+            "level": 65,
+            "ability": "Moxie",
+            "item": "None",
+            "moves": "Sucker Punch, Brave Bird, Roost, Superpower",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Gyarados",
+            "level": 67,
+            "ability": "Intimidate",
+            "item": "None",
+            "moves": "Aqua Tail, Earthquake, Iron Head, Crunch",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Garchomp",
+            "level": 65,
+            "ability": "Rough Skin",
+            "item": "None",
+            "moves": "Earthquake, Poison Jab, Fire Blast, Dragon Rush",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Boss Lysandre",
+        "location": "Team Flare HQ",
+        "note": "Team Flare battle.",
+        "mons": [
+          {
+            "name": "Mienshao",
+            "level": 67,
+            "ability": "Reckless",
+            "item": "Focus Sash",
+            "moves": "Swords Dance, High Jump Kick, Poison Jab, Baton Pass",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Pyroar",
+            "level": 68,
+            "ability": "Rivalry",
+            "item": "Life Orb",
+            "moves": "Hyper Voice, Fire Blast, Sunny Day, Solar Beam",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Honchkrow",
+            "level": 67,
+            "ability": "Moxie",
+            "item": "Choice Scarf",
+            "moves": "Brave Bird, Night Slash, Heat Wave, Superpower",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Volcarona",
+            "level": 67,
+            "ability": "Flame Body",
+            "item": "Leftovers",
+            "moves": "Fiery Dance, Bug Buzz, Quiver Dance, Psychic",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Garchomp",
+            "level": 67,
+            "ability": "Rough Skin",
+            "item": "Rocky Helmet",
+            "moves": "Earthquake, Stone Edge, Fire Blast, Dragon Rush",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          },
+          {
+            "name": "Gyarados",
+            "level": 68,
+            "ability": "Intimidate",
+            "item": "Gyaradosite",
+            "moves": "Waterfall, Earthquake, Crunch, Dragon Dance",
+            "ivs": [
+              31,
+              31,
+              31,
+              31,
+              31,
+              31
+            ]
+          }
+        ]
+      }
+    ]
+  };
+  var WY_LEVEL_CAPS = [
+    {"boss": "Viola (Bug Badge)", "cap": 16},
+    {"boss": "Grant (Cliff Badge)", "cap": 30},
+    {"boss": "Korrina (Rumble Badge)", "cap": 37},
+    {"boss": "Ramos (Plant Badge)", "cap": 45},
+    {"boss": "Aliana — Power Plant", "cap": 46},
+    {"boss": "Clemont (Voltage Badge)", "cap": 47},
+    {"boss": "Bryony & Celosia — Poké Ball Factory", "cap": 53},
+    {"boss": "Valerie (Fairy Badge)", "cap": 52},
+    {"boss": "Mable — Frost Cavern", "cap": 60},
+    {"boss": "Olympia (Psychic Badge)", "cap": 65},
+    {"boss": "Team Flare HQ / Lysandre Labs (Boss Lysandre)", "cap": 68},
+    {"boss": "Wulfric (Iceberg Badge)", "cap": 78},
+    {"boss": "Elite Four", "cap": 82},
+    {"boss": "Champion Diantha", "cap": 87}
+  ];
+  var WY_ITEM_TABLES = [
+    {
+      "title": "Changed TMs",
+      "cols": [
+        {
+          "h": "TM",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Now teaches",
+          "f": [
+            2
+          ]
+        },
+        {
+          "h": "Was",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "TM48",
+          "Round",
+          "Ice Punch"
+        ],
+        [
+          "TM60",
+          "Quash",
+          "Fire Punch"
+        ],
+        [
+          "TM49",
+          "Echoed Voice",
+          "Drain Punch"
+        ],
+        [
+          "TM58",
+          "Sky Drop",
+          "Thunder Punch"
+        ],
+        [
+          "TM100",
+          "Confide",
+          "Giga Drain"
+        ],
+        [
+          "TM51",
+          "Steel Wing",
+          "Sucker Punch"
+        ],
+        [
+          "TM79",
+          "Frost Breath",
+          "Freeze Dry"
+        ]
+      ]
+    },
+    {
+      "title": "All Marts (Five badges onwards)",
+      "cols": [
+        {
+          "h": "Now sells",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Replaces",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "Gardevoirite",
+          "Potion"
+        ],
+        [
+          "Garchompite",
+          "Super Potion"
+        ],
+        [
+          "Scizorite",
+          "Antidote"
+        ],
+        [
+          "Kangaskhanite",
+          "Paralyze Heal"
+        ],
+        [
+          "Heracronite",
+          "Awakening"
+        ],
+        [
+          "Gyaradosite",
+          "Burn Heal"
+        ],
+        [
+          "Tyranitarite",
+          "Ice Heal"
+        ],
+        [
+          "Pinsirite",
+          "Repel"
+        ]
+      ],
+      "collapsed": true
+    },
+    {
+      "title": "Incense Stand (Coumarine City)",
+      "cols": [
+        {
+          "h": "Now sells",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Replaces",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "Manectite",
+          "Sea Incense"
+        ],
+        [
+          "Houndoominite",
+          "Lax Incense"
+        ],
+        [
+          "Mawilite",
+          "Rose Incense"
+        ],
+        [
+          "Banettite",
+          "Pure Incense"
+        ],
+        [
+          "Charizardite Y (X)/Charizardite X (Y)",
+          "Rock Incense"
+        ],
+        [
+          "Aggronite",
+          "Odd Incense"
+        ],
+        [
+          "Absolite",
+          "Luck Incense"
+        ],
+        [
+          "Medichamite",
+          "Full Incense"
+        ],
+        [
+          "Alakazite",
+          "Wave Incense"
+        ]
+      ],
+      "collapsed": true
+    },
+    {
+      "title": "Stone Emporium",
+      "cols": [
+        {
+          "h": "Now sells",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Replaces",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "Dawn Stone",
+          "Fire Stone"
+        ],
+        [
+          "Dusk Stone",
+          "Water Stone"
+        ],
+        [
+          "Shiny Stone",
+          "Leaf Stone"
+        ]
+      ],
+      "collapsed": true
+    },
+    {
+      "title": "Aquacorde Town Poké Ball Store",
+      "cols": [
+        {
+          "h": "Now sells",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Replaces",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "Cherish Balls",
+          "Poké Balls"
+        ]
+      ],
+      "collapsed": true
+    },
+    {
+      "title": "Santalune City Mart",
+      "cols": [
+        {
+          "h": "Now sells",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Replaces",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "TM48 Ice Punch",
+          "X Speed"
+        ],
+        [
+          "TM60 Fire Punch",
+          "X Attack"
+        ],
+        [
+          "TM58 Thunder Punch",
+          "X Defense"
+        ],
+        [
+          "TM23 Smack Down",
+          "Guard Spec."
+        ],
+        [
+          "TM59 Incinerate",
+          "Dire Hit"
+        ],
+        [
+          "TM05 Roar",
+          "X Accuracy"
+        ],
+        [
+          "TM16 Light Screen",
+          "X Sp. Attack"
+        ],
+        [
+          "TM33 Reflect",
+          "X Sp. Def"
+        ]
+      ],
+      "collapsed": true
+    },
+    {
+      "title": "Lumiose City, North Boulevard Poké Center",
+      "cols": [
+        {
+          "h": "Now sells",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Replaces",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "TM72 Volt Switch",
+          "Heal Ball"
+        ],
+        [
+          "TM87 Swagger",
+          "Net Ball"
+        ],
+        [
+          "TM51 Sucker Punch",
+          "Nest Ball"
+        ]
+      ],
+      "collapsed": true
+    },
+    {
+      "title": "Cyllage City",
+      "cols": [
+        {
+          "h": "Now sells",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Replaces",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "Flying Gem",
+          "Nest Ball"
+        ]
+      ],
+      "collapsed": true
+    },
+    {
+      "title": "Laverre City Mart",
+      "cols": [
+        {
+          "h": "Now sells",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Replaces",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "TM14 Blizzard",
+          "Protein"
+        ],
+        [
+          "TM25 Thunder",
+          "Iron"
+        ],
+        [
+          "TM38 Fire Blast",
+          "Calcium"
+        ],
+        [
+          "TM52 Focus Blast",
+          "Zinc"
+        ],
+        [
+          "TM15 Hyper Beam",
+          "Carbos"
+        ],
+        [
+          "TM68 Giga Impact",
+          "HP Up"
+        ]
+      ],
+      "collapsed": true
+    },
+    {
+      "title": "Anistar City Mart",
+      "cols": [
+        {
+          "h": "Now sells",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Replaces",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "TM93 Wild Charge",
+          "Blizzard"
+        ],
+        [
+          "TM91 Flash Cannon",
+          "Thunder"
+        ],
+        [
+          "TM34 Sludge Wave",
+          "Fire Blast"
+        ],
+        [
+          "TM50 Overheat",
+          "Focus Blast"
+        ],
+        [
+          "TM64 Explosion",
+          "Hyper Beam"
+        ]
+      ],
+      "collapsed": true
+    },
+    {
+      "title": "Coumarine City Mart",
+      "cols": [
+        {
+          "h": "Now sells",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Replaces",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "Razor Claw",
+          "Quick Ball"
+        ],
+        [
+          "Razor Fang",
+          "Timer Ball"
+        ],
+        [
+          "Dubious Disc",
+          "Repeat Ball"
+        ]
+      ],
+      "collapsed": true
+    },
+    {
+      "title": "Snowbelle City Mart",
+      "cols": [
+        {
+          "h": "Now sells",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Replaces",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "Assault Vest",
+          "Heal Ball"
+        ],
+        [
+          "Life Orb",
+          "Net Ball"
+        ],
+        [
+          "Flame Orb",
+          "Nest Ball"
+        ],
+        [
+          "Toxic Orb",
+          "Dusk Ball"
+        ],
+        [
+          "Choice Band",
+          "Quick Ball"
+        ],
+        [
+          "Choice Scarf",
+          "Timer Ball"
+        ],
+        [
+          "Choice Specs",
+          "Repeat Ball"
+        ]
+      ],
+      "collapsed": true
+    },
+    {
+      "title": "Items held by wild Pokémon",
+      "cols": [
+        {
+          "h": "Item",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Held by",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "Flame Orb",
+          "sometimes held by wild Drifloon (5%) and Slugma (50%)"
+        ],
+        [
+          "Toxic Orb",
+          "sometimes held by wild Zangoose (5%) and Muk (50%)"
+        ],
+        [
+          "Life Orb",
+          "sometimes held by wild Absol (5%)"
+        ],
+        [
+          "Fire, Water and Leaf Stones",
+          "always held by wild Pansear, Panpour and Pansage respectively"
+        ],
+        [
+          "Sun and Moon Stones",
+          "always held by wild Solrock and Lunatone"
+        ],
+        [
+          "Blazikenite",
+          "sometimes held by wild Torchic (50%). Always held by the one-time Torchic encounter on Route 2."
+        ],
+        [
+          "Latiosite",
+          "always held by wild Latias"
+        ],
+        [
+          "Latiasite",
+          "always held by wild Latios"
+        ],
+        [
+          "Lucky Egg",
+          "sometimes held by wild Pelipper (5%)"
+        ],
+        [
+          "Leftovers",
+          "always held by wild Munchlax (same as the vanilla games)"
+        ],
+        [
+          "King's Rock",
+          "sometimes held by wild Slowpoke and Poliwag (5%), wild Poliwhirl, Poliwrath and Politoed (50%)"
+        ],
+        [
+          "Metal Coat",
+          "always held by wild Bronzor and Beldum"
+        ],
+        [
+          "Dragon Scale",
+          "sometimes held by wild Horsea and Seadra (50%)"
+        ],
+        [
+          "Up-Grade",
+          "sometimes held by wild Porygon (50%)"
+        ],
+        [
+          "Deep Sea Tooth",
+          "always held by wild Carvanha"
+        ],
+        [
+          "Deep Sea Scale",
+          "always held by wild Chinchou"
+        ],
+        [
+          "Protector",
+          "sometimes held by wild Rhyhorn (50%)"
+        ],
+        [
+          "Electirizer",
+          "sometimes held by wild Elekid (50%)"
+        ],
+        [
+          "Magmarizer",
+          "sometimes held by wild Magby (50%)"
+        ],
+        [
+          "Reaper Cloth",
+          "sometimes held by wild Duskull (50%)"
+        ],
+        [
+          "Whipped Dream",
+          "sometimes held by wild Swirlix (50%)"
+        ],
+        [
+          "Sachet",
+          "sometimes held by wild Spritzee (50%)"
+        ],
+        [
+          "Lax Incense",
+          "always held by wild Wobbuffet"
+        ],
+        [
+          "Odd Incense",
+          "always held by wild Mr. Mime"
+        ],
+        [
+          "Rock Incense",
+          "always held by wild Sudowoodo"
+        ],
+        [
+          "Rose Incense",
+          "sometimes held by wild Roselia (50%)"
+        ],
+        [
+          "Sea Incense",
+          "Always held by wild Marill and Azumarill"
+        ],
+        [
+          "Wave Incense",
+          "Always held by wild Mantyke"
+        ],
+        [
+          "Helix Fossil",
+          "Krabby (50%)"
+        ],
+        [
+          "Dome Fossil",
+          "Onix (50%)"
+        ],
+        [
+          "Root Fossil",
+          "Relicanth (100%)"
+        ],
+        [
+          "Claw Fossil",
+          "Kangaskhan (50%)"
+        ],
+        [
+          "Armor Fossil",
+          "Helioptile (50%)"
+        ],
+        [
+          "Skull Fossil",
+          "Hippopotas (50%)"
+        ],
+        [
+          "Plume Fossil",
+          "Dwebble (50%)"
+        ],
+        [
+          "Cover Fossil",
+          "Sandile (50%)"
+        ],
+        [
+          "Sail Fossil",
+          "Binacle (50%)"
+        ],
+        [
+          "Jaw Fossil",
+          "Mawile (50%)"
+        ]
+      ],
+      "collapsed": true
+    }
+  ];
+  var WY_ITEM_CARDS = [
+    {
+      "title": "Item changes",
+      "body": "All Mega Stones except Mewtwonite X and Y are now available before the Elite Four. All TMs except Dream Eater and Retaliate are also available before the Elite Four. As of version 2.4, the Big Root item boosts HP recovered by 100% instead of 30%. TM49 and TM100 are found in their usual locations. Held items added in ORAS are also present, usually at a 50% rate (e.g. Power Herbs may be held by wild Seedot). Laverre City Mart: Vitamins are now post-game only; you can use Super Training if you're desperate for extra EVs. Coumarine City Mart: These balls are now exclusive to the Poké Ball Emporium."
+    }
+  ];
+  var WY_EVO_TABLES = [
+    {
+      "title": "Changed evolution methods",
+      "cols": [
+        {
+          "h": "From",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Into",
+          "f": [
+            1
+          ]
+        },
+        {
+          "h": "How",
+          "f": [
+            2
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "Eevee",
+          "Glaceon",
+          "Use a Shiny Stone"
+        ],
+        [
+          "Eevee",
+          "Leafeon",
+          "Use a Leaf Stone"
+        ],
+        [
+          "Graveler",
+          "Golem",
+          "Level up with high happiness"
+        ],
+        [
+          "Kadabra",
+          "Alakazam",
+          "Level up with high happiness"
+        ],
+        [
+          "Machoke",
+          "Machamp",
+          "Level up with high happiness"
+        ],
+        [
+          "Haunter",
+          "Gengar",
+          "Level up with high happiness"
+        ],
+        [
+          "Onix",
+          "Steelix",
+          "Use a Metal Coat"
+        ],
+        [
+          "Scyther",
+          "Scizor",
+          "Use a Metal Coat"
+        ],
+        [
+          "Seadra",
+          "Kingdra",
+          "Use a Dragon Scale"
+        ],
+        [
+          "Poliwhirl",
+          "Politoed",
+          "Use a King's Rock"
+        ],
+        [
+          "Slowpoke",
+          "Slowking",
+          "Use a King's Rock"
+        ],
+        [
+          "Porygon",
+          "Porygon2",
+          "Use an Up-Grade"
+        ],
+        [
+          "Porygon2",
+          "Porygon-Z",
+          "Use a Dubious Disc"
+        ],
+        [
+          "Clamperl",
+          "Huntail",
+          "Use a Deep Sea Tooth"
+        ],
+        [
+          "Clamperl",
+          "Gorebyss",
+          "Use a Deep Sea Scale"
+        ],
+        [
+          "Dusclops",
+          "Dusknoir",
+          "Use a Reaper Cloth"
+        ],
+        [
+          "Magmar",
+          "Magmortar",
+          "Use a Magmarizer"
+        ],
+        [
+          "Electabuzz",
+          "Electivire",
+          "Use an Electirizer"
+        ],
+        [
+          "Rhydon",
+          "Rhyperior",
+          "Use a Protector"
+        ],
+        [
+          "Feebas",
+          "Milotic",
+          "Use a Prism Scale"
+        ],
+        [
+          "Karrablast",
+          "Escavalier",
+          "Level up with a Shelmet in the party"
+        ],
+        [
+          "Shelmet",
+          "Accelgor",
+          "Level up with a Karrablast in the party"
+        ],
+        [
+          "Gurdurr",
+          "Conkeldurr",
+          "Level up with high happiness"
+        ],
+        [
+          "Boldore",
+          "Gigalith",
+          "Level up with high happiness"
+        ],
+        [
+          "Spritzee",
+          "Aromatisse",
+          "Use a Sachet"
+        ],
+        [
+          "Swirlix",
+          "Slurpuff",
+          "Use a Whipped Dream"
+        ],
+        [
+          "Phantump",
+          "Trevenant",
+          "Use a Dusk Stone"
+        ],
+        [
+          "Pumpkaboo",
+          "Gourgeist",
+          "Use a Dusk Stone"
+        ]
+      ]
+    },
+    {
+      "title": "Earlier level evolutions (Rebalanced)",
+      "cols": [
+        {
+          "h": "Pokémon",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Evolves at",
+          "f": [
+            1,
+            2
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "Rufflet",
+          "Lv 34",
+          "was Lv 54"
+        ],
+        [
+          "Vullaby",
+          "Lv 34",
+          "was Lv 54"
+        ],
+        [
+          "Deino",
+          "Lv 40",
+          "was Lv 50"
+        ],
+        [
+          "Zweilous",
+          "Lv 54",
+          "was Lv 64"
+        ],
+        [
+          "Pawniard",
+          "Lv 42",
+          "was Lv 52"
+        ],
+        [
+          "Mienfoo",
+          "Lv 40",
+          "was Lv 50"
+        ],
+        [
+          "Larvesta",
+          "Lv 49",
+          "was Lv 59"
+        ]
+      ]
+    }
+  ];
+  var WY_EVO_CARDS = [
+    {
+      "title": "Trade evolutions",
+      "body": "Pokémon that would normally need to be traded to evolve now have an additional evolution method. Also, Eevee no longer requires a moss or ice rock to evolve into Leafeon or Glaceon, as these are located far too late into the game. As a quick summary, Pokémon that don't need to hold an item when traded will evolve via happiness, while those that do need an item will evolve by simply using the item like an evolution stone."
+    }
+  ];
+  var WY_MOVE_TABLES = [
+    {
+      "title": "Changed moves (Rebalanced)",
+      "cols": [
+        {
+          "h": "Move",
+          "f": [
+            0
+          ]
+        },
+        {
+          "h": "Change",
+          "f": [
+            1
+          ]
+        }
+      ],
+      "rows": [
+        [
+          "Cut",
+          "PP 30 => 20, Type Normal => Grass, now always results in a critical hit."
+        ],
+        [
+          "Strength",
+          "Power 80 => 100, PP 15 => 10, Type Normal => Rock, now lowers the user's Defense and Sp. Def in addition to dealing damage."
+        ],
+        [
+          "Fly",
+          "Accuracy 95% => 100%"
+        ],
+        [
+          "Submission",
+          "Power 80 => 90, Accuracy 80% => 100%, PP 25 => 15"
+        ],
+        [
+          "Chatter",
+          "Power 65 => 90, PP 20 => 15"
+        ],
+        [
+          "Tail Slap",
+          "Accuracy 85% => 100%"
+        ],
+        [
+          "Shadow Punch",
+          "Power 60 => 80"
+        ],
+        [
+          "Arm Thrust",
+          "Power 15 => 25"
+        ],
+        [
+          "Spike Cannon",
+          "Power 20 => 25"
+        ],
+        [
+          "Absorb",
+          "Power 20 => 40"
+        ],
+        [
+          "Mega Drain",
+          "Power 40 => 60"
+        ],
+        [
+          "Force Palm",
+          "PP 10 => 15"
+        ],
+        [
+          "Mud Bomb",
+          "PP 10 => 15, Accuracy 85% => 90%"
+        ],
+        [
+          "Mystical Fire",
+          "Power 65 => 85"
+        ],
+        [
+          "Parabolic Charge",
+          "Power 75 => 90, HP restored 50% => 25%"
+        ],
+        [
+          "Draining Kiss",
+          "Power 50 => 75, HP restored 75% => 50%"
+        ],
+        [
+          "Fell Stinger",
+          "Updating Fell Stinger's effect can't be done easily, so I've increased its base power to 70 instead. PP has been reduced to from 25 to 15."
+        ],
+        [
+          "Drill Peck",
+          "Now has an increased critical hit ratio (same effect as Slash or Leaf Blade, not guaranteed to crit)."
+        ],
+        [
+          "Freeze-Dry",
+          "Power 70 => 95, PP 20 => 15"
+        ],
+        [
+          "Steel Wing",
+          "Power 70 => 90, PP 25 => 15"
+        ],
+        [
+          "Self-Destruct",
+          "Always results in a critical hit."
+        ],
+        [
+          "Explosion",
+          "Always results in a critical hit."
+        ],
+        [
+          "Needle Arm",
+          "Power 60 => 90"
+        ],
+        [
+          "Cross Poison",
+          "70 => 90, PP 20 => 15"
+        ],
+        [
+          "Gear Grind",
+          "Accuracy 85% => 100%"
+        ],
+        [
+          "Power Gem",
+          "Power 80 => 90, PP 20 => 15"
+        ],
+        [
+          "Triple Kick",
+          "Power 10 => 20"
+        ],
+        [
+          "Disarming Voice",
+          "Power 40 => 60, PP 15 => 20"
+        ]
+      ]
+    }
+  ];
+  // END GENERATED: tools/build_wy_data.py
+
   // ---------- game registry ----------
   // Each game bundles its own guide/boss/guide-tab data plus the section
   // labels that vary per game (rival name, evil team name, etc.). Adding a
@@ -10338,7 +13929,40 @@
     otherBattlesLabel: "League, Final Chapter & Named Trainers",
     evilTeamLabel: "Team Rocket"
   };
-  var GAME_ORDER = ["emerald", "renegade", "hgretiled", "soulgold", "originhg"];
+  // Wilting Y (Pokémon Y romhack, Rebalanced version). All WY_* data is
+  // generated by tools/build_wy_data.py from the hack's own PDFs. Only the
+  // important trainers are documented (no route trainers, no rivals yet),
+  // so no Trainers tab; no Pokédex either (the docs list changes only).
+  GAMES.wiltingy = {
+    id: "wiltingy",
+    label: "Pokémon Wilting Y",
+    shortLabel: "Wilting Y",
+    guide: WY_GUIDE,
+    guideComplete: true,
+    badgeCount: 8,
+    bosses: WY_BOSSES,
+    trainerFights: [],
+    features: [],
+    // Same as SoulGold: teams open, each card foldable (user, 2026-10-07).
+    collapsibleTeams: true,
+    bossesNote: "Teams are the Rebalanced documentation's. Rival battles aren't documented yet; the docs only warn that the rival has a Multiscale Dragonite holding a Weakness Policy. Every boss but the rivals and Team Flare carries healing items.",
+    guideSections: [
+      { key: "levelcaps", label: "Level Caps", type: "tables",
+        cards: [{ title: "How these caps work", body: "Each cap is that boss's highest level, the usual Nuzlocke rule of not out-levelling the next boss; the game doesn't enforce them. Team Flare battles are listed where they fall in the story." }],
+        data: [
+          { title: "Level Caps", cols: [{h:"Boss", f:[0]}, {h:"Cap", f:[1]}],
+            rows: WY_LEVEL_CAPS.map(function(r){ return [r.boss, r.cap]; }) }
+        ] },
+      { key: "items", label: "Items", type: "tables", cards: WY_ITEM_CARDS, data: WY_ITEM_TABLES },
+      { key: "evolutions", label: "Evolutions", type: "tables", cards: WY_EVO_CARDS, data: WY_EVO_TABLES },
+      { key: "moves", label: "Move Changes", type: "tables", data: WY_MOVE_TABLES },
+      { key: "natures", label: "Natures", type: "natures", data: NATURE_GUIDE }
+    ],
+    rivalLabel: "Rivals",
+    otherBattlesLabel: "Other Battles",
+    evilTeamLabel: "Team Flare"
+  };
+  var GAME_ORDER = ["emerald", "renegade", "hgretiled", "soulgold", "originhg", "wiltingy"];
   var DEFAULT_GAME = "emerald";
 
   function currentGame(){
@@ -10904,7 +14528,7 @@
     document.body.setAttribute("data-game", state.selectedGame);
     applyGameFeatures();
     var themeMeta = document.querySelector('meta[name="theme-color"]');
-    if(themeMeta) themeMeta.setAttribute("content", ({ renegade: "#141e26", hgretiled: "#211910", soulgold: "#1a1710", originhg: "#1d1113" })[state.selectedGame] || "#16241b");
+    if(themeMeta) themeMeta.setAttribute("content", ({ renegade: "#141e26", hgretiled: "#211910", soulgold: "#1a1710", originhg: "#1d1113", wiltingy: "#18141d" })[state.selectedGame] || "#16241b");
     document.getElementById("runName").value = run.runName || "";
     document.getElementById("gameSelect").value = state.selectedGame;
     Object.keys(run.rules).forEach(function(k){
