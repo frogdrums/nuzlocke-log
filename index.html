@@ -16807,8 +16807,11 @@
     return m ? (m.learn[name] || {}) : null;
   }
   function loadDexMoves(){
-    var g = currentGame(), game = state.selectedGame;
-    loadLazyScript(g.dexMoves.src, g.dexMoves.global).then(function(){
+    var g = currentGame(), game = state.selectedGame, src = g.dexMoves.src;
+    // An earlier failure (offline before the file was cached) must not stick:
+    // reopening a card retries, as its error text promises.
+    if(lazyScriptFailed[src]){ delete lazyScriptFailed[src]; delete lazyScriptPromises[src]; }
+    loadLazyScript(src, g.dexMoves.global).then(function(){
       if(state.selectedGame !== game) return;
       invalidatePokedexList();
       renderPokedexList();
