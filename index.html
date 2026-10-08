@@ -374,6 +374,8 @@
   .card-actions{ display:flex; gap:4px; flex-wrap:wrap; margin-top:3px; }
   .card-actions button{ font-size: 13px; padding: 4px 3px; flex:1; min-width: 0; line-height:1; }
   .cause{ font-size: 10.5px; color: var(--dead); font-style: italic; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .mon-notes{ font-size: 10.5px; color: var(--cream-dim); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .shiny-mark{ flex-shrink:0; font-size: 11px; }
 
   .empty{ text-align:center; color: var(--cream-dim); font-size: 15px; padding: 30px 10px; border: 1px dashed var(--line); border-radius: var(--radius); }
 
@@ -871,6 +873,13 @@
   .modal-actions button{ flex:1; }
   .modal-choices{ display:flex; flex-direction:column; gap:8px; margin-bottom: 12px; }
   .modal-choices button{ width:100%; }
+  .edit-mon{ max-height: calc(100vh - 40px); overflow-y: auto; }
+  .edit-mon .modal-input{ margin-bottom: 8px; }
+  .edit-mon textarea.modal-input{ resize: vertical; font-size: 15px; }
+  .edit-mon .row{ display:flex; gap: 8px; }
+  .edit-mon .row > div{ flex: 1; min-width: 0; }
+  .shiny-check{ display:flex; align-items:center; gap: 6px; font-size: 14px; color: var(--cream); margin: 4px 0 10px; cursor:pointer; }
+  .shiny-check input{ width:auto; margin:0; }
 
   /* Hidden-team boss cards (GAMES[id].hideTeams) and the Guide-tab table
      filter box. */
@@ -1008,7 +1017,7 @@
         </div>
         <div class="row">
           <div>
-            <label class="f">Nickname</label>
+            <label class="f">Nickname (optional)</label>
             <input type="text" id="fNick" placeholder="Gale">
           </div>
           <div style="max-width:90px; flex:0 0 90px;">
@@ -1016,6 +1025,7 @@
             <input type="number" id="fLevel" placeholder="5" min="1" max="100">
           </div>
         </div>
+        <label class="shiny-check"><input type="checkbox" id="fShiny"> ✨ Shiny</label>
         <button class="btn-primary" id="addBtn">+ Add Encounter</button>
       </div>
 
@@ -1257,6 +1267,38 @@
     <div class="modal-actions" id="modalActions">
       <button type="button" class="btn-ghost" id="modalCancel">Cancel</button>
       <button type="button" class="btn-primary" id="modalOk">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit one logged encounter (cardHTML's ✏️). Static markup, wired at init. -->
+<div class="modal-overlay" id="editMonOverlay">
+  <div class="modal-box edit-mon">
+    <div class="modal-msg">Edit encounter</div>
+    <label class="f">Species</label>
+    <input type="text" class="modal-input" id="eSpecies">
+    <label class="f">Nickname (optional)</label>
+    <input type="text" class="modal-input" id="eNick">
+    <div class="row">
+      <div>
+        <label class="f">Route / Location</label>
+        <input type="text" class="modal-input" id="eRoute">
+      </div>
+      <div style="max-width:90px; flex:0 0 90px;">
+        <label class="f">Level</label>
+        <input type="number" class="modal-input" id="eLevel" min="1" max="100">
+      </div>
+    </div>
+    <label class="shiny-check"><input type="checkbox" id="eShiny"> ✨ Shiny</label>
+    <div id="eCauseWrap">
+      <label class="f">How it fell</label>
+      <input type="text" class="modal-input" id="eCause" placeholder="e.g. Crit from Whitney's Miltank">
+    </div>
+    <label class="f">Notes</label>
+    <textarea class="modal-input" id="eNotes" rows="3" placeholder="Anything worth remembering"></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="eCancel">Cancel</button>
+      <button type="button" class="btn-primary" id="eSave">Save</button>
     </div>
   </div>
 </div>
@@ -15277,8 +15319,8 @@
     if(m.status === "boxed"){
       actions += '<button data-act="unbox" data-id="'+m.id+'" class="btn-ghost" title="Un-box">📤</button>';
     }
+    actions += '<button data-act="edit-mon" data-id="'+m.id+'" class="btn-ghost" title="Edit">✏️</button>';
     if(m.status === "dead"){
-      actions += '<button data-act="edit-cause" data-id="'+m.id+'" class="btn-ghost" title="Edit note">✏️</button>';
       actions += '<button data-act="revive" data-id="'+m.id+'" class="btn-ghost" title="Undo faint">↩️</button>';
     }
     actions += '<button data-act="delete" data-id="'+m.id+'" class="btn-ghost" title="Delete">🗑️</button>';
@@ -15295,11 +15337,13 @@
         '<div class="card-top">' +
           '<span class="dot status-'+m.status+'"></span>' +
           (m.nick ? '<span class="nick">'+escapeHTML(m.nick)+'</span>' : dexLinkHTML(m.species, escapeHTML(m.species || "Unnamed"), "nick")) +
+          (m.shiny ? '<span class="shiny-mark" title="Shiny">✨</span>' : '') +
         '</div>' +
         speciesLine +
         routeLine +
         '<div class="meta">'+statusLabel+(m.level ? ' · Lv '+escapeHTML(String(m.level)) : '')+'</div>' +
         cause +
+        (m.notes ? '<div class="mon-notes">'+escapeHTML(m.notes)+'</div>' : '') +
         '<div class="card-actions">'+actions+'</div>' +
       '</div>'
     );
@@ -15391,11 +15435,13 @@
         '<div class="card-top">' +
           '<span class="dot status-'+m.status+'"></span>' +
           (m.nick ? '<span class="nick">'+escapeHTML(m.nick)+'</span>' : dexLinkHTML(m.species, escapeHTML(m.species || "Unnamed"), "nick")) +
+          (m.shiny ? '<span class="shiny-mark" title="Shiny">✨</span>' : '') +
         '</div>' +
         speciesLine +
         routeLine +
         '<div class="meta">'+statusLabel+(m.level ? ' · Lv '+escapeHTML(String(m.level)) : '')+'</div>' +
         cause +
+        (m.notes ? '<div class="mon-notes">'+escapeHTML(m.notes)+'</div>' : '') +
       '</div>'
     );
   }
@@ -18280,13 +18326,10 @@
     var species = document.getElementById("fSpecies").value.trim();
     var nick = document.getElementById("fNick").value.trim();
     var level = document.getElementById("fLevel").value.trim();
+    var shiny = document.getElementById("fShiny").checked;
 
     if(!species && !nick){
       showToast("Add at least a species or nickname");
-      return;
-    }
-    if(!nick){
-      showToast("This run requires a nickname");
       return;
     }
 
@@ -18296,11 +18339,14 @@
       species: species,
       nick: nick,
       level: level,
+      shiny: shiny,
+      notes: "",
       status: "alive",
       cause: "",
       createdAt: Date.now()
     });
     save();
+    document.getElementById("fShiny").checked = false;
     document.getElementById("fRoute").value = "";
     document.getElementById("fSpecies").value = "";
     document.getElementById("fNick").value = "";
@@ -18543,19 +18589,8 @@
       }
       mon.status = "alive";
       showToast((mon.nick || mon.species) + " back in the party");
-    } else if(act === "edit-cause"){
-      // The note on a fallen mon (user, 2026-10-06). Its auto Timeline entry
-      // follows along unless that entry was hand-edited.
-      showPrompt("Note for " + (mon.nick || mon.species || "this Pokémon") + ":", "e.g. Crit from Whitney's Miltank", function(val){
-        var before = deathEntryText(mon);
-        mon.cause = (val || "").trim();
-        (currentRun().timeline || []).forEach(function(t){
-          if(t.kind === "death" && t.monId === mon.id && t.text === before) t.text = deathEntryText(mon);
-        });
-        save();
-        renderAll();
-        showToast("Note saved");
-      }, mon.cause || "");
+    } else if(act === "edit-mon"){
+      openMonEditor(mon);
       return;
     } else if(act === "revive"){
       mon.status = "alive";
@@ -18566,8 +18601,8 @@
     } else if(act === "delete"){
       showConfirm("Delete this encounter permanently?", function(){
         currentRun().mons = currentRun().mons.filter(function(m){ return m.id !== id; });
-        // A deleted mis-entry never died: drop its death entry, like Undo faint.
-        currentRun().timeline = (currentRun().timeline || []).filter(function(t){ return !(t.kind === "death" && t.monId === id); });
+        // A deleted mis-entry never existed: drop its death and evolution entries.
+        currentRun().timeline = (currentRun().timeline || []).filter(function(t){ return t.monId !== id; });
         showToast("Deleted");
         save();
         renderAll();
@@ -18576,6 +18611,92 @@
     }
     save();
     renderAll();
+  });
+
+  // ---------- Encounter editor (user, 2026-10-07) ----------
+  // Every field of a logged mon, plus shiny and free-text notes. Changing the
+  // species is how an evolution is recorded: it asks whether it evolved
+  // (→ an "evo" Timeline entry) or was a correction (→ no entry). Auto
+  // Timeline entries naming the mon follow the edit unless hand-edited.
+  var editingMonId = null;
+
+  function evoEntryText(mon, from){
+    return (mon.nick ? mon.nick + " (" + from + ")" : from) + " evolved into " + (mon.species || "?") +
+      (mon.level ? " at Lv " + mon.level : "");
+  }
+
+  function openMonEditor(mon){
+    editingMonId = mon.id;
+    document.getElementById("eSpecies").value = mon.species || "";
+    document.getElementById("eNick").value = mon.nick || "";
+    document.getElementById("eRoute").value = mon.route || "";
+    document.getElementById("eLevel").value = mon.level || "";
+    document.getElementById("eShiny").checked = !!mon.shiny;
+    document.getElementById("eNotes").value = mon.notes || "";
+    document.getElementById("eCause").value = mon.cause || "";
+    document.getElementById("eCauseWrap").style.display = mon.status === "dead" ? "" : "none";
+    document.getElementById("editMonOverlay").classList.add("show");
+  }
+
+  function closeMonEditor(){
+    editingMonId = null;
+    document.getElementById("editMonOverlay").classList.remove("show");
+  }
+
+  function saveMonEditor(){
+    var mon = editingMonId && findMon(editingMonId);
+    if(!mon){ closeMonEditor(); return; }
+    var species = document.getElementById("eSpecies").value.trim();
+    var nick = document.getElementById("eNick").value.trim();
+    if(!species && !nick){ showToast("Add at least a species or nickname"); return; }
+    var run = currentRun();
+    var deathBefore = deathEntryText(mon);
+    var fromSpecies = mon.species || "";
+    mon.species = species;
+    mon.nick = nick;
+    mon.route = document.getElementById("eRoute").value.trim() || "Unknown Location";
+    mon.level = document.getElementById("eLevel").value.trim();
+    mon.shiny = document.getElementById("eShiny").checked;
+    mon.notes = document.getElementById("eNotes").value.trim();
+    if(mon.status === "dead") mon.cause = document.getElementById("eCause").value.trim();
+    (run.timeline || []).forEach(function(t){
+      if(t.kind === "death" && t.monId === mon.id && t.text === deathBefore) t.text = deathEntryText(mon);
+    });
+    closeMonEditor();
+    save();
+    renderAll();
+    if(!fromSpecies || !species || fromSpecies === species){ showToast("Saved"); return; }
+    // Species changed back to what its latest evolution came from = undoing it.
+    var tl = run.timeline || [];
+    for(var i = tl.length - 1; i >= 0; i--){
+      if(tl[i].kind === "evo" && tl[i].monId === mon.id){
+        if(tl[i].from === species && tl[i].to === fromSpecies){
+          tl.splice(i, 1); save(); renderAll();
+          showToast("Evolution removed from the Timeline");
+          return;
+        }
+        break;
+      }
+    }
+    showChoice("Did " + fromSpecies + " evolve into " + species + "?", [
+      { label: "Evolved — add to Timeline", value: "evo" },
+      { label: "No, just a correction", value: "fix" }
+    ], function(v){
+      if(v === "evo"){
+        addTimelineEntry("evo", evoEntryText(mon, fromSpecies), { monId: mon.id, from: fromSpecies, to: species });
+        save(); renderAll();
+        showToast(fromSpecies + " → " + species);
+      } else {
+        showToast("Saved");
+      }
+    });
+  }
+
+  document.getElementById("eSave").addEventListener("click", saveMonEditor);
+  document.getElementById("eCancel").addEventListener("click", closeMonEditor);
+  document.getElementById("editMonOverlay").addEventListener("keydown", function(e){
+    if(e.key === "Escape") closeMonEditor();
+    else if(e.key === "Enter" && e.target.tagName === "INPUT" && e.target.type !== "checkbox") saveMonEditor();
   });
 
   // ---------- Timeline (user, 2026-10-06) ----------
@@ -18654,7 +18775,7 @@
         d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
     }catch(e){ return d.toISOString().slice(0, 16).replace("T", " "); }
   }
-  var TIMELINE_ICON = { gym: "🏅", boss: "⚔️", death: "☠️", note: "✎" };
+  var TIMELINE_ICON = { gym: "🏅", boss: "⚔️", death: "☠️", evo: "🧬", note: "✎" };
 
   function timelineEntryHTML(t){
     var id = escapeHTML(t.id);
