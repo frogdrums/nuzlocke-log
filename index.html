@@ -18722,6 +18722,18 @@
   // field with SoulGold's ~960 <option>s (user, 2026-10-09).
   var speciesOptionsFor = null, speciesOptionNames = [];
   function getSpeciesOptions(){
+    // A fresh launch hasn't loaded the game's Pokédex (only the Pokédex tab
+    // or a game switch does), so load it now and refresh an open list —
+    // else SoulGold showed only vanilla Gen 1-4 names (user, 2026-10-09).
+    if(dexHasEvos() && !dexData()){
+      var game = state.selectedGame;
+      loadGameDex().then(function(){
+        var el = document.activeElement;
+        if(state.selectedGame === game && el && (el.id === "fSpecies" || el.id === "eSpecies")){
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      }, function(){});
+    }
     var key = state.selectedGame + (dexHasEvos() && dexData() ? "+dex" : "");
     if(speciesOptionsFor === key) return speciesOptionNames;
     speciesOptionsFor = key;
