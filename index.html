@@ -1018,7 +1018,7 @@
           </div>
           <div>
             <label class="f">Species</label>
-            <input type="text" id="fSpecies" placeholder="Pidgey" list="speciesOptions" autocomplete="off">
+            <div class="calc-dd-wrap"><input type="text" id="fSpecies" placeholder="Pidgey" autocomplete="off"><div class="calc-dd-list" id="fSpeciesDD" style="display:none;"></div></div>
           </div>
         </div>
         <div class="row">
@@ -1282,15 +1282,13 @@
   </div>
 </div>
 
-<!-- Species names for the Add form and the editor (fillSpeciesOptions()). -->
-<datalist id="speciesOptions"></datalist>
 
 <!-- Edit one logged encounter (cardHTML's ✏️). Static markup, wired at init. -->
 <div class="modal-overlay" id="editMonOverlay">
   <div class="modal-box edit-mon">
     <div class="modal-msg">Edit encounter</div>
     <label class="f">Species</label>
-    <input type="text" class="modal-input" id="eSpecies" list="speciesOptions" autocomplete="off">
+    <div class="calc-dd-wrap"><input type="text" class="modal-input" id="eSpecies" autocomplete="off"><div class="calc-dd-list" id="eSpeciesDD" style="display:none;"></div></div>
     <div class="evo-chips" id="eEvos"></div>
     <label class="f">Nickname (optional)</label>
     <input type="text" class="modal-input" id="eNick">
@@ -18719,19 +18717,20 @@
 
   // The species autocomplete: the game's Pokédex names when loaded, else
   // vanilla Gen 1-4 (Gen 3 on Emerald), plus every species in its encounter
-  // guide (forms and hack names the vanilla list lacks).
-  var speciesOptionsFor = null;
-  function fillSpeciesOptions(){
+  // guide (forms and hack names the vanilla list lacks). Shown through
+  // attachTypeahead(), never a native <datalist>: iOS froze on tapping the
+  // field with SoulGold's ~960 <option>s (user, 2026-10-09).
+  var speciesOptionsFor = null, speciesOptionNames = [];
+  function getSpeciesOptions(){
     var key = state.selectedGame + (dexHasEvos() && dexData() ? "+dex" : "");
-    if(speciesOptionsFor === key) return;
+    if(speciesOptionsFor === key) return speciesOptionNames;
     speciesOptionsFor = key;
     var seen = {}, names = [];
     function add(n){ if(n && !seen[n]){ seen[n] = true; names.push(n); } }
     (dexHasEvos() && dexData() ? getPokedexSpeciesList() : genericNames()).forEach(add);
     (currentGame().guide || []).forEach(function(loc){ (loc.encounters || []).forEach(function(e){ add(e.sp); }); });
-    document.getElementById("speciesOptions").innerHTML = names.sort().map(function(n){
-      return '<option value="' + escapeHTML(n) + '"></option>';
-    }).join("");
+    speciesOptionNames = names.sort();
+    return speciesOptionNames;
   }
 
   function openMonEditor(mon){
@@ -18789,9 +18788,10 @@
     document.getElementById("eSpecies").value = b.getAttribute("data-evo");
     renderEvoChips();   // next stage, e.g. Pidgeotto → Pidgeot
   });
-  ["fSpecies", "eSpecies"].forEach(function(id){
-    document.getElementById(id).addEventListener("focus", fillSpeciesOptions);
-  });
+  attachTypeahead("fSpecies", "fSpeciesDD", getSpeciesOptions);
+  attachTypeahead("eSpecies", "eSpeciesDD", getSpeciesOptions);
+  // Picking from the list sets the value without an input event.
+  document.getElementById("eSpecies").addEventListener("change", renderEvoChips);
 
   // ---------- Timeline (user, 2026-10-06) ----------
   // Real-world times of boss wins and deaths, plus the player's own entries,

@@ -1,4 +1,4 @@
-var CACHE_NAME = "nuzlocke-log-v49";
+var CACHE_NAME = "nuzlocke-log-v50";
 var PRECACHE = [
   "./",
   "./index.html",
