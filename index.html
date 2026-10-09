@@ -15816,15 +15816,17 @@
 
       var loggedMons = findLoggedMonsForRoute(loc.name);
       var logged = loggedMons.length > 0;
-      var collapsed = logged && !!currentRun().collapsedRoutes[loc.name];
+      // Any location can be folded away, logged or not — a route the player
+      // skipped (or has no use for) can be hidden without catching there.
+      var collapsed = !!currentRun().collapsedRoutes[loc.name];
 
       if(collapsed){
-        var namesStr = loggedMons.map(function(m){ return m.species || "?"; }).join(", ");
+        var namesStr = logged ? loggedMons.map(function(m){ return m.species || "?"; }).join(", ") : "Hidden";
         return (
-          '<div class="cl-card done cl-collapsed">' +
+          '<div class="cl-card '+(logged?"done":"pending")+' cl-collapsed">' +
             '<div class="cl-top">' +
               '<div class="cl-name">'+escapeHTML(loc.name)+'</div>' +
-              '<div class="cl-status done">Logged</div>' +
+              '<div class="cl-status '+(logged?"done":"pending")+'">'+(logged?"Logged":"Not yet")+'</div>' +
             '</div>' +
             '<button type="button" class="cl-toggle" data-act="toggle-collapse-route" data-route="'+escapeHTML(loc.name)+'">'+escapeHTML(namesStr)+' — tap to expand</button>' +
           '</div>'
@@ -15874,7 +15876,7 @@
             '<div class="cl-status '+(logged?"done":"pending")+'">'+(logged?"Logged":"Not yet")+'</div>' +
           '</div>' +
           groupsHtml +
-          (logged ? '<button type="button" class="cl-toggle" data-act="toggle-collapse-route" data-route="'+escapeHTML(loc.name)+'">Collapse</button>' : '') +
+          '<button type="button" class="cl-toggle" data-act="toggle-collapse-route" data-route="'+escapeHTML(loc.name)+'">'+(logged?"Collapse":"Hide")+'</button>' +
         '</div>'
       );
     }).filter(function(html){ return html !== ""; });
@@ -19061,7 +19063,11 @@
     var a = document.createElement("a");
     var safeName = (currentRun().runName || "nuzlocke-run").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
     a.href = url;
-    a.download = (safeName || "nuzlocke-run") + "-backup.json";
+    // Local calendar date, so a backup made late in the evening isn't
+    // stamped with tomorrow's UTC date.
+    var now = new Date();
+    var dateStamp = now.getFullYear() + "-" + ("0" + (now.getMonth() + 1)).slice(-2) + "-" + ("0" + now.getDate()).slice(-2);
+    a.download = (safeName || "nuzlocke-run") + "-backup-" + dateStamp + ".json";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
