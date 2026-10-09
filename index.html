@@ -15034,7 +15034,7 @@
       collapsedTeams: {}, // key -> true; collapsibleTeams games: a team the player folded away
       timeline: [], // {id, at (ISO), kind: gym|boss|death|note, text, split, key?, monId?} — Timeline tab
       completedQuests: {}, // quest id -> true; Quests tab ("quests" feature)
-      collapsedRoutes: {}, // route name -> true
+      collapsedRoutes: {}, // route name -> true (collapsed, logged) or "hidden" (hidden with no catch)
       collapsedSplits: {}, // trainer-fight split name -> true
       collapsedTimelineSplits: {}, // timeline split label -> true
       pastRuns: [] // {id, endedAt, result, note, attempt, runName, badges, mons, beatenBosses} — see "End Run"
@@ -15083,7 +15083,7 @@
     var cr = run.collapsedRoutes;
     Object.keys(cr).forEach(function(name){
       if(!Object.prototype.hasOwnProperty.call(aliases, name)) return;
-      if(cr[name]) cr[aliases[name]] = true;
+      if(cr[name]) cr[aliases[name]] = cr[name];   // keeps "hidden" vs true
       delete cr[name];
     });
   }
@@ -15821,7 +15821,11 @@
       var logged = loggedMons.length > 0;
       // Any location can be folded away, logged or not — a route the player
       // skipped (or has no use for) can be hidden without catching there.
-      var collapsed = !!currentRun().collapsedRoutes[loc.name];
+      // A hide without a catch is stored as "hidden"; a bare `true` is the
+      // auto-collapse from logging, which must not hide the route once its
+      // mon is deleted or moved elsewhere.
+      var crVal = currentRun().collapsedRoutes[loc.name];
+      var collapsed = logged ? !!crVal : crVal === "hidden";
 
       if(collapsed){
         var namesStr = logged ? loggedMons.map(function(m){ return m.species || "?"; }).join(", ") : "Hidden";
@@ -18466,7 +18470,10 @@
 
     if(act === "toggle-collapse-route"){
       var routeKey = btn.getAttribute("data-route");
-      currentRun().collapsedRoutes[routeKey] = !currentRun().collapsedRoutes[routeKey];
+      var crMap = currentRun().collapsedRoutes;
+      if(findLoggedMonsForRoute(routeKey).length) crMap[routeKey] = !crMap[routeKey];
+      else if(crMap[routeKey] === "hidden") delete crMap[routeKey];
+      else crMap[routeKey] = "hidden";
       save();
       renderChecklist();
       return;
@@ -18725,19 +18732,20 @@
   // guide (forms and hack names the vanilla list lacks). Shown through
   // attachTypeahead(), never a native <datalist>: iOS froze on tapping the
   // field with SoulGold's ~960 <option>s (user, 2026-10-09).
-  var speciesOptionsFor = null, speciesOptionNames = [];
+  var speciesOptionsFor = null, speciesOptionNames = [], speciesDexPending = null;
   function getSpeciesOptions(){
     // A fresh launch hasn't loaded the game's Pokédex (only the Pokédex tab
     // or a game switch does), so load it now and refresh an open list —
     // else SoulGold showed only vanilla Gen 1-4 names (user, 2026-10-09).
-    if(dexHasEvos() && !dexData()){
-      var game = state.selectedGame;
+    if(dexHasEvos() && !dexData() && speciesDexPending !== state.selectedGame){
+      var game = speciesDexPending = state.selectedGame;   // one refresh per load, not per keystroke
       loadGameDex().then(function(){
+        speciesDexPending = null;
         var el = document.activeElement;
         if(state.selectedGame === game && el && (el.id === "fSpecies" || el.id === "eSpecies")){
           el.dispatchEvent(new Event("input", { bubbles: true }));
         }
-      }, function(){});
+      }, function(){ speciesDexPending = null; });
     }
     var key = state.selectedGame + (dexHasEvos() && dexData() ? "+dex" : "");
     if(speciesOptionsFor === key) return speciesOptionNames;
