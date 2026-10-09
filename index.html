@@ -412,6 +412,11 @@
   .cl-toggle{ margin-top: 9px; font-size: 14px; padding: 6px 10px; width: 100%; background: var(--panel-raised); border-color: var(--line); cursor: pointer; border-radius: var(--radius); color: var(--cream); font-family: 'JetBrains Mono', monospace; }
   .cl-collapsed .cl-toggle{ background: var(--lcd-dim); color: #0d1712; font-weight: 700; border-color: var(--lcd); }
   .cl-card.cl-collapsed{ opacity: 0.7; }
+  /* Hidden without a catch: grey, so it never reads as a logged route. */
+  .cl-card.cl-hidden{ border-left: 3px dashed var(--cream-dim); background: var(--bg); }
+  .cl-status.hidden{ background: transparent; border: 1px dashed var(--cream-dim); color: var(--cream-dim); }
+  .cl-hidden .cl-name{ color: var(--cream-dim); }
+  .cl-collapsed.cl-hidden .cl-toggle{ background: var(--panel); color: var(--cream-dim); font-weight: 400; border-color: var(--line); }
   .cl-method:first-of-type{ margin-top: 8px; }
   .cl-sub{ color: var(--cream); }
   .chip-lv{ opacity: 0.75; font-size: 12px; }
@@ -15821,10 +15826,10 @@
       if(collapsed){
         var namesStr = logged ? loggedMons.map(function(m){ return m.species || "?"; }).join(", ") : "Hidden";
         return (
-          '<div class="cl-card '+(logged?"done":"pending")+' cl-collapsed">' +
+          '<div class="cl-card '+(logged?"done":"cl-hidden")+' cl-collapsed">' +
             '<div class="cl-top">' +
               '<div class="cl-name">'+escapeHTML(loc.name)+'</div>' +
-              '<div class="cl-status '+(logged?"done":"pending")+'">'+(logged?"Logged":"Not yet")+'</div>' +
+              '<div class="cl-status '+(logged?"done":"hidden")+'">'+(logged?"Logged":"Hidden")+'</div>' +
             '</div>' +
             '<button type="button" class="cl-toggle" data-act="toggle-collapse-route" data-route="'+escapeHTML(loc.name)+'">'+escapeHTML(namesStr)+' — tap to expand</button>' +
           '</div>'
