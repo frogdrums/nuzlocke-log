@@ -819,7 +819,9 @@
     padding: 10px 12px; margin-bottom: 8px;
   }
   .guide-card-title{ font-weight:700; font-size: 16px; color: var(--lcd); margin-bottom: 4px; }
-  .guide-card-body{ font-size: 15px; color: var(--cream); line-height: 1.5; white-space: pre-line; }
+  /* overflow-wrap: a long unbroken string (a URL in the SoulGold FAQ) would
+     otherwise widen the whole page and let it scroll sideways. */
+  .guide-card-body{ font-size: 15px; color: var(--cream); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
   .nature-table{ width:100%; border-collapse: collapse; font-size: 14px; }
   .nature-table th{ text-align:left; color: var(--cream-dim); font-size: 13px; text-transform:uppercase; padding: 4px 6px; border-bottom: 1px solid var(--line); }
   .nature-table td{ padding: 5px 6px; border-bottom: 1px solid var(--line); }
@@ -833,6 +835,19 @@
   .guide-table-card[open] > summary::before{ content: "▾ "; }
   .guide-table-card[open] > summary{ margin-bottom: 6px; }
   .gt-count{ font-weight: 400; font-size: 13px; color: var(--cream-dim); }
+  /* Sectioned guides (SoulGold "Guides"): a card per guide, a fold per entry */
+  .guide-doc > summary, .gd-entry > summary{ cursor: pointer; list-style: none; }
+  .guide-doc > summary::-webkit-details-marker, .gd-entry > summary::-webkit-details-marker{ display: none; }
+  .guide-doc > summary{ margin-bottom: 0; }
+  .guide-doc > summary::before, .gd-entry > summary::before{ content: "▸ "; color: var(--cream-dim); }
+  .guide-doc[open] > summary::before, .gd-entry[open] > summary::before{ content: "▾ "; }
+  .guide-doc[open] > summary{ margin-bottom: 6px; }
+  .gd-group{ font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--cream-dim); margin: 10px 0 4px; }
+  .gd-entry{ border-top: 1px solid var(--line); padding: 7px 0; }
+  .gd-entry > summary{ font-size: 15px; font-weight: 700; color: var(--cream); }
+  .gd-entry .guide-card-body{ margin-top: 4px; padding-left: 14px; }
+  .gd-chunk + .gd-chunk{ margin-top: 2px; }
+  .guide-doc[hidden], .gd-entry[hidden], .gd-group[hidden], .gd-chunk[hidden]{ display: none; }
   .guide-table{ table-layout: auto; font-size: 13px; }
   .guide-table td{ vertical-align: top; color: var(--cream); overflow-wrap: break-word; }
   .guide-table .gt-main{ white-space: pre-line; }
@@ -989,6 +1004,7 @@
       <label id="scalingRuleLabel" style="display:none"><input type="checkbox" data-rule="scaling"> Trainer level scaling</label>
       <label id="hardRuleLabel" style="display:none"><input type="checkbox" data-rule="hard"> Hard mode (+10% levels)</label>
       <label id="sgHardRuleLabel" style="display:none"><input type="checkbox" data-rule="sgHard"> Hard mode (different teams)</label>
+      <label id="allInnatesRuleLabel" style="display:none"><input type="checkbox" data-rule="allInnates"> All innates unlocked</label>
     </div>
   </div>
 
@@ -7588,6 +7604,441 @@
       ]
     }
   ];
+  var SG_INNATES = {
+    "Abomasnow":["Slush Rush","Thick Fat","Ice Scales"],
+    "Absol":["Sharpness","Stakeout","Dark Aura"],
+    "Aegislash":["Sharpness","Battle Armor","Phalanx"],
+    "Aerodactyl":["Strong Jaw","Guts","Last Stand"],
+    "Aggron":["Battle Armor","Stamina","Siegebreaker"],
+    "Aipom":["Dual Strike"],
+    "Alakazam":["Elemental Fist","Telepathy","Insomnia"],
+    "Altaria":["Cotton Down","Unburden","Dragon's Maw"],
+    "Ambipom":["Dual Strike","Long Reach","Warrior Spirit"],
+    "Ampharos":["Keen Eye","Battery","Lightning Rod"],
+    "Annihilape":["Guts","Adrenaline","Iron Fist"],
+    "Appletun":["Leaf Guard","Natural Cure","Seed Sower"],
+    "Applin":["Leaf Guard"],
+    "Arbok":["Hunter","Acidic","Merciless"],
+    "Arcanine":["Guts","Blaze","Heatstorm"],
+    "Arcanine (Hisui)":["Sunhardened","Quick Feet","Steadfast"],
+    "Archaludon":["Battle Armor","Clear Body","Filter"],
+    "Archeops":["Own Tempo","Rock Head","Armor Tail"],
+    "Arctibax":["Strong Jaw","Permafrost"],
+    "Ariados":["Corrosion","Tough Claws","Poison Puppeteer"],
+    "Armarouge":["Shardplate","Mega Launcher","Smouldering"],
+    "Audino":["Soothing","Friend Guard","Triage"],
+    "Avalugg":["Stamina","Filter","Regenerator"],
+    "Avalugg (Hisui)":["Stamina","Filter","Regenerator"],
+    "Azumarill":["Cheek Pouch","Water Veil","Rain Dish"],
+    "Bagon":["Early Bird"],
+    "Baltoy":["Analytic"],
+    "Banette":["Plain Soul","Voidtouch","Perish Body"],
+    "Barbaracle":["Suction Cups","Stamina","Sharpness"],
+    "Basculegion":["Restoring","Uncanny","Unstoppable"],
+    "Basculin":["Seabound","Rock Head"],
+    "Basculin (Blue Striped)":["Seabound","Reactive"],
+    "Baxcalibur":["Strong Jaw","Permafrost","Thick Fat"],
+    "Bayleef":["Natural Cure","Triage"],
+    "Beedrill":["Bloodlust","Merciless","Corrosion"],
+    "Bellossom":["Dancer","Drought","Flower Veil"],
+    "Bellsprout":["Tangled Feet"],
+    "Binacle":["Suction Cups"],
+    "Bisharp":["Filter","Analytic"],
+    "Blastoise":["Shell Armor","Bulletproof","Rock Head"],
+    "Blissey":["Hospitality","Symbiosis","Triage"],
+    "Braviary (Hisui)":["Think Ahead","Psychate","Mystic Force"],
+    "Breloom":["Plantation","Iron Fist","Triage"],
+    "Budew":["Jade Bloom"],
+    "Buizel":["Quick Draw"],
+    "Buneary":["Lunar Cycle"],
+    "Butterfree":["Reactive","Mystic Force","Mind Soul"],
+    "Cacturne":["Rough Skin","Stakeout","Merciless"],
+    "Camerupt":["Heatstorm","Simple","Earth Eater"],
+    "Carvanha":["Consume"],
+    "Ceruledge":["Haunting","Sharpness","Smouldering"],
+    "Chandelure":["Ritualist","Unaware","Cursed Body"],
+    "Chansey":["Hospitality","Symbiosis"],
+    "Charcadet":["Smouldering"],
+    "Charizard":["Flameburst","Berserk","Reckless"],
+    "Charjabug":["Swarm","Shield Dust"],
+    "Charmeleon":["Flame Body","Berserk"],
+    "Chikorita":["Natural Cure"],
+    "Chimecho":["Soundproof","Punk Rock","Psychic Surge"],
+    "Chinchou":["Restoring","Diver"],
+    "Cinccino":["Generalist","Ready Stance","Long Reach"],
+    "Cinderace":["Steel Feet","Quick Feet","Reckless"],
+    "Clauncher":["Sniper"],
+    "Clawitzer":["Sniper","Suction Cups","Analytic"],
+    "Claydol":["Gravity Well","Magic Guard","Enigma"],
+    "Clefable":["Force Return","Fairy Aura","Pixilate"],
+    "Clefairy":["Force Return","Fairy Aura"],
+    "Clodsire":["Poison Touch","Purifying Salt","Earth Eater"],
+    "Cloyster":["Bulletproof","Rough Skin","Aftermath"],
+    "Cofagrigus":["Fill Void","Lifesteal","Cursed Body"],
+    "Combusken":["Flame Body","Reckless"],
+    "Corsola":["Reef Warden","Water Compaction","Pastel Veil"],
+    "Corsola (Galar)":["Reef Warden","Wandering Spirit","Perish Body"],
+    "Corviknight":["Iron Barbs","Battle Armor","Wind Rider"],
+    "Corvisquire":["Wind Rider","Overcoat"],
+    "Cottonee":["Cotton Down"],
+    "Cradily":["Solid Rock","Rejuvenation","Seed Sower"],
+    "Crobat":["Flier","Strong Jaw","Quick Draw"],
+    "Cubone":["Long Reach","Moody"],
+    "Cutiefly":["Aroma Veil"],
+    "Cyclizar":["Inner Focus","Natural Cure","Backdraft"],
+    "Darmanitan (Galar Standard)":["Ice Body","Unstoppable","Simple"],
+    "Delibird":["Unburden","Quick Draw","Refrigerate"],
+    "Dewgong":["Guts","Slush Rush","Snow Cloak"],
+    "Dhelmise":["Cursed Body","Sharpness","Ritualist"],
+    "Diglett (Alola)":["Rock Head"],
+    "Ditto":["Sticky Hold"],
+    "Dondozo":["Rain Dish","Storm Drain","Stamina"],
+    "Donphan":["Rolling Stones","Stamina","Sandshield"],
+    "Doublade":["Sharpness","Battle Armor"],
+    "Dragalge":["Merciless","Storm Drain","Reef Warden"],
+    "Dragapult":["Shed Skin","Inner Focus","Adrenaline"],
+    "Dragonair":["Serene Grace","Cloud Nine"],
+    "Dragonite":["Marvel Scale","Aerilate","Hospitality"],
+    "Drakloak":["Shed Skin","Inner Focus"],
+    "Drampa":["Drizzle","Own Tempo","Scrappy"],
+    "Drifblim":["Wind Rider","Cursed Body","Shadow Shield"],
+    "Drilbur":["Burrower"],
+    "Dudunsparce":["Simple","Burrower","Enigma"],
+    "Dugtrio":["Burrower","Run Away","Quick Draw"],
+    "Dugtrio (Alola)":["Burrower","Phalanx","Sand Spit"],
+    "Dunsparce":["Simple","Burrower"],
+    "Duraludon":["Battle Armor","Clear Body","Filter"],
+    "Dusclops":["Voidtouch","Cursed Body"],
+    "Dusknoir":["Voidtouch","Cursed Body","Iron Fist"],
+    "Duskull":["Voidtouch"],
+    "Eelektrik":["Shockwiring","Restoring"],
+    "Eelektross":["Shockwiring","Restoring","Overload"],
+    "Eevee":["Scrappy"],
+    "Electivire":["Shockwiring","No Guard","Plasma Surge"],
+    "Electrode (Hisui)":["Minus","Berserk","Screen Cleaner"],
+    "Emboar":["Sheer Force","First Strike","Reactive"],
+    "Emolga":["Wind Power","Static Burst","Maneuverability"],
+    "Empoleon":["Prism Armor","Multiscale","Quick Forge"],
+    "Espathra":["Forewarn","Telepathy","Synchronize"],
+    "Espeon":["Adaptability","Soothing","Aura Shield"],
+    "Excadrill":["Burrower","Clear Body","Tough Claws"],
+    "Exeggcute":["Telepathy"],
+    "Exeggutor":["Telepathy","Leaf Guard","Skill Link"],
+    "Exeggutor (Alola)":["Telepathy","Keen Eye","Skill Link"],
+    "Falinks":["Inner Focus","Scrappy","Resolute Guard"],
+    "Farfetch'd":["Sharpness","Wind Rider","Super Luck"],
+    "Farigiraf":["Psychic Surge","Inner Focus","Inversion"],
+    "Feebas":["Rattled"],
+    "Ferrothorn":["Bulletproof","Steely Spirit","Oblivious"],
+    "Finizen":["Diver"],
+    "Finneon":["Dazzling"],
+    "Flamigo":["Big Pecks","Keen Eye","Wind Rider"],
+    "Flareon":["Adaptability","Poison Heal","Controlled Burn"],
+    "Floatzel":["Quick Draw","Adaptability","Vital Spirit"],
+    "Flygon":["Sand Force","Tinted Lens","Windcaller"],
+    "Fraxure":["Intimidate","Unstoppable"],
+    "Froslass":["Frost Nova","Glacial","Spectral"],
+    "Gabite":["Strong Jaw","Sand Force"],
+    "Gallade":["Moxie","Tough Claws","Mind's Eye"],
+    "Galvantula":["Maneuverability","Overload","Consume"],
+    "Garchomp":["Strong Jaw","Marvel Scale","Unstoppable"],
+    "Garganacl":["Filter","Battle Armor","Solid Rock"],
+    "Gastly":["Poison Touch"],
+    "Gastrodon":["Stamina","Earth Eater","Gooey"],
+    "Gengar":["Prankster","Infiltrator","Levitate"],
+    "Geodude (Alola)":["Electric Surge"],
+    "Gholdengo":["Battle Armor","Pickup","Steelworker"],
+    "Girafarig":["Forewarn","Rattled","Inversion"],
+    "Glaceon":["Adaptability","Slush Rush","Dazzling"],
+    "Glalie":["Refrigerate","Strong Jaw","Permafrost"],
+    "Gligar":["Poison Touch"],
+    "Glimmora":["Levitate","Merciless","Sturdy"],
+    "Gliscor":["Poison Touch","Tough Claws","Rough Skin"],
+    "Gogoat":["Moxie","Guardian","Reactive"],
+    "Golbat":["Mind's Eye","Strong Jaw"],
+    "Golem":["Rolling Stones","Earth Eater","Bulletproof"],
+    "Golem (Alola)":["Electric Surge","Static","Rocky Payload"],
+    "Golisopod":["Battle Armor","Tough Claws","Indomitable"],
+    "Golurk":["Cursed Body","Spectral Drain","Mystic Force"],
+    "Goodra (Hisui)":["Water Absorb","Stamina","Solidify"],
+    "Graveler":["Rolling Stones","Earth Eater"],
+    "Graveler (Alola)":["Electric Surge","Static","Illuminate"],
+    "Grimer (Alola)":["Liquid Ooze","Toxic Debris"],
+    "Grimmsnarl":["Unnerve","Infiltrator","Bulletproof"],
+    "Growlithe":["Guts"],
+    "Growlithe (Hisui)":["Sunhardened"],
+    "Grubbin":["Shield Dust"],
+    "Gyarados":["Consume","Strong Jaw","Dragon Soul"],
+    "Hariyama":["Iron Fist","Stamina","Inner Focus"],
+    "Haunter":["Poison Touch","Cursed Body"],
+    "Hawlucha":["Steel Feet","Scrappy","Breaking"],
+    "Haxorus":["Intimidate","Unstoppable","Sheer Force"],
+    "Heracross":["Skill Link","Tough Claws","Defiant"],
+    "Hippowdon":["Sand Rush","Sandshield","Steam Engine"],
+    "Hitmonchan":["Parrying","Technician","Guts"],
+    "Hitmonlee":["Steel Feet","Long Reach","Quick Feet"],
+    "Hitmontop":["Momentum","Steel Feet","Reckless"],
+    "Honchkrow":["Stakeout","Dark Aura","Supreme Overlord"],
+    "Hoothoot":["Soothing"],
+    "Hoppip":["Wind Rider"],
+    "Horsea":["Keen Eye","Run Away"],
+    "Houndoom":["Brand of Torment","Strong Jaw","Brimstone"],
+    "Houndour":["Stakeout"],
+    "Hydrapple":["Ripen","Leaf Guard","Natural Cure"],
+    "Infernape":["Quick Feet","Reckless","Ash Assets"],
+    "Iron Leaves":["Leaf Guard","Natural Cure","Seed Sower"],
+    "Iron Thorns":["Sturdy","Rock Head","Battle Armor"],
+    "Iron Treads":["Sand Veil","Earth Eater","Rough Skin"],
+    "Ivysaur":["Seed Sower","Leaf Guard"],
+    "Jolteon":["Adaptability","Technician","Rough Skin"],
+    "Joltik":["Static"],
+    "Jumpluff":["Wind Rider","Prankster","Cotton Down"],
+    "Kadabra":["Elemental Fist","Telepathy"],
+    "Kangaskhan":["Dauntless Shield","Anger Point","Force Return"],
+    "Kilowattrel":["Static","Backdraft","Electromorphosis"],
+    "Kingambit":["Filter","Battle Armor","Analytic"],
+    "Kingdra":["Keen Eye","Marvel Scale","Multiscale"],
+    "Kleavor":["Hyper Cutter","Hustle","No Guard"],
+    "Koffing":["Aftermath"],
+    "Kommo-o":["Echoing","Battle Armor","Inner Focus"],
+    "Krookodile":["Dust Devil","Consume","Strong Jaw"],
+    "Lairon":["Battle Armor","Stamina"],
+    "Lampent":["Ritualist","Cursed Body"],
+    "Lanturn":["Restoring","Diver","Battery"],
+    "Lapras":["Soothing","Liquid Voice","Hospitality"],
+    "Larvesta":["Blazing Sun"],
+    "Leafeon":["Adaptability","Rooted","Verdant Gale"],
+    "Lickilicky":["Sticky Hold","Pickpocket","Long Reach"],
+    "Lickitung":["Sticky Hold","Pickpocket"],
+    "Lilligant":["Plantation","Thick Fat","Soothing"],
+    "Lilligant (Hisui)":["Victory Star","Dancer","Unburden"],
+    "Linoone (Galar)":["Stakeout","Tough Claws"],
+    "Litwick":["Ritualist"],
+    "Lucario":["Mind's Eye","Quick Feet","Aura Shield"],
+    "Lumineon":["Dazzling","Monsoon","Adaptability"],
+    "Luxio":["Strong Jaw","Pack Leader"],
+    "Luxray":["Strong Jaw","Pack Leader","Static Burst"],
+    "Lycanroc":["Sturdy","Guard Dog","Battle Armor"],
+    "Lycanroc (Dusk)":["Sturdy","Own Tempo","Battle Armor"],
+    "Machamp":["Sheer Force","Defiant","Titan Grip"],
+    "Machoke":["Sheer Force","Defiant"],
+    "Machop":["Sheer Force"],
+    "Magmar":["Magma Armor","Smouldering"],
+    "Magmortar":["Magma Armor","Smouldering","Solar Power"],
+    "Magneton":["Electromorphosis","Levitate","Full Metal Body"],
+    "Magnezone":["Electromorphosis","Levitate","Full Metal Body"],
+    "Malamar":["Telepathy","Inky","Tinted Lens"],
+    "Mamoswine":["Permafrost","Stamina","Slush Rush"],
+    "Mandibuzz":["Anger Point","Consume","Debilitate"],
+    "Manectric":["Pack Leader","Transistor","Guard Dog"],
+    "Mantine":["Hydration","Reef Warden","Filter"],
+    "Maractus":["Solar Power","Rooted","Verdant Soul"],
+    "Mareanie":["Poison Point"],
+    "Mareep":["Fluffy"],
+    "Marill":["Cheek Pouch","Water Veil"],
+    "Marowak":["Long Reach","Reckless","Guts"],
+    "Marowak (Alola)":["Long Reach","Reckless","Sheer Force"],
+    "Maushold":["Scrappy","Rally","Magnify Field"],
+    "Mawile":["Huge Power","Consume","Strong Jaw"],
+    "Medicham":["Indomitable","Parrying","Mind's Eye"],
+    "Meganium":["Grassy Surge","Triage","Pixilate"],
+    "Meowstic":["Uncanny","Telepathy","Friend Guard"],
+    "Meowstic (F)":["Uncanny","Psychic Surge","Opportunist"],
+    "Metagross":["Analytic","Iron Fist","Phalanx"],
+    "Mienshao":["Maneuverability","Technician","Limber"],
+    "Milotic":["Guardian","Fae Soul","Regenerator"],
+    "Miltank":["Stamina","Sheer Force","Grass Pelt"],
+    "Mimikyu":["Cursed Body","Cute Charm","Dazzling"],
+    "Minccino":["Scrappy"],
+    "Misdreavus":["Cursed Body","Lifesteal"],
+    "Mismagius":["Haunting","Lifesteal","Spectral"],
+    "Morgrem":["Unnerve","Infiltrator"],
+    "Mr. Mime":["Mimicry","Synchronize","Magic Guard"],
+    "Mr. Mime (Galar)":["Filter","Snow Cloak","Frost Nova"],
+    "Mr. Rime":["Filter","Slush Rush","Frost Nova"],
+    "Muk":["Liquid Ooze","Acidic","Solidify"],
+    "Muk (Alola)":["Liquid Ooze","Toxic Debris","Solidify"],
+    "Munchlax":["Harvest"],
+    "Murkrow":["Stakeout"],
+    "Nacli":["Filter"],
+    "Naclstack":["Filter","Battle Armor"],
+    "Natu":["Seer"],
+    "Nidoking":["Tough Claws","Friend Guard","Mold Breaker"],
+    "Nidoqueen":["Bulletproof","Healer","Rough Skin"],
+    "Nidoran F":["Anticipation"],
+    "Nidoran M":["Anticipation"],
+    "Nidorina":["Anticipation","Healer"],
+    "Ninetales":["Phantom Soul","Magic Bounce","Cursed Body"],
+    "Ninetales (Alola)":["Cute Charm","Ice Scales","Ice Body"],
+    "Noctowl":["Soothing","Magic Guard","Stygian"],
+    "Noibat":["Echoing"],
+    "Noivern":["Echoing","Soundproof","Punk Rock"],
+    "Nosepass":["Earth Eater"],
+    "Numel":["Stamina"],
+    "Obstagoon":["Stakeout","Guard Dog","Dark Aura"],
+    "Onix":["Solid Rock","Burrower"],
+    "Oricorio (Sensu)":["Cursed Body","Insomnia","Infiltrator"],
+    "Overqwil":["Merciless","Toxic Debris","Rough Skin"],
+    "Palafin":["Diver","Restoring","Iron Fist"],
+    "Pawmo":["Static","Pendulum"],
+    "Pawmot":["Static","Pendulum","Channel Earth"],
+    "Pawniard":["Filter"],
+    "Pelipper":["Big Pecks","Windcaller","Backdraft"],
+    "Persian":["Super Luck","Maim and Mend","Nine Lives"],
+    "Persian (Alola)":["Moody","Wonder Skin","Nine Lives"],
+    "Petilil":["Plantation"],
+    "Phantump":["Rooted"],
+    "Pidgeot":["Vital Spirit","Windburst","No Guard"],
+    "Pidgeotto":["Vital Spirit","Windburst"],
+    "Pidgey":["Run Away"],
+    "Pikachu":["Plus","Battery"],
+    "Piloswine":["Permafrost","Stamina"],
+    "Pinsir":["Rivalry","Guts","Terrate"],
+    "Politoed":["Swift Swim","Water Veil","Liquid Voice"],
+    "Poliwhirl":["Guts","Water Veil"],
+    "Poliwrath":["Guts","Water Veil","Stamina"],
+    "Ponyta":["Horse Council","Heatstorm"],
+    "Porygon":["Immunity","Clear Body"],
+    "Porygon-Z":["Immunity","Levitate","Generalist"],
+    "Porygon2":["Immunity","Clear Body","Adaptability"],
+    "Primeape":["Guts","Adrenaline"],
+    "Probopass":["Earth Eater","Steelworker","Filter"],
+    "Pupitar":["Battle Armor","Sand Force"],
+    "Pyroar":["Intimidate","Breaking","Adrenaline"],
+    "Pyukumuku":["Water Veil","Rejuvenation","Martyr"],
+    "Quagsire":["Drizzle","Poison Heal","Solid Rock"],
+    "Qwilfish":["Merciless","Toxic Debris","Aftermath"],
+    "Qwilfish (Hisui)":["Merciless","Toxic Debris"],
+    "Raichu":["Plus","Teravolt","Plasma Surge"],
+    "Raichu (Alola)":["Plus","Electromagnetism","Electric Surge"],
+    "Ralts":["Forewarn"],
+    "Rapidash":["Horse Council","Heatstorm","Speed Boost"],
+    "Rapidash (Galar)":["Horse Council","Magic Bounce","Dazzling"],
+    "Raticate":["Hyper Cutter","Strong Jaw","Unburden"],
+    "Raticate (Alola)":["Cheek Pouch","Strong Jaw","Consume"],
+    "Rattata":["Hyper Cutter"],
+    "Rattata (Alola)":["Cheek Pouch"],
+    "Reuniclus":["Uncanny","Showtime","Bulletproof"],
+    "Rhydon":["Tough Claws","Bulletproof"],
+    "Rhyperior":["Tough Claws","Bulletproof","Rocky Payload"],
+    "Roselia":["Jade Bloom","Corrosion"],
+    "Roserade":["Jade Bloom","Corrosion","Merciless"],
+    "Rotom (Heat)":["Electromorphosis","Steam Engine","Flamilate"],
+    "Rotom (Wash)":["Electromorphosis","Water Veil","Aquate"],
+    "Rufflet":["Flier"],
+    "Runerigus":["Stamina","Spectral","Spectral Drain"],
+    "Sableye":["Cursed Body","Pickpocket","Shadow Shield"],
+    "Salamence":["Windcaller","Battle Armor","Rivalry"],
+    "Sandaconda":["Earth Eater","Rough Skin","Burrower"],
+    "Sandile":["Dust Devil"],
+    "Sandshrew":["Shell Armor"],
+    "Sandslash":["Shell Armor","Rough Skin","Sharpness"],
+    "Sandslash (Alola)":["Shell Armor","Rough Skin","Refrigerate"],
+    "Sceptile":["Dragon Soul","Stakeout","Effect Spore"],
+    "Scizor":["Hyper Cutter","Iron Fist","Intimidate"],
+    "Scolipede":["Toxic Debris","Swarm Instinct","Merciless"],
+    "Scovillain":["Leaf Guard","Natural Cure","Seed Sower"],
+    "Scrafty":["Gang Up","Adrenaline","Infiltrator"],
+    "Scraggy":["Gang Up"],
+    "Scyther":["Hyper Cutter","Sharpness","Quick Draw"],
+    "Seadra":["Keen Eye","Swift Swim"],
+    "Sealeo":["Slush Rush","Water Veil"],
+    "Seel":["Guts"],
+    "Sharpedo":["Consume","Merciless","Intimidate"],
+    "Shedinja":["Infiltrator","Anticipation","Frisk"],
+    "Shelgon":["Early Bird","Battle Armor"],
+    "Shellos":["Stamina"],
+    "Shellos (East)":["Stamina"],
+    "Shuppet":["Pickpocket"],
+    "Silicobra":["Earth Eater"],
+    "Sinistcha":["Soothing","Ritualist","Insomnia"],
+    "Sirfetch'd":["Super Luck","Sniper","Leaf Guard"],
+    "Sizzlipede":["Smouldering"],
+    "Skarmory":["Battle Armor","Mirror Armor","Phalanx"],
+    "Skeledirge":["Flame Body","Soundproof","Punk Rock"],
+    "Skiddo":["Moxie"],
+    "Skiploom":["Wind Rider","Cotton Down"],
+    "Skorupi":["Poison Touch"],
+    "Skrelp":["Merciless"],
+    "Slowbro":["Simple","Unaware","Thick Fat"],
+    "Slowbro (Galar)":["Poison Point","Propeller Tail","Corrosion"],
+    "Slowking":["Analytic","Inner Focus","Magic Bounce"],
+    "Slowking (Galar)":["Synchronize","Toxic Core","Corrosion"],
+    "Slowpoke":["Simple","Unaware","Stall"],
+    "Slowpoke (Galar)":["Moody","Unaware","Stall"],
+    "Sneasel":["Tough Claws"],
+    "Sneasel (Hisui)":["Tough Claws"],
+    "Sneasler":["Tough Claws","Merciless","Pack Leader"],
+    "Snorlax":["Oblivious","Guts","Own Tempo"],
+    "Snover":["Slush Rush"],
+    "Spinarak":["Consume"],
+    "Stantler":["Forewarn","Rattled"],
+    "Staraptor":["Gale Wings","Flier","Opportunist"],
+    "Staravia":["Gale Wings","Big Pecks"],
+    "Starmie":["Regenerator","Tinted Lens","Wonder Skin"],
+    "Staryu":["Regenerator"],
+    "Steelix":["Filter","Burrower","Siegebreaker"],
+    "Stunfisk":["Earthbound","Earth Eater","Reactive"],
+    "Stunfisk (Galar)":["Earth Eater","Quick Forge","Stone Sentinel"],
+    "Swadloon":["Plantation","Seed Sower"],
+    "Sylveon":["Adaptability","Echoing","Tether"],
+    "Talonflame":["Bull Rush","Reckless","Windcaller"],
+    "Tangela":["Tangled Feet","Unnerve"],
+    "Tangrowth":["Tangling Hair","Unnerve","Long Reach"],
+    "Tapu Fini":["Water Veil","Rain Dish","Storm Drain"],
+    "Tatsugiri (Droopy)":["Shed Skin","Inner Focus","Marvel Scale"],
+    "Tauros":["Hustle","Vital Spirit","Unstoppable"],
+    "Tauros (Paldea Aqua)":["Thick Fat","Vital Spirit","Unstoppable"],
+    "Tauros (Paldea Blaze)":["Bull Rush","Vital Spirit","Unstoppable"],
+    "Tauros (Paldea Combat)":["Sheer Force","Vital Spirit","Unstoppable"],
+    "Teddiursa":["Cheek Pouch"],
+    "Tentacool":["Inky","Illuminate"],
+    "Tentacruel":["Inky","Illuminate","Tangling Hair"],
+    "Thundurus (Therian)":["Filter","No Guard","Drizzle"],
+    "Tinkaton":["Sweet Veil","Magnet Pull","Steelworker"],
+    "Togetic":["Friend Guard","Magic Guard"],
+    "Torkoal":["Smouldering","Brimstone","Flameburst"],
+    "Tornadus (Therian)":["Disquiet","Windburst","Vital Spirit"],
+    "Torterra":["Plantation","Stamina","Inversion"],
+    "Toxapex":["Poison Point","Poison Touch","Water Absorb"],
+    "Toxtricity":["Echoing","Poison Touch","Overload"],
+    "Trevenant":["Rooted","Cursed Body","Rough Skin"],
+    "Tropius":["Thick Fat","Cud Chew","Triage"],
+    "Tyranitar":["Battle Armor","Sand Force","Rockstorm"],
+    "Umbreon":["Adaptability","Poison Touch","Infiltrator"],
+    "Ursaring":["Strong Jaw","Anger Point","Tough Claws"],
+    "Vaporeon":["Adaptability","Restoring","Rain Dish"],
+    "Venusaur":["Seed Sower","Leaf Guard","Channel Earth"],
+    "Vibrava":["Sand Force","Tinted Lens"],
+    "Victreebel":["Corrosion","Liquid Ooze","Supersweet Syrup"],
+    "Vileplume":["Supersweet Syrup","Lingering Aroma","Overgrow"],
+    "Volcarona":["Blazing Sun","Unnerve","Levitate"],
+    "Voltorb":["Plus"],
+    "Voltorb (Hisui)":["Minus"],
+    "Vullaby":["Anger Point","Consume"],
+    "Vulpix":["Phantom Soul"],
+    "Wartortle":["Shell Armor","Swift Swim"],
+    "Wattrel":["Static"],
+    "Weavile":["Tough Claws","Technician","Pack Leader"],
+    "Weezing":["Aftermath","Toxic Chain","Analytic"],
+    "Weezing (Galar)":["Natural Cure","Healer","Curious Medicine"],
+    "Whimsicott":["Technician","Soundproof","Soothing"],
+    "Whirlipede":["Toxic Debris","Rolling Stones"],
+    "Whiscash":["Water Bubble","Earth Eater","Stamina"],
+    "Wigglytuff":["Force Return","Overcoat","Limber"],
+    "Wobbuffet":["Friend Guard","Force Return","Magic Bounce"],
+    "Wooper (Paldea)":["Poison Touch"],
+    "Xatu":["Seer","Magic Guard","Competitive"],
+    "Yamask":["Fill Void"],
+    "Yanma":["Windburst"],
+    "Yanmega":["Technician","Compound Eyes","Aerilate"],
+    "Zigzagoon":["Rattled"],
+    "Zigzagoon (Galar)":["Stakeout"],
+    "Zoroark":["Nightstalker","Shadow Shield","Reactive"],
+    "Zoroark (Hisui)":["Phantom Step","Nightstalker","Shadow Shield"],
+    "Zorua":["Infiltrator"],
+    "Zubat":["Mind's Eye"]
+  };
   var SG_ITEM_TABLES = [
     {
       "title":"New Bark Town",
@@ -9832,12 +10283,12 @@
     ]
   };
   var SG_GUIDES = [
-    {"title":"FAQ","body":"Basics\n\nWhat is the latest version of the hack?\n• 1.1.1 and it's only available on Hackdex\n\nSaves compatible between versions?\n• Always\n\nAre there any cheats?\n• No, cheats are not supported and they are likely to corrupt your save, don't trust 3rd party sites offering them.\n\nHard mode differences?\n• Gym battles are double battles unless enforced into singles by another setting\n• Trainers with no pre-assigned moves for their Pokémon generate slightly smarter movepools based on progression.\n\nKanto?\n• No kanto, pure Johto focus.\n\nWhen is Morning/Day/Evening/Night?\n• Morning is 06:00-10:00, Day 10:00-19:00, Evening 19:00-20:00 and Night 20:00-06:00.\n\nWhen does night time start?\n• 20:00 ingame time.\n\nDexnav?\n• After obtaining first set of Poké Balls.\n\nUnregistering dexnav species?\n• Select in the dexnav screen.\n\nWhere is X Item/Pokémon/TM?\n• Check docs or ingame pokedex.\n\nStory progression and key items\n\nExp. Share?\n• Given right before arriving in the Violet City.\n\nHMs?\n• Requires only owning the HM and the corresponding badge. Additionally you can Fly using the Region Map in Pokégear after obtaining the HM.\n\nStrength HM?\n• Olivine Cafe.\n\nWaterfall hM?\n• Ice path.\n\nHow do I access Whitney's Gym?\n• Go to the Radio Tower and complete the quiz on the first floor\n\nHow do I remove the weird tree after beating 3rd Gym?\n• Go to Goldenrod Flower Shop next to the gym and get Squirtbottle to wake up the tree.\n\nWhat's Candy Jar and how do I get it?\n• After beating the first gym, Elm's aide will give it to you alongside the egg. It will accumulate extra exp from battles and convert them to Exp Candy on use.\n\nMega Ring?\n• After Team Rocket takeover event in Goldenrod City.\n\nHow to get starter megastone/bondstone?\n• Given to you by Elm at a certain point in story.\n\nCoin case?\n• Goldenrod Underground\n\nCameron locations?\n• Ruins of Alph, Route 34, Cianwood City, Kitakami Border and Route 28.\n\nPokémon availability and encounters\n\nHow do I get the other starters?\n• The Gachapon machine in Goldenrod Casino, behind the rewards counter, can give starters from any generation. 3000 Coins is the minimum entry, but putting more increases the chance of not receiving a duplicate starter.\n\nRegional Pokémon?\n• Most are available in the Baoba's Safari Zone, but several can be found before this.\n\nShiny odds?\n• 1/256. Eggs will show with blue dots if they are shiny.\n\nShiny locks?\n• None. Even NPC trades can be shiny.\n\nHow often do Hidden Grotto contents respawn?\n• Once per day, but you can also use Beckoning Bell item from Battle Factory after Gym 3.\n\nAre Pokémon found from Hidden Grottos any different from regular wild ones?\n• Pokémon from Hidden Grottos have atleast two perfect IVs and their Hidden Ability. They have 60% chance of containing a Pokémon, 30% of having a generic item and 10% of having a grotto specific item\n\nFossils?\n• Smash rocks in Ruins of Alph.\n\nBaby forms?\n• Breed with incenses, see https://bulbapedia.bulbagarden.net/wiki/Baby_Pok%C3%A9mon#List_of_baby_Pok%C3%A9mon for more information.\n\nWhat are the ingame trades?\n• Pawmi in Violet (for Cottonee)\n• G-Slowpoke in Azalea (for regular Slowpoke)\n• Honedge in Goldenrod Dept Store (for Clefairy),\n• Hisui-Voltorb in Olivine (for Mareanie)\n• Gabite in Blackthorn City (for Dragonair)\n• Meltan in Rinto Village (for Tinkaton)\n\nGameplay mechanics\n\nType changes?\n• None during the main game. Only some might gain one extra type during postgame from an innate.\n\nBST Changes?\n• None.\n\nMoves changes?\n• Yes, some Pokémon learn extra moves for a bit more late game power. Such as Attack Order Beedrill.\n\nHow to mega evolve?\n• Press start when selecting moves while the Pokémon is wielding appropriate Mega stone and you have the Mega Ring\n\nShould I hold off evolving Growlithe/Vulpix/etc?\n• No, the evolved forms learn all the moves the pre-evoluion form does.\n\nHow do I change Rotom form?\n• After obtaining a Rotom, bring it to the guard on the first floor of Goldenrod Apartment building. You can then access the basement with form changing appliances.\n\nTraining and customization\n\nGrinding Exp for late game?\n• Kitakami has an Audino/Blissey trainer for a fee of 10,000 pokedollars.\n\nNature mints?\n• Olivine beach cafe sells them.\n\nAbility changing?\n• Battle Factory (after 3rd gym) offers them for playing a few rounds. Few can also be found in the overworld.\n\nTutor moves?\n• There's a tutor move master in Olivine City in the top-right house who will sell you infinite access to all Tutor moves for 44444 pokedollars. After buying it, you can teach tutor moves from the summary screen.\n\nEgg moves?\n• Blackthorn City egg move master sells you infinite access to egg moves for 88888 pokedollars similar to tutor move master.\n\nWhy do innates unlock so late?\n• They are meant to act as a form of postgame progression. Most Pokémon stop learning moves around 60~ usually, so this gives something to look forward to after that. If you really want to play with innates during the main game, you can activate them from the bookcase behind the starter case table in Elm's lab. However this will be a very unbalanced experience and not the intended way to play.\n\nRaising IVs?\n• Fishing and Battle Factory (after gym 3) can net you feather items which permanently raise your IVs by 5 with each use. Additionally Hyper Training is available in Rinto Village with Bottle Caps (which can also be obtained by fishing with Super Rod).\n\nRaising EVs?\n• EV items such as Power Weight have been greatly buffed, and they are buyable in Goldenrod. Additionally vitamins like Protein are not capped at 100 EVs anymore, and there are EX versions of the items that raise the stats instantly to max.\n\nLowering EVs?\n• Goldenrod Dept. Store sells EV reducing berries?\n\nItems, money, and Pickup\n\nTips for finding items that are held by wild Pokémon?\n• Have a Pokémon with ability Compoundeyes or Super Luck in the first party slot to increase the chances of wild Pokémon holding an item.\n\nTips for getting money?\n• Early game, have a Pokémon with ability Pickup. In this hack if the held item slot is occuped, items picked by Pickup will still go to bag. Later on you can fish feathers or smash rocks for shards and sell them for quick cash. After reaching Goldenrod, you can start coveting/thieving Yanmas on Route 35 for Wide Lenses, they sell for a lot of money and can be easily farmed with Dexnav chain. Butterfree learns Covet and Persian learns Thief. After obtaining 8 badges, Battle Factory will stock Nuggets and Big Nuggets. In the post game you can farm money from the Rocket Arcade facility.\n\nWhat items can Pickup find?\n• Below is the table of items found with Pickup. Note that the items go straight to bag if held item slot is occupied.\n\n| Item | Lv. 1–10 | Lv. 11–20 | Lv. 21–30 | Lv. 31–40 | Lv. 41–50 | Lv. 51–60 | Lv. 61–70 | Lv. 71–80 | Lv. 81–90 | Lv. 91–100 |\n| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n| Potion | 35% | — | — | — | — | — | — | — | — | — |\n| Tiny Mushroom | 25% | 10% | — | — | — | — | — | — | — | — |\n| Repel | 8% | 30% | — | — | — | — | — | — | — | — |\n| Super Potion | 8% | 10% | 30% | — | — | — | — | — | — | — |\n| Poké Doll | 8% | 10% | 9% | 30% | — | — | — | — | — | — |\n| Big Mushroom | 3% | 10% | 9% | — | — | — | — | — | — | — |\n| Super Repel | 3% | 10% | 9% | 9% | 30% | — | — | — | — | — |\n| Full Heal | 3% | 3% | 9% | 8% | 9% | 30% | — | — | — | — |\n| Revive | 3% | 3% | 3% | 8% | 8% | 9% | 30% | — | — | — |\n| Hyper Potion | 3% | 3% | 3% | 4% | 8% | 9% | 8% | 30% | — | — |\n| Ether | 1% | 1% | 3% | 4% | 4% | — | — | — | — | — |\n| Max Repel | — | 3% | 3% | 4% | 4% | 9% | 8% | 8% | 30% | — |\n| Moon Stone | — | 3% | 3% | 4% | 4% | 4% | 4% | 5% | 9% | 10% |\n| Sun Stone | — | 3% | 3% | 4% | 4% | 4% | 4% | 5% | 9% | 10% |\n| Rare Candy | — | 1% | 1% | 1% | 1% | 4% | 4% | 5% | 4% | 5% |\n| Nugget | — | — | 3% | 4% | 4% | 4% | 4% | 5% | 4% | 5% |\n| Max Potion | — | — | 3% | 4% | 4% | 4% | 8% | 8% | 9% | 30% |\n| Max Ether | — | — | 1% | 1% | 4% | 4% | 4% | — | — | — |\n| PP Up | — | — | 1% | 1% | 1% | 4% | 4% | 5% | 4% | 5% |\n| Big Nugget | — | — | 1% | 1% | 1% | 1% | 4% | 5% | 4% | 5% |\n| Destiny Knot | — | — | 1% | 1% | 1% | 1% | 1% | 1% | 1% | 1% |\n| Leftovers | — | — | 1% | 1% | 1% | 1% | 1% | 1% | 1% | 1% |\n| Mental Herb | — | — | 1% | 1% | 1% | 1% | 1% | 1% | 1% | 1% |\n| Power Herb | — | — | 1% | 1% | 1% | 1% | 1% | 1% | 1% | 1% |\n| White Herb | — | — | 1% | 1% | 1% | 1% | 1% | 1% | 1% | 1% |\n| Balm Mushroom | — | — | 1% | 4% | 4% | 4% | 4% | 5% | 4% | 5% |\n| Max Revive | — | — | — | 4% | 4% | 4% | 4% | 7% | 9% | 9% |\n| Ability Capsule | — | — | — | — | 1% | 1% | 4% | 5% | 4% | 5% |\n| Ability Patch | — | — | — | — | — | — | 1% | 1% | 4% | 5% |\n| Bottle Cap | — | — | — | — | — | — | — | 1% | 1% | 1% |\n\nPostgame and optional battles\n\nHow do I get Dive HM?\n• Complete Mt. Silver event in the postgame and then speak with your rival in their house to start a questline that eventually rewards Dive.\n\nWhere are the Route Experts?\n• Route 31, Goldenrod Shore, Route 47, Route 43 and Route 27.\n\nGym leader rematch locations in postgame?\n• Falkner: Violet City school\n• Bugsy: National Park\n• Whitney: Goldenrod Dept. Store\n• Morty: Bellchime Trail\n• Chuck: Route 47 bridge\n• Jasmine: Olivine cafe\n• Pryce: Lake of Rage\n• Clair: Dragon's Den cave"},
-    {"title":"Legendary locations","body":"Legendary Pokémon\n\nArticuno\n\nFound in Snowtop Mountain. Rock Climb is required.\n\nZapdos\n\nFound at the top of Olivine Lighthouse after obtaining the eighth badge.\n\nMoltres\n\nFound in Victory Road.\n\nGalarian Articuno, Zapdos, and Moltres\n\nEach bird can be purchased from the Route 50 Battle Café for 5 points.\n\nMewtwo\n\nFound in Nameless Dungeon at Kitakami Border after defeating the Elite Four. Rock Climb is required.\n\nMew\n\nAfter obtaining eight badges, visit Olivine City's port and find Blaine. Defeat him to unlock Faraway Island, where Mew can be found.\n\nRaikou, Entei, and Suicune\n\nAll three begin roaming after the Burned Tower event.\n\nLugia\n\nChoose the Silver Wing after the Rocket takeover. If you chose the Rainbow Wing instead, speak with the Director after defeating the Elite Four and prepare for a fight.\n\nShadow Lugia\n\nExplore south of Johto to find the Abandoned Rocket Warehouse. Solve its puzzles to obtain a Dark Crystal, then bring it to the regular Lugia encounter.\n\nIf you have already caught Lugia, complete one round of Title Defense to reset the spawn. If you chose Ho-Oh during the main story, defeat the Director in the postgame to obtain the Silver Wing.\n\nHo-Oh\n\nChoose the Rainbow Wing after the Rocket takeover. If you chose the Silver Wing instead, speak with the Director after defeating the Elite Four and prepare for a fight.\n\nCelebi\n\nSolve all eight Ruins of Alph puzzles: four slider puzzles and four wall puzzles. Enter a passage in B1F to find the GS Ball, take it to Kurt in Azalea Town, then visit the Ilex Forest shrine.\n\nRuins of Alph wall puzzle solutions:\n• ESCAPE: Use an Escape Rope from the Bag.\n• WATER: Use a Water Stone from the Bag.\n• LIGHT: Use Flash from the party menu.\n• HOOH: Bring Ho-Oh with you.\n\nRegirock\n\nSolve the braille puzzle in Vajra Desert West.\n\nRegirock puzzle solution:\nBring Tyranitar to the wall.\n\nRegice\n\nSolve the braille puzzle in Snowtop Mountain.\n\nRegice puzzle solution:\nBring Baxcalibur to the wall.\n\nRegisteel\n\nSolve the braille puzzle in Railway Cave.\n\nRegisteel puzzle solution:\nBring Kommo-o to the wall.\n\nLatias and Latios\n\nBoth are found in the Vajra Desert East temple during the postgame.\n\nKyogre\n\nAfter completing the Darkrai event, your rival gives you the Dive HM. Surf south from Route 33 and take the first left to find a dive spot containing Kyogre.\n\nGroudon\n\nAfter completing the Darkrai event, your rival gives you the Dive HM. A dive spot on Route 50 leads to a small cave containing Groudon.\n\nRayquaza\n\nDefeat Steven in the Kitakami house after becoming Champion, then visit Embedded Tower.\n\nJirachi\n\nComplete the rival story at Mt. Silver.\n\nUxie\n\nFound at the Rock Climb spot on Route 30 near the Berry Man's house.\n\nMesprit\n\nFound at the Rock Climb spot on Route 47 near the final bridge before Route 48.\n\nAzelf\n\nFound at the Rock Climb spot in Mahogany Town.\n\nDialga, Palkia, and Giratina\n\nObtain Hoopa and solve all eight Ruins of Alph puzzles. Return to the secret room that held Celebi with Hoopa in your party, then interact with the back wall to find portals leading to Dialga, Palkia, and Giratina.\n\nPrimal Dialga\nHave Grovyle, Dusknoir and Celebi in your party and interact with the Time Gear on Spear Pillar Summit.\n\nHeatran\n\nExplore the depths of Mt. Mortar after obtaining Waterfall and Rock Climb.\n\nHeatran puzzle solution:\nSelect the lower line and the middle top.\n\nRegigigas\n\nBring Regirock, Regice, and Registeel to the Mt. Silver back room.\n\nCresselia\n\nAfter completing the rival story at Mt. Silver, speak with your rival in their house to begin the quest. Go to the Lake of Rage, speak with the Hidden Power Dude, then explore the north-east corner of the lake.\n\nPhione\n\nFish with a Good Rod or Super Rod in the South Johto Sea area where only Shellos and Gastrodon can be encountered.\n\nManaphy\n\nEvolve Phione at level 58.\n\nDarkrai\n\nAfter obtaining Cresselia, show it to your rival in their house. Go to Cherrygrove City and enter the inn with Cresselia in your party.\n\nDarkrai inn puzzle solution:\n1. Accept the Moon Key.\n2. Go to your room at the top of the stairs, examine the bed, and choose not to sleep or resist sleeping.\n3. Go outside, return to the lobby, and inspect the papers on the wall.\n4. Inspect the Luxray trophy in the long hallway.\n5. Inspect the old telephone on the front desk and call the number formed by the stack of papers.\n6. Examine the piano to find a small key, then use it on the nearby safe.\n7. Walk upstairs to find Darkrai.\n\nShaymin\n\nFound in the Dream Garden, accessible from Tohjo Falls after obtaining Rock Climb.\n\nArceus\n\nReward from Oak in Radio Tower 2F for completing the Pokédex. Requires having caught all 615 non-legendary/non-mythical Pokémon.\n\nVictini\n\nAfter becoming Champion, speak with the old woman in the Kitakami Border house and defeat every Gym Leader rematch.\n\nCobalion\n\nFound through the Route 33-side exit of Railway Cave after becoming Champion.\n\nTerrakion\n\nFound in Dark Cave North after becoming Champion.\n\nVirizion\n\nFound on Route 50.\n\nTornadus, Thundurus, Landorus, and Enamorus\n\nEach force can be purchased from the Battle Café for 5 points. Your first force purchase also grants the Reveal Glass.\n\nMeloetta\n\nAfter becoming Champion, Meloetta can be found in the Ecruteak Dance Theater.\n\nGenesect\n\nCan be found in the Abandoned Rocket Warehouse after becoming Champion.\n\nEternal Floette\n\nObtain 60 trophies.\n\nDiancie\n\nDefeat every regular Battle Café opponent once, then claim Diancie from the café owner.\n\nHoopa\n\nComplete the Rinto Village trade that gives Tinkaton to the scientist in the bottom house. After becoming Champion, explore the depths of Vajra Pyramid and prepare for several battles.\n\nMagearna\n\nAfter becoming Champion, enter the Rocket Arcade and speak with the burglar. Win 25 Arcade rounds and speak with him again to receive a key to the top floor of Goldenrod Apartment. Prepare for a fight.\n\nOriginal Color Magearna\n\nObtain 100 trophies.\n\nMarshadow\n\nAfter obtaining the eighth badge, return to Elder Li in Sprout Tower and prepare for a battle. Afterwards, explore the Sprout Tower basement.\n\nTapus\n\nEach tapu can be purchased from the Route 50 Battle Café for 5 points.\n\nPoipole\n\nObtain 45 trophies.\n\nZeraora\n\nReach a 30-win streak in the Battle Tower to make Zeraora appear outside the tower.\n\nMeltan\n\nTrade for Tinkaton in Rinto Village.\n\nKubfu\n\nFound in the Rock Climb cave in Blackthorn City. The evolution scrolls can be purchased from the Rocket Arcade for a very high price.\n\nKubfu cave solution:\nGo down, up, left, up, left, down, right, right.\n\nZarude\n\nObtain 75 trophies.\n\nBloodmoon Ursaluna\n\nExplore Kitakami Mountain to find the Black Mirror, then go to the Lost Woods.\n\nBloodmoon Ursaluna route solution:\nFollow the Murkrow.\n\nParadox Pokémon\n\nExplore South Johto's Meteor Island.\n\nChien-Pao\n\nAfter obtaining Waterfall and Rock Climb, explore deeper into Ice Path.\n\nChi-Yu\n\nFish from the water fountain in Battle Cafe.\n\nWalking Wake, Gouging Fire, and Raging Bolt\n\nRegister every past Paradox Pokémon in the Pokédex, then interact with the Unown wall at the back.\n\nPast Paradox wall puzzle solution:\nIn the next room, bring Entei, Raikou, and Suicune to their respective walls to open them.\n\nIron Leaves, Iron Boulder, and Iron Crown\n\nRegister every future Paradox Pokémon in the Pokédex, then interact with the wall at the back.\n\nFuture Paradox wall puzzle solution:\nBring Virizion, Terrakion, and Cobalion to their respective walls to unlock them.\n\nKoraidon/Miraidon\n\nBoth can be purchased from the Route 50 Battle Café for 25 points after obtaining all other Paradox Pokémon.\n\nFezandipiti\n\nAfter obtaining Rock Climb, explore Kitakami.\n\nOgerpon\n\nExplore Kitakami Mountain."},
-    {"title":"Hidden Grotto locations","body":"How Hidden Grottos work\n\n• Interact with suspicious paths behind trees to enter a Grotto.\n• Grottos repopulate once per day. A Beckoning Bell can also refresh them (One is obtained for free in Ilex Forest from an npc, more can be farmed from Battle Factory after beating the third gym).\n• A Hidden Grotto has a 60% chance to contain a Pokémon, a 32% chance to be a generic item such as Rare Candy, PP Up and such, and a 8% chance to contain a grotto specific item.\n• Grotto Pokémon have two guaranteed 31 IVs and their Hidden Ability. Each of the four Pokémon in a grotto is equally likely to spawn when the grotto rolls a Pokémon spawn.\n• The Grotto specific item listed below is one possible result and is not guaranteed.\n\nLocations\n\n• Route 32 (Lv. 10): Applin, Paldean Wooper, Mareep, or Misdreavus. Grotto specific item: Everstone.\n\n• Route 33 (Lv. 14): Pachirisu, Mienfoo, Darumaka, or Cottonee. Grotto specific item: Sun Stone.\n\n• Ilex Forest (Lv. 15): Oddish, Ferroseed, Roselia, or Exeggcute. Grotto specific item: Leaf Stone.\n\n• Route 35 (Lv. 18): Rookidee, Pikachu, Poltchageist, or Eevee. Grotto specific item: Unremarkable Teacup.\n\n• Goldenrod Shore (Lv. 20): Minccino, Shroomish, Own Tempo Rockruff, or Heracross. Grotto specific item: Light Clay.\n\n• Route 38 (Lv. 30): Munchlax, Male Meowstic, Female Meowstic, or Espathra. Grotto specific item: Stardust.\n\n• Vajra Desert (Lv. 30): Baltoy, Vullaby, Larvitar, or Gible. Grotto specific item: Smooth Rock.\n\n• Lake of Rage (Lv. 35): Cyclizar, Maushold, Falinks, or Drampa. Grotto specific item: Eviolite.\n\n• Route 44 (Lv. 40): Arctibax, Bergmite, Lopunny, or Hisuian Zorua. Grotto specific item: Ice Stone.\n\n• Route 47 (Lv. 40): Chansey, Larvesta, Ditto, or Zorua. Grotto specific item: Lucky Egg."},
-    {"title":"Shiny hunting tips","body":"Basics\n\n• Every Pokémon you can obtain can be shiny, even traded Pokémon. There are no shiny locks.\n• The shiny odds are 1/256.\n• DexNav Pokémon have a higher chance of being shiny at streaks of 50 and 100.\n\nElm's lab starters\n\n1. Save in front of the starter case before opening it.\n2. Open the case and check the starters. A shiny starter has a gold colored ball, and its sprite is shiny when hovered.\n3. If the starter you want is not shiny, soft reset the game and check again.\n\nEggs\n\n• Eggs use the base 1/256 odds. The Masuda Method is not enabled in this hack.\n• Gift eggs can be shiny just like any regular gift Pokémon.\n• Shiny eggs have blue dots on their sprite.\n• An egg's shininess when breeding at the Day Care is decided when the egg is spawned at the Daycare Man, not when it's accepted/hatches.\n• The Day-Care Man says, \"This Egg looks quite different from the ones we usually see!\" when a shiny egg is ready. This message is shown before he asks if you want the egg.\n• Accept the egg after the special message. Otherwise, decline it and walk until another egg is ready.\n\nLegendaries, statis encounters and gifts\n\nSave directly before starting the encounter or receiving the Pokémon. If it is not shiny, soft reset and try again.\nGift Pokémon show as shiny in the preview screen when received.\n\nRaikou, Entei and Suicune are rolled when they are released in Burned Tower. Their shininess does not change each time they are encountered. It is recommended that you instead Shiny Genome them if you wish to have them as shiny.\n\nNPC trades\n\nNPC trades can be shiny and have 12 times the normal shiny chance. Save before completing the trade, then soft reset if needed. The sprite will show as shiny during the trade animation.\n\nNote about save states\n\nYou may use save states to shiny hunt many of these faster, but you have to occasionally advance the RNG by opening a bag or taking a few steps for example, so that you don't get stuck in the same outcomes."},
-    {"title":"Trophy milestones","body":"Trophies\n\nThere are over 100 trophies to obtain in Soulgold, and you are rewarded for reaching certain\nmilestones when obtaining enough of them.\n\nSpeak to the gentleman in Route 40 house to collect rewards and to check your current progress towards the next milestone.\n\nThe rewards\n\n15 trophies\n\n• Reward Shiny Patch\n  • This consumable turns any Pokémon you own into a shiny version!\n\n30 achievements\n\n• Reward: Ash-Greninja\n  • This Pokémon has a special ability Battle Bond which allows it to transform after KOing an opponent.\n\n45 achievements\n\n• Reward: Poipole\n  • Ultra Beast that starts off weak, but turns into a powerful Pokémon after learning Dragon Pulse.\n\n60 achievements\n• Reward: Eternal Floette\n  • A special Floette capable of Mega Evolution and boasting much higher stats than your average Floette.\n\n75 achievements\n• Reward: Zarude\n  • A mythical Pokémon from the jungle.\n\n100 achievements\n• Reward: Original Color Magerna\n  • This version of Magerna is usually given for completing the Pokédex, however this time it can be obtained by completing 100 achievemnts. Quite a feat!\n\nNote: All the Pokémon given by the gentleman can be shiny, and they will show as one in the preview picture if they are shiny."},
-    {"title":"Gift and Trade Pokémon","body":"Gift Pokémon\n\nCherrygrove City:\n• A Choice between Alolan Rattata and Galarian Zigzagoon after player obtains the first Poké Balls.\n\nRuins of Alph.\n• Handing fossils from smashing rocks in the Ruins of Alph to the scientist in the building will give player an appropriate Fossil Pokémon.\n\nOdd Egg from rival\n• Bagon, Gible, Feebas, Riolu, Jangmo-o, H-Zorua or Goomy.\n\nGoldenrod:\n• Bill gives a choice between Let's Go Eevee and Pikachu after speaking to him in the Ecruteak Pokémon Center.\n\nCianwood:\n• Gimmighoul from one of the houses.\n\nMt Mortar:\n• Tyrogue after beating the Karate King.\n\nBlackthorn City:\n• Dratini after answering the Dragon Den Shrine's questions and speaking with Clair. This Dratini has an unique move \"Spacial Rend\".\n\nKitakami:\n• Beldum from Steven.\n\nGoldenrod Casino:\n• All starters can be obtained from the Gachapon machine behind the rewards counter by paying a minimum of 3000 coins. Putting in more coins reduces the chance of getting a starter you already have.\n\nRoute 40:\n• Achievements Man hands you certain Pokémon for reaching milestones in the amount of trophies you have. The exact Pokémon can be found in the Achievement milestones guide here\n\nTrade Pokémon\n\nPawmi\n• Violet City, requires Cottonee.\n\nGalarian Slowpoke\n• Azalea Town, requires regular Slowpoke.\n\nHonedge\n• Goldenrod Dept Store, requires Clefairy.\n\nRotom\n• Route 39-Route 49 Gatehouse, requires Zorua.\n\nHisui-Voltorb\n• Olivine City, requires Mareanie.\n\nMeltan\n• Rinto Village, requires Tinkaton.\n\nGabite\n• Blackthorn City, requires Dragonair."}
+    {"title":"FAQ","groups":[{"group":"Basics","items":[{"t":"What is the latest version of the hack?","b":"• 1.1.1 and it's only available on Hackdex"},{"t":"Saves compatible between versions?","b":"• Always"},{"t":"Are there any cheats?","b":"• No, cheats are not supported and they are likely to corrupt your save, don't trust 3rd party sites offering them."},{"t":"Hard mode differences?","b":"• Gym battles are double battles unless enforced into singles by another setting\n• Trainers with no pre-assigned moves for their Pokémon generate slightly smarter movepools based on progression."},{"t":"Kanto?","b":"• No kanto, pure Johto focus."},{"t":"When is Morning/Day/Evening/Night?","b":"• Morning is 06:00-10:00, Day 10:00-19:00, Evening 19:00-20:00 and Night 20:00-06:00."},{"t":"When does night time start?","b":"• 20:00 ingame time."},{"t":"Dexnav?","b":"• After obtaining first set of Poké Balls."},{"t":"Unregistering dexnav species?","b":"• Select in the dexnav screen."},{"t":"Where is X Item/Pokémon/TM?","b":"• Check docs or ingame pokedex."}]},{"group":"Story progression and key items","items":[{"t":"Exp. Share?","b":"• Given right before arriving in the Violet City."},{"t":"HMs?","b":"• Requires only owning the HM and the corresponding badge. Additionally you can Fly using the Region Map in Pokégear after obtaining the HM."},{"t":"Strength HM?","b":"• Olivine Cafe."},{"t":"Waterfall hM?","b":"• Ice path."},{"t":"How do I access Whitney's Gym?","b":"• Go to the Radio Tower and complete the quiz on the first floor"},{"t":"How do I remove the weird tree after beating 3rd Gym?","b":"• Go to Goldenrod Flower Shop next to the gym and get Squirtbottle to wake up the tree."},{"t":"What's Candy Jar and how do I get it?","b":"• After beating the first gym, Elm's aide will give it to you alongside the egg. It will accumulate extra exp from battles and convert them to Exp Candy on use."},{"t":"Mega Ring?","b":"• After Team Rocket takeover event in Goldenrod City."},{"t":"How to get starter megastone/bondstone?","b":"• Given to you by Elm at a certain point in story."},{"t":"Coin case?","b":"• Goldenrod Underground"},{"t":"Cameron locations?","b":"• Ruins of Alph, Route 34, Cianwood City, Kitakami Border and Route 28."}]},{"group":"Pokémon availability and encounters","items":[{"t":"How do I get the other starters?","b":"• The Gachapon machine in Goldenrod Casino, behind the rewards counter, can give starters from any generation. 3000 Coins is the minimum entry, but putting more increases the chance of not receiving a duplicate starter."},{"t":"Regional Pokémon?","b":"• Most are available in the Baoba's Safari Zone, but several can be found before this."},{"t":"Shiny odds?","b":"• 1/256. Eggs will show with blue dots if they are shiny."},{"t":"Shiny locks?","b":"• None. Even NPC trades can be shiny."},{"t":"How often do Hidden Grotto contents respawn?","b":"• Once per day, but you can also use Beckoning Bell item from Battle Factory after Gym 3."},{"t":"Are Pokémon found from Hidden Grottos any different from regular wild ones?","b":"• Pokémon from Hidden Grottos have atleast two perfect IVs and their Hidden Ability. They have 60% chance of containing a Pokémon, 30% of having a generic item and 10% of having a grotto specific item"},{"t":"Fossils?","b":"• Smash rocks in Ruins of Alph."},{"t":"Baby forms?","b":"• Breed with incenses, see https://bulbapedia.bulbagarden.net/wiki/Baby_Pok%C3%A9mon#List_of_baby_Pok%C3%A9mon for more information."},{"t":"What are the ingame trades?","b":"• Pawmi in Violet (for Cottonee)\n• G-Slowpoke in Azalea (for regular Slowpoke)\n• Honedge in Goldenrod Dept Store (for Clefairy),\n• Hisui-Voltorb in Olivine (for Mareanie)\n• Gabite in Blackthorn City (for Dragonair)\n• Meltan in Rinto Village (for Tinkaton)"}]},{"group":"Gameplay mechanics","items":[{"t":"Type changes?","b":"• None during the main game. Only some might gain one extra type during postgame from an innate."},{"t":"BST Changes?","b":"• None."},{"t":"Moves changes?","b":"• Yes, some Pokémon learn extra moves for a bit more late game power. Such as Attack Order Beedrill."},{"t":"How to mega evolve?","b":"• Press start when selecting moves while the Pokémon is wielding appropriate Mega stone and you have the Mega Ring"},{"t":"Should I hold off evolving Growlithe/Vulpix/etc?","b":"• No, the evolved forms learn all the moves the pre-evoluion form does."},{"t":"How do I change Rotom form?","b":"• After obtaining a Rotom, bring it to the guard on the first floor of Goldenrod Apartment building. You can then access the basement with form changing appliances."}]},{"group":"Training and customization","items":[{"t":"Grinding Exp for late game?","b":"• Kitakami has an Audino/Blissey trainer for a fee of 10,000 pokedollars."},{"t":"Nature mints?","b":"• Olivine beach cafe sells them."},{"t":"Ability changing?","b":"• Battle Factory (after 3rd gym) offers them for playing a few rounds. Few can also be found in the overworld."},{"t":"Tutor moves?","b":"• There's a tutor move master in Olivine City in the top-right house who will sell you infinite access to all Tutor moves for 44444 pokedollars. After buying it, you can teach tutor moves from the summary screen."},{"t":"Egg moves?","b":"• Blackthorn City egg move master sells you infinite access to egg moves for 88888 pokedollars similar to tutor move master."},{"t":"Why do innates unlock so late?","b":"• They are meant to act as a form of postgame progression. Most Pokémon stop learning moves around 60~ usually, so this gives something to look forward to after that. If you really want to play with innates during the main game, you can activate them from the bookcase behind the starter case table in Elm's lab. However this will be a very unbalanced experience and not the intended way to play."},{"t":"Raising IVs?","b":"• Fishing and Battle Factory (after gym 3) can net you feather items which permanently raise your IVs by 5 with each use. Additionally Hyper Training is available in Rinto Village with Bottle Caps (which can also be obtained by fishing with Super Rod)."},{"t":"Raising EVs?","b":"• EV items such as Power Weight have been greatly buffed, and they are buyable in Goldenrod. Additionally vitamins like Protein are not capped at 100 EVs anymore, and there are EX versions of the items that raise the stats instantly to max."},{"t":"Lowering EVs?","b":"• Goldenrod Dept. Store sells EV reducing berries?"}]},{"group":"Items, money, and Pickup","items":[{"t":"Tips for finding items that are held by wild Pokémon?","b":"• Have a Pokémon with ability Compoundeyes or Super Luck in the first party slot to increase the chances of wild Pokémon holding an item."},{"t":"Tips for getting money?","b":"• Early game, have a Pokémon with ability Pickup. In this hack if the held item slot is occuped, items picked by Pickup will still go to bag. Later on you can fish feathers or smash rocks for shards and sell them for quick cash. After reaching Goldenrod, you can start coveting/thieving Yanmas on Route 35 for Wide Lenses, they sell for a lot of money and can be easily farmed with Dexnav chain. Butterfree learns Covet and Persian learns Thief. After obtaining 8 badges, Battle Factory will stock Nuggets and Big Nuggets. In the post game you can farm money from the Rocket Arcade facility."},{"t":"What items can Pickup find?","b":"• Below is the table of items found with Pickup. Note that the items go straight to bag if held item slot is occupied.\n\n| Item | Lv. 1–10 | Lv. 11–20 | Lv. 21–30 | Lv. 31–40 | Lv. 41–50 | Lv. 51–60 | Lv. 61–70 | Lv. 71–80 | Lv. 81–90 | Lv. 91–100 |\n| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n| Potion | 35% | — | — | — | — | — | — | — | — | — |\n| Tiny Mushroom | 25% | 10% | — | — | — | — | — | — | — | — |\n| Repel | 8% | 30% | — | — | — | — | — | — | — | — |\n| Super Potion | 8% | 10% | 30% | — | — | — | — | — | — | — |\n| Poké Doll | 8% | 10% | 9% | 30% | — | — | — | — | — | — |\n| Big Mushroom | 3% | 10% | 9% | — | — | — | — | — | — | — |\n| Super Repel | 3% | 10% | 9% | 9% | 30% | — | — | — | — | — |\n| Full Heal | 3% | 3% | 9% | 8% | 9% | 30% | — | — | — | — |\n| Revive | 3% | 3% | 3% | 8% | 8% | 9% | 30% | — | — | — |\n| Hyper Potion | 3% | 3% | 3% | 4% | 8% | 9% | 8% | 30% | — | — |\n| Ether | 1% | 1% | 3% | 4% | 4% | — | — | — | — | — |\n| Max Repel | — | 3% | 3% | 4% | 4% | 9% | 8% | 8% | 30% | — |\n| Moon Stone | — | 3% | 3% | 4% | 4% | 4% | 4% | 5% | 9% | 10% |\n| Sun Stone | — | 3% | 3% | 4% | 4% | 4% | 4% | 5% | 9% | 10% |\n| Rare Candy | — | 1% | 1% | 1% | 1% | 4% | 4% | 5% | 4% | 5% |\n| Nugget | — | — | 3% | 4% | 4% | 4% | 4% | 5% | 4% | 5% |\n| Max Potion | — | — | 3% | 4% | 4% | 4% | 8% | 8% | 9% | 30% |\n| Max Ether | — | — | 1% | 1% | 4% | 4% | 4% | — | — | — |\n| PP Up | — | — | 1% | 1% | 1% | 4% | 4% | 5% | 4% | 5% |\n| Big Nugget | — | — | 1% | 1% | 1% | 1% | 4% | 5% | 4% | 5% |\n| Destiny Knot | — | — | 1% | 1% | 1% | 1% | 1% | 1% | 1% | 1% |\n| Leftovers | — | — | 1% | 1% | 1% | 1% | 1% | 1% | 1% | 1% |\n| Mental Herb | — | — | 1% | 1% | 1% | 1% | 1% | 1% | 1% | 1% |\n| Power Herb | — | — | 1% | 1% | 1% | 1% | 1% | 1% | 1% | 1% |\n| White Herb | — | — | 1% | 1% | 1% | 1% | 1% | 1% | 1% | 1% |\n| Balm Mushroom | — | — | 1% | 4% | 4% | 4% | 4% | 5% | 4% | 5% |\n| Max Revive | — | — | — | 4% | 4% | 4% | 4% | 7% | 9% | 9% |\n| Ability Capsule | — | — | — | — | 1% | 1% | 4% | 5% | 4% | 5% |\n| Ability Patch | — | — | — | — | — | — | 1% | 1% | 4% | 5% |\n| Bottle Cap | — | — | — | — | — | — | — | 1% | 1% | 1% |"}]},{"group":"Postgame and optional battles","items":[{"t":"How do I get Dive HM?","b":"• Complete Mt. Silver event in the postgame and then speak with your rival in their house to start a questline that eventually rewards Dive."},{"t":"Where are the Route Experts?","b":"• Route 31, Goldenrod Shore, Route 47, Route 43 and Route 27."},{"t":"Gym leader rematch locations in postgame?","b":"• Falkner: Violet City school\n• Bugsy: National Park\n• Whitney: Goldenrod Dept. Store\n• Morty: Bellchime Trail\n• Chuck: Route 47 bridge\n• Jasmine: Olivine cafe\n• Pryce: Lake of Rage\n• Clair: Dragon's Den cave"}]}]},
+    {"title":"Legendary locations","groups":[{"group":"Legendary Pokémon","items":[{"t":"Articuno","b":"Found in Snowtop Mountain. Rock Climb is required."},{"t":"Zapdos","b":"Found at the top of Olivine Lighthouse after obtaining the eighth badge."},{"t":"Moltres","b":"Found in Victory Road."},{"t":"Galarian Articuno, Zapdos, and Moltres","b":"Each bird can be purchased from the Route 50 Battle Café for 5 points."},{"t":"Mewtwo","b":"Found in Nameless Dungeon at Kitakami Border after defeating the Elite Four. Rock Climb is required."},{"t":"Mew","b":"After obtaining eight badges, visit Olivine City's port and find Blaine. Defeat him to unlock Faraway Island, where Mew can be found."},{"t":"Raikou, Entei, and Suicune","b":"All three begin roaming after the Burned Tower event."},{"t":"Lugia","b":"Choose the Silver Wing after the Rocket takeover. If you chose the Rainbow Wing instead, speak with the Director after defeating the Elite Four and prepare for a fight."},{"t":"Shadow Lugia","b":"Explore south of Johto to find the Abandoned Rocket Warehouse. Solve its puzzles to obtain a Dark Crystal, then bring it to the regular Lugia encounter.\n\nIf you have already caught Lugia, complete one round of Title Defense to reset the spawn. If you chose Ho-Oh during the main story, defeat the Director in the postgame to obtain the Silver Wing."},{"t":"Ho-Oh","b":"Choose the Rainbow Wing after the Rocket takeover. If you chose the Silver Wing instead, speak with the Director after defeating the Elite Four and prepare for a fight."},{"t":"Celebi","b":"Solve all eight Ruins of Alph puzzles: four slider puzzles and four wall puzzles. Enter a passage in B1F to find the GS Ball, take it to Kurt in Azalea Town, then visit the Ilex Forest shrine.\n\nRuins of Alph wall puzzle solutions:\n• ESCAPE: Use an Escape Rope from the Bag.\n• WATER: Use a Water Stone from the Bag.\n• LIGHT: Use Flash from the party menu.\n• HOOH: Bring Ho-Oh with you."},{"t":"Regirock","b":"Solve the braille puzzle in Vajra Desert West.\n\nRegirock puzzle solution:\nBring Tyranitar to the wall."},{"t":"Regice","b":"Solve the braille puzzle in Snowtop Mountain.\n\nRegice puzzle solution:\nBring Baxcalibur to the wall."},{"t":"Registeel","b":"Solve the braille puzzle in Railway Cave.\n\nRegisteel puzzle solution:\nBring Kommo-o to the wall."},{"t":"Latias and Latios","b":"Both are found in the Vajra Desert East temple during the postgame."},{"t":"Kyogre","b":"After completing the Darkrai event, your rival gives you the Dive HM. Surf south from Route 33 and take the first left to find a dive spot containing Kyogre."},{"t":"Groudon","b":"After completing the Darkrai event, your rival gives you the Dive HM. A dive spot on Route 50 leads to a small cave containing Groudon."},{"t":"Rayquaza","b":"Defeat Steven in the Kitakami house after becoming Champion, then visit Embedded Tower."},{"t":"Jirachi","b":"Complete the rival story at Mt. Silver."},{"t":"Uxie","b":"Found at the Rock Climb spot on Route 30 near the Berry Man's house."},{"t":"Mesprit","b":"Found at the Rock Climb spot on Route 47 near the final bridge before Route 48."},{"t":"Azelf","b":"Found at the Rock Climb spot in Mahogany Town."},{"t":"Dialga, Palkia, and Giratina","b":"Obtain Hoopa and solve all eight Ruins of Alph puzzles. Return to the secret room that held Celebi with Hoopa in your party, then interact with the back wall to find portals leading to Dialga, Palkia, and Giratina."},{"t":"Primal Dialga","b":"Have Grovyle, Dusknoir and Celebi in your party and interact with the Time Gear on Spear Pillar Summit."},{"t":"Heatran","b":"Explore the depths of Mt. Mortar after obtaining Waterfall and Rock Climb.\n\nHeatran puzzle solution:\nSelect the lower line and the middle top."},{"t":"Regigigas","b":"Bring Regirock, Regice, and Registeel to the Mt. Silver back room."},{"t":"Cresselia","b":"After completing the rival story at Mt. Silver, speak with your rival in their house to begin the quest. Go to the Lake of Rage, speak with the Hidden Power Dude, then explore the north-east corner of the lake."},{"t":"Phione","b":"Fish with a Good Rod or Super Rod in the South Johto Sea area where only Shellos and Gastrodon can be encountered."},{"t":"Manaphy","b":"Evolve Phione at level 58."},{"t":"Darkrai","b":"After obtaining Cresselia, show it to your rival in their house. Go to Cherrygrove City and enter the inn with Cresselia in your party.\n\nDarkrai inn puzzle solution:\n1. Accept the Moon Key.\n2. Go to your room at the top of the stairs, examine the bed, and choose not to sleep or resist sleeping.\n3. Go outside, return to the lobby, and inspect the papers on the wall.\n4. Inspect the Luxray trophy in the long hallway.\n5. Inspect the old telephone on the front desk and call the number formed by the stack of papers.\n6. Examine the piano to find a small key, then use it on the nearby safe.\n7. Walk upstairs to find Darkrai."},{"t":"Shaymin","b":"Found in the Dream Garden, accessible from Tohjo Falls after obtaining Rock Climb."},{"t":"Arceus","b":"Reward from Oak in Radio Tower 2F for completing the Pokédex. Requires having caught all 615 non-legendary/non-mythical Pokémon."},{"t":"Victini","b":"After becoming Champion, speak with the old woman in the Kitakami Border house and defeat every Gym Leader rematch."},{"t":"Cobalion","b":"Found through the Route 33-side exit of Railway Cave after becoming Champion."},{"t":"Terrakion","b":"Found in Dark Cave North after becoming Champion."},{"t":"Virizion","b":"Found on Route 50."},{"t":"Tornadus, Thundurus, Landorus, and Enamorus","b":"Each force can be purchased from the Battle Café for 5 points. Your first force purchase also grants the Reveal Glass."},{"t":"Meloetta","b":"After becoming Champion, Meloetta can be found in the Ecruteak Dance Theater."},{"t":"Genesect","b":"Can be found in the Abandoned Rocket Warehouse after becoming Champion."},{"t":"Eternal Floette","b":"Obtain 60 trophies."},{"t":"Diancie","b":"Defeat every regular Battle Café opponent once, then claim Diancie from the café owner."},{"t":"Hoopa","b":"Complete the Rinto Village trade that gives Tinkaton to the scientist in the bottom house. After becoming Champion, explore the depths of Vajra Pyramid and prepare for several battles."},{"t":"Magearna","b":"After becoming Champion, enter the Rocket Arcade and speak with the burglar. Win 25 Arcade rounds and speak with him again to receive a key to the top floor of Goldenrod Apartment. Prepare for a fight."},{"t":"Original Color Magearna","b":"Obtain 100 trophies."},{"t":"Marshadow","b":"After obtaining the eighth badge, return to Elder Li in Sprout Tower and prepare for a battle. Afterwards, explore the Sprout Tower basement."},{"t":"Tapus","b":"Each tapu can be purchased from the Route 50 Battle Café for 5 points."},{"t":"Poipole","b":"Obtain 45 trophies."},{"t":"Zeraora","b":"Reach a 30-win streak in the Battle Tower to make Zeraora appear outside the tower."},{"t":"Meltan","b":"Trade for Tinkaton in Rinto Village."},{"t":"Kubfu","b":"Found in the Rock Climb cave in Blackthorn City. The evolution scrolls can be purchased from the Rocket Arcade for a very high price.\n\nKubfu cave solution:\nGo down, up, left, up, left, down, right, right."},{"t":"Zarude","b":"Obtain 75 trophies."},{"t":"Bloodmoon Ursaluna","b":"Explore Kitakami Mountain to find the Black Mirror, then go to the Lost Woods.\n\nBloodmoon Ursaluna route solution:\nFollow the Murkrow."},{"t":"Paradox Pokémon","b":"Explore South Johto's Meteor Island."},{"t":"Chien-Pao","b":"After obtaining Waterfall and Rock Climb, explore deeper into Ice Path."},{"t":"Chi-Yu","b":"Fish from the water fountain in Battle Cafe."},{"t":"Walking Wake, Gouging Fire, and Raging Bolt","b":"Register every past Paradox Pokémon in the Pokédex, then interact with the Unown wall at the back.\n\nPast Paradox wall puzzle solution:\nIn the next room, bring Entei, Raikou, and Suicune to their respective walls to open them."},{"t":"Iron Leaves, Iron Boulder, and Iron Crown","b":"Register every future Paradox Pokémon in the Pokédex, then interact with the wall at the back.\n\nFuture Paradox wall puzzle solution:\nBring Virizion, Terrakion, and Cobalion to their respective walls to unlock them."},{"t":"Koraidon/Miraidon","b":"Both can be purchased from the Route 50 Battle Café for 25 points after obtaining all other Paradox Pokémon."},{"t":"Fezandipiti","b":"After obtaining Rock Climb, explore Kitakami."},{"t":"Ogerpon","b":"Explore Kitakami Mountain."}]}]},
+    {"title":"Hidden Grotto locations","groups":[{"group":"","items":[{"t":"How Hidden Grottos work","b":"• Interact with suspicious paths behind trees to enter a Grotto.\n• Grottos repopulate once per day. A Beckoning Bell can also refresh them (One is obtained for free in Ilex Forest from an npc, more can be farmed from Battle Factory after beating the third gym).\n• A Hidden Grotto has a 60% chance to contain a Pokémon, a 32% chance to be a generic item such as Rare Candy, PP Up and such, and a 8% chance to contain a grotto specific item.\n• Grotto Pokémon have two guaranteed 31 IVs and their Hidden Ability. Each of the four Pokémon in a grotto is equally likely to spawn when the grotto rolls a Pokémon spawn.\n• The Grotto specific item listed below is one possible result and is not guaranteed."},{"t":"Locations","b":"• Route 32 (Lv. 10): Applin, Paldean Wooper, Mareep, or Misdreavus. Grotto specific item: Everstone.\n\n• Route 33 (Lv. 14): Pachirisu, Mienfoo, Darumaka, or Cottonee. Grotto specific item: Sun Stone.\n\n• Ilex Forest (Lv. 15): Oddish, Ferroseed, Roselia, or Exeggcute. Grotto specific item: Leaf Stone.\n\n• Route 35 (Lv. 18): Rookidee, Pikachu, Poltchageist, or Eevee. Grotto specific item: Unremarkable Teacup.\n\n• Goldenrod Shore (Lv. 20): Minccino, Shroomish, Own Tempo Rockruff, or Heracross. Grotto specific item: Light Clay.\n\n• Route 38 (Lv. 30): Munchlax, Male Meowstic, Female Meowstic, or Espathra. Grotto specific item: Stardust.\n\n• Vajra Desert (Lv. 30): Baltoy, Vullaby, Larvitar, or Gible. Grotto specific item: Smooth Rock.\n\n• Lake of Rage (Lv. 35): Cyclizar, Maushold, Falinks, or Drampa. Grotto specific item: Eviolite.\n\n• Route 44 (Lv. 40): Arctibax, Bergmite, Lopunny, or Hisuian Zorua. Grotto specific item: Ice Stone.\n\n• Route 47 (Lv. 40): Chansey, Larvesta, Ditto, or Zorua. Grotto specific item: Lucky Egg."}]}]},
+    {"title":"Shiny hunting tips","groups":[{"group":"","items":[{"t":"Basics","b":"• Every Pokémon you can obtain can be shiny, even traded Pokémon. There are no shiny locks.\n• The shiny odds are 1/256.\n• DexNav Pokémon have a higher chance of being shiny at streaks of 50 and 100."},{"t":"Elm's lab starters","b":"1. Save in front of the starter case before opening it.\n2. Open the case and check the starters. A shiny starter has a gold colored ball, and its sprite is shiny when hovered.\n3. If the starter you want is not shiny, soft reset the game and check again."},{"t":"Eggs","b":"• Eggs use the base 1/256 odds. The Masuda Method is not enabled in this hack.\n• Gift eggs can be shiny just like any regular gift Pokémon.\n• Shiny eggs have blue dots on their sprite.\n• An egg's shininess when breeding at the Day Care is decided when the egg is spawned at the Daycare Man, not when it's accepted/hatches.\n• The Day-Care Man says, \"This Egg looks quite different from the ones we usually see!\" when a shiny egg is ready. This message is shown before he asks if you want the egg.\n• Accept the egg after the special message. Otherwise, decline it and walk until another egg is ready."},{"t":"Legendaries, statis encounters and gifts","b":"Save directly before starting the encounter or receiving the Pokémon. If it is not shiny, soft reset and try again.\nGift Pokémon show as shiny in the preview screen when received.\n\nRaikou, Entei and Suicune are rolled when they are released in Burned Tower. Their shininess does not change each time they are encountered. It is recommended that you instead Shiny Genome them if you wish to have them as shiny."},{"t":"NPC trades","b":"NPC trades can be shiny and have 12 times the normal shiny chance. Save before completing the trade, then soft reset if needed. The sprite will show as shiny during the trade animation."},{"t":"Note about save states","b":"You may use save states to shiny hunt many of these faster, but you have to occasionally advance the RNG by opening a bag or taking a few steps for example, so that you don't get stuck in the same outcomes."}]}]},
+    {"title":"Trophy milestones","groups":[{"group":"","items":[{"t":"Trophies","b":"There are over 100 trophies to obtain in Soulgold, and you are rewarded for reaching certain\nmilestones when obtaining enough of them.\n\nSpeak to the gentleman in Route 40 house to collect rewards and to check your current progress towards the next milestone."}]},{"group":"The rewards","items":[{"t":"15 trophies","b":"• Reward Shiny Patch\n  • This consumable turns any Pokémon you own into a shiny version!"},{"t":"30 achievements","b":"• Reward: Ash-Greninja\n  • This Pokémon has a special ability Battle Bond which allows it to transform after KOing an opponent."},{"t":"45 achievements","b":"• Reward: Poipole\n  • Ultra Beast that starts off weak, but turns into a powerful Pokémon after learning Dragon Pulse."},{"t":"60 achievements","b":"• Reward: Eternal Floette\n  • A special Floette capable of Mega Evolution and boasting much higher stats than your average Floette."},{"t":"75 achievements","b":"• Reward: Zarude\n  • A mythical Pokémon from the jungle."},{"t":"100 achievements","b":"• Reward: Original Color Magerna\n  • This version of Magerna is usually given for completing the Pokédex, however this time it can be obtained by completing 100 achievemnts. Quite a feat!\n\nNote: All the Pokémon given by the gentleman can be shiny, and they will show as one in the preview picture if they are shiny."}]}]},
+    {"title":"Gift and Trade Pokémon","groups":[{"group":"Gift Pokémon","items":[{"t":"Cherrygrove City","b":"• A Choice between Alolan Rattata and Galarian Zigzagoon after player obtains the first Poké Balls."},{"t":"Ruins of Alph","b":"• Handing fossils from smashing rocks in the Ruins of Alph to the scientist in the building will give player an appropriate Fossil Pokémon."},{"t":"Odd Egg from rival","b":"• Bagon, Gible, Feebas, Riolu, Jangmo-o, H-Zorua or Goomy."},{"t":"Goldenrod","b":"• Bill gives a choice between Let's Go Eevee and Pikachu after speaking to him in the Ecruteak Pokémon Center."},{"t":"Cianwood","b":"• Gimmighoul from one of the houses."},{"t":"Mt Mortar","b":"• Tyrogue after beating the Karate King."},{"t":"Blackthorn City","b":"• Dratini after answering the Dragon Den Shrine's questions and speaking with Clair. This Dratini has an unique move \"Spacial Rend\"."},{"t":"Kitakami","b":"• Beldum from Steven."},{"t":"Goldenrod Casino","b":"• All starters can be obtained from the Gachapon machine behind the rewards counter by paying a minimum of 3000 coins. Putting in more coins reduces the chance of getting a starter you already have."},{"t":"Route 40","b":"• Achievements Man hands you certain Pokémon for reaching milestones in the amount of trophies you have. The exact Pokémon can be found in the Achievement milestones guide here"}]},{"group":"Trade Pokémon","items":[{"t":"Pawmi","b":"• Violet City, requires Cottonee."},{"t":"Galarian Slowpoke","b":"• Azalea Town, requires regular Slowpoke."},{"t":"Honedge","b":"• Goldenrod Dept Store, requires Clefairy."},{"t":"Rotom","b":"• Route 39-Route 49 Gatehouse, requires Zorua."},{"t":"Hisui-Voltorb","b":"• Olivine City, requires Mareanie."},{"t":"Meltan","b":"• Rinto Village, requires Tinkaton."},{"t":"Gabite","b":"• Blackthorn City, requires Dragonair."}]}]}
   ];
   var SG_GUIDE_TABLES = [
     {
@@ -14856,6 +15307,9 @@
       // the rules row; see scalingOn() / sgHardOn().
       levelScaling: true,
       hardTeams: true,
+      // Every trainer species' innates (generated), for the "All innates
+      // unlocked" toggle; see allInnatesOn().
+      innates: SG_INNATES,
       // Boss stats assume default options (tools/build_sg_data.py calc_stats;
       // docs/soulgold.md "Boss stats").
       bossesNote: "Levels and stats are the standard ones, without trainer level scaling: with scaling on, bosses scale to your party like everyone else. Replay options that max opponents' IVs/EVs or change innates aren't reflected.",
@@ -15008,8 +15462,10 @@
     if(scalingLabel) scalingLabel.style.display = currentGame().levelScaling ? "" : "none";
     var sgHardLabel = document.getElementById("sgHardRuleLabel");
     if(sgHardLabel) sgHardLabel.style.display = currentGame().hardTeams ? "" : "none";
+    var innatesLabel = document.getElementById("allInnatesRuleLabel");
+    if(innatesLabel) innatesLabel.style.display = currentGame().innates ? "" : "none";
     var rulesRow = document.getElementById("rulesRow");
-    if(rulesRow) rulesRow.style.display = (currentGame().hardMode || currentGame().levelScaling || currentGame().hardTeams) ? "" : "none";
+    if(rulesRow) rulesRow.style.display = (currentGame().hardMode || currentGame().levelScaling || currentGame().hardTeams || currentGame().innates) ? "" : "none";
   }
 
   // One run's worth of state — kept per-game (see `runs` below) so
@@ -15020,8 +15476,9 @@
     // species/dupes/shiny/nickname toggles were removed (user, 2026-10-06:
     // always played with all of them on); only `nickname` ever had an effect
     // and it is now always enforced. `scaling` shows on GAMES[id].levelScaling,
-    // `sgHard` (SoulGold's Difficulty option: swaps teams) on GAMES[id].hardTeams.
-    return { species:true, dupes:true, shiny:true, nickname:true, hard:false, scaling:false, sgHard:false };
+    // `sgHard` (SoulGold's Difficulty option: swaps teams) on GAMES[id].hardTeams,
+    // `allInnates` (SoulGold's Elm's-lab bookcase) on GAMES[id].innates.
+    return { species:true, dupes:true, shiny:true, nickname:true, hard:false, scaling:false, sgHard:false, allInnates:false };
   }
   function defaultRunState(){
     return {
@@ -15644,7 +16101,7 @@
       currentRun().rules[rule] = e.target.checked; save();
       // Hard mode changes every level the Bosses/Trainers/Guide tabs show.
       if(rule === "hard"){ renderBosses(); renderTrainers(); renderGuide(); }
-      if(rule === "scaling" || rule === "sgHard"){ renderBosses(); renderTrainers(); }
+      if(rule === "scaling" || rule === "sgHard" || rule === "allInnates"){ renderBosses(); renderTrainers(); }
     }
   });
 
@@ -16041,6 +16498,16 @@
   //    the builder reproduces into `hardMoves`.
   function scalingOn(){ return !!currentGame().levelScaling && !!currentRun().rules.scaling; }
   function sgHardOn(){ return !!currentGame().hardTeams && !!currentRun().rules.sgHard; }
+  // SoulGold's "Artifact of Chaos" (the bookcase in Elm's lab,
+  // FLAG_ALL_INNATES_UNLOCKED): every innate is active at any level, for every
+  // mon in battle — trainers' too. Normally they unlock at Lv 75/85/95, which
+  // is what the generated ability text shows ("Static + innate Keen Eye").
+  function allInnatesOn(){ return !!currentGame().innates && !!currentRun().rules.allInnates; }
+  function abilityText(m){
+    var inn = allInnatesOn() && currentGame().innates[m.name];
+    if(!inn) return m.ability;
+    return String(m.ability).split(" + innate ")[0] + " + innate " + inn.join(", ");
+  }
   // The team a boss entry fights with under the current difficulty.
   function teamMons(b){ return (sgHardOn() && b.hard) ? b.hard : b.mons; }
   function teamDoubles(b){ return (sgHardOn() && b.hard) ? !!b.hardDoubles : !!b.doubles; }
@@ -16069,7 +16536,7 @@
     return (
       '<div class="boss-mon">' +
         '<div class="boss-mon-top">'+dexLinkHTML(m.name, escapeHTML(m.name), "")+'<span>'+lvHtml+'</span></div>' +
-        '<div class="boss-mon-meta">Ability: '+escapeHTML(m.ability)+' · Item: '+escapeHTML(m.item)+(m.nature ? ' · '+escapeHTML(m.nature) : '')+'</div>' +
+        '<div class="boss-mon-meta">Ability: '+escapeHTML(abilityText(m))+' · Item: '+escapeHTML(m.item)+(m.nature ? ' · '+escapeHTML(m.nature) : '')+'</div>' +
         '<div class="boss-mon-moves">'+escapeHTML(moves)+'</div>' +
         statLineHTML(m) +
         (spread ? '<div class="boss-mon-spread">'+escapeHTML(spread)+'</div>' : '') +
@@ -16090,6 +16557,9 @@
       out.push(tab === "bosses"
         ? "Hard mode: bosses with a Hard team show it (some are double battles); the rest use the same team as Normal. The in-game Battle style option can force singles."
         : "Hard mode: route trainers use the same teams as Normal, but moves they weren't given are picked by Hard mode's own rule, which is what's shown.");
+    }
+    if(allInnatesOn()){
+      out.push("All innates unlocked (the bookcase in Elm's lab): every Pokémon here has all of its innates, whatever its level.");
     }
     return out.map(function(t){ return '<div class="hard-note">' + escapeHTML(t) + '</div>'; }).join("");
   }
@@ -18106,10 +18576,51 @@
     if(!list.length){
       return introHtml + '<div class="empty">No ' + escapeHTML(emptyLabel) + ' loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
     }
-    return introHtml + list.map(function(t){
+    return introHtml + list.map(function(t, i){
+      if(t.groups) return guideDocHTML(t, game.id + "|" + i);
       return '<div class="guide-card"><div class="guide-card-title">'+escapeHTML(t.title)+'</div><div class="guide-card-body">'+escapeHTML(t.body)+'</div></div>';
     }).join("");
   }
+
+  // A guide split along its own headings (`groups` of `items` {t, b}; the
+  // builder's md_sections()): the guide folds, each entry folds, and the
+  // Guide filter searches down to single lines (applyGuideFilter). Which
+  // folds are open is in-memory (guideDocOpen, keyed by data-gd) so a
+  // re-render or a cleared search puts them back as the user left them.
+  var guideDocOpen = {};
+  function guideDocHTML(t, key){
+    var n = 0, j = 0;
+    var inner = t.groups.map(function(gr){
+      var head = gr.group ? '<div class="gd-group">' + escapeHTML(gr.group) + '</div>' : "";
+      return head + gr.items.map(function(it){
+        n++;
+        // A top-level line (bullet, step or paragraph line) plus its indented
+        // sub-bullets is one chunk: the unit a search shows or hides.
+        var chunks = [];
+        it.b.split("\n").forEach(function(line){
+          if(/^\s+\S/.test(line) && chunks.length) chunks[chunks.length - 1] += "\n" + line;
+          else chunks.push(line);
+        });
+        var body = '<div class="guide-card-body">' + chunks.map(function(c){
+          return '<div class="gd-chunk">' + (c.trim() ? escapeHTML(c) : "&nbsp;") + '</div>';
+        }).join("") + '</div>';
+        if(!it.t) return '<div class="gd-intro" data-gd-group="' + escapeHTML(gr.group) + '">' + body + '</div>';
+        var k = key + "|" + (j++);
+        return '<details class="gd-entry" data-gd="' + escapeHTML(k) + '" data-gd-group="' + escapeHTML(gr.group) + '"' + (guideDocOpen[k] ? ' open' : '') +
+          '><summary>' + escapeHTML(it.t) + '</summary>' + body + '</details>';
+      }).join("");
+    }).join("");
+    return '<details class="guide-card guide-doc" data-gd="' + escapeHTML(key) + '"' + (guideDocOpen[key] ? ' open' : '') +
+      '><summary class="guide-card-title">' + escapeHTML(t.title) + ' <span class="gt-count" data-total="' + n + '">(' + n + ')</span></summary>' + inner + '</details>';
+  }
+  // Remember folds the user opens or closes, but not the ones a search opens.
+  document.getElementById("guideContent").addEventListener("toggle", function(e){
+    var d = e.target;
+    if(!d || !d.getAttribute || !d.getAttribute("data-gd")) return;
+    var input = document.getElementById("guideFilter");
+    if(input && input.value.trim()) return;
+    guideDocOpen[d.getAttribute("data-gd")] = d.open;
+  }, true);
 
   // Typed text of the Guide-tab table filter, per game+section, so it survives
   // any re-render of the same section (renderAll(), game switch and back).
@@ -18130,7 +18641,7 @@
     var clearBtn = root.querySelector("#guideFilterClear");
     // Empty filter on a freshly rendered section: nothing is hidden, so skip
     // the per-row walk (renderAll() rebuilds 600+ row tables on every edit).
-    if(!q && !root.querySelector("tr.gt-row[hidden], details.guide-table-card[hidden]")){
+    if(!q && !root.querySelector("tr.gt-row[hidden], details.guide-table-card[hidden], .guide-doc[data-filtered]")){
       var emptyNote = root.querySelector("#guideFilterNote");
       if(emptyNote) emptyNote.textContent = "";
       if(clearBtn) clearBtn.style.display = "none";
@@ -18157,10 +18668,64 @@
       if(count) count.textContent = q ? "(" + shown + " of " + rows.length + ")" : "(" + rows.length + ")";
       if(shown) anyShown = true;
     });
+    var docs = root.querySelectorAll("details.guide-doc");
+    Array.prototype.forEach.call(docs, function(d){
+      anyTable = true;
+      if(filterGuideDoc(d, q)) anyShown = true;
+    });
     var note = root.querySelector("#guideFilterNote");
-    if(note) note.textContent = (q && anyTable && !anyShown) ? 'No rows match "' + input.value.trim() + '".' : "";
+    if(note) note.textContent = (q && anyTable && !anyShown) ? (docs.length ? 'Nothing matches "' : 'No rows match "') + input.value.trim() + '".' : "";
     var clear = root.querySelector("#guideFilterClear");
     if(clear) clear.style.display = q ? "" : "none";
+  }
+
+  // One sectioned guide under the Guide filter. A hit on the guide's title or
+  // a group heading shows its entries closed; a hit on an entry's title shows
+  // all of it, opened; otherwise only the matching lines show, opened. An
+  // empty query restores every fold the user left open (guideDocOpen).
+  // Returns whether anything in the guide is shown.
+  function filterGuideDoc(d, q){
+    var lc = function(el){ if(el._gdText === undefined) el._gdText = el.textContent.toLowerCase(); return el._gdText; };
+    var count = d.querySelector(".gt-count");
+    var total = count ? count.getAttribute("data-total") : "";
+    if(!q){
+      d.removeAttribute("data-filtered"); d.hidden = false;
+      d.open = !!guideDocOpen[d.getAttribute("data-gd")];
+      Array.prototype.forEach.call(d.querySelectorAll("[hidden]"), function(x){ x.hidden = false; });
+      Array.prototype.forEach.call(d.querySelectorAll("details.gd-entry"), function(e){ e.open = !!guideDocOpen[e.getAttribute("data-gd")]; });
+      if(count) count.textContent = "(" + total + ")";
+      return true;
+    }
+    d.setAttribute("data-filtered", "1");
+    var cardHit = lc(d.querySelector("summary")).replace(/\(\d+\)$/, "").indexOf(q) !== -1;
+    var groupHit = {}, shown = 0;
+    Array.prototype.forEach.call(d.querySelectorAll(".gd-group"), function(g){ groupHit[g.textContent] = lc(g).indexOf(q) !== -1; });
+    Array.prototype.forEach.call(d.querySelectorAll("details.gd-entry, .gd-intro"), function(e){
+      var wide = cardHit || !!groupHit[e.getAttribute("data-gd-group")];
+      var sum = e.querySelector("summary");
+      var titleHit = !!sum && lc(sum).indexOf(q) !== -1;
+      var lines = 0;
+      Array.prototype.forEach.call(e.querySelectorAll(".gd-chunk"), function(c){
+        var hit = wide || titleHit || lc(c).indexOf(q) !== -1;
+        c.hidden = !hit;
+        if(hit && lc(c).indexOf(q) !== -1) lines++;
+      });
+      var show = wide || titleHit || lines > 0;
+      e.hidden = !show;
+      if(e.tagName === "DETAILS") e.open = show && (titleHit || lines > 0);
+      if(show && e.tagName === "DETAILS") shown++;
+    });
+    Array.prototype.forEach.call(d.querySelectorAll(".gd-group"), function(g){
+      var any = false;
+      Array.prototype.forEach.call(d.querySelectorAll('[data-gd-group]'), function(e){
+        if(e.getAttribute("data-gd-group") === g.textContent && !e.hidden) any = true;
+      });
+      g.hidden = !any;
+    });
+    d.hidden = shown === 0 && !cardHit;
+    d.open = !d.hidden;
+    if(count) count.textContent = "(" + shown + " of " + total + ")";
+    return !d.hidden;
   }
 
   // ---------- Quests tab (games with the "quests" feature) ----------
@@ -18310,8 +18875,9 @@
       var cardsHtml = (section.cards && section.cards.length) ? guideCardsHTML(section.cards, section.label.toLowerCase(), game) : "";
       var tables = (section.data || []).filter(function(t){ return t.rows && t.rows.length; });
       if(!tables.length && !cardsHtml) return '<div class="empty">No ' + escapeHTML(section.label.toLowerCase()) + ' loaded yet for ' + escapeHTML(game.shortLabel) + '.</div>';
-      var filterHtml = tables.length
-        ? '<div class="filter-box"><input type="text" id="guideFilter" placeholder="Filter rows (e.g. &quot;Route 32&quot;)…" autocomplete="off" value="' + escapeHTML(guideFilterText[guideFilterKey(game, section)] || "") + '">' +
+      var hasDocs = (section.cards || []).some(function(c){ return c.groups; });
+      var filterHtml = (tables.length || hasDocs)
+        ? '<div class="filter-box"><input type="text" id="guideFilter" placeholder="' + (hasDocs ? 'Search the guides (e.g. &quot;Lugia&quot;, &quot;mints&quot;)…' : 'Filter rows (e.g. &quot;Route 32&quot;)…') + '" autocomplete="off" value="' + escapeHTML(guideFilterText[guideFilterKey(game, section)] || "") + '">' +
           '<button type="button" class="filter-clear" id="guideFilterClear" data-act="guide-filter-clear">×</button></div>' +
           '<div class="guide-filter-note" id="guideFilterNote"></div>'
         : "";
