@@ -920,6 +920,9 @@
   .dex-tutors{ display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
   .dex-chip{ font-size: 12px; padding: 2px 6px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--cream); }
   .dex-move-desc{ font-size: 12px; color: var(--cream-dim); margin-top: 3px; line-height: 1.35; }
+  .dex-scope{ display: flex; gap: 6px; margin: -4px 0 12px; }
+  .dex-scope button{ flex: 1; font: inherit; font-size: 13px; padding: 6px 4px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); color: var(--cream-dim); cursor: pointer; }
+  .dex-scope button[aria-pressed="true"]{ background: var(--lcd); border-color: var(--lcd); color: var(--bg); font-weight: 700; }
   .dex-learn-how{ font-size: 13px; color: var(--gold); margin-top: 3px; overflow-wrap: anywhere; }
   .dex-move-hit{ font-size: 13px; color: var(--cream-dim); margin: -4px 0 10px; }
   .dex-move-sugg{ display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 10px; }
@@ -1249,6 +1252,11 @@
         <div class="filter-box">
           <input type="text" id="pokedexFilter" placeholder="Filter by species, type or move (e.g. &quot;Charmander&quot;, &quot;Fire&quot;, &quot;Surf&quot;)…" autocomplete="off">
           <button type="button" class="filter-clear" id="pokedexFilterClear">×</button>
+        </div>
+        <div class="dex-scope" id="pokedexScope">
+          <button type="button" data-act="dex-scope" data-scope="team" aria-pressed="false">Team</button>
+          <button type="button" data-act="dex-scope" data-scope="owned" aria-pressed="false">Team + Box</button>
+          <button type="button" data-act="dex-scope" data-scope="final" aria-pressed="false">Final evos</button>
         </div>
         <div id="pokedexList"></div>
       </div>
@@ -15778,8 +15786,9 @@
 
   function renderStats(){
     var run = currentRun();
-    var alive = run.mons.filter(function(m){ return m.status==="alive"; }).length;
     var dead = run.mons.filter(function(m){ return m.status==="dead"; }).length;
+    // Alive = every encounter still living, party and PC alike (user).
+    var alive = run.mons.length - dead;
     document.getElementById("statTotal").textContent = run.mons.length;
     document.getElementById("statAlive").textContent = alive;
     document.getElementById("statDead").textContent = dead;
@@ -17756,6 +17765,39 @@
     return (pokedexMoveIndexes[game] = idx);
   }
 
+  // Scope toggles (user, 2026-10-12): limit the list to the party ("team"),
+  // party + PC ("owned"), or the fully evolved forms of party + PC ("final",
+  // every branch of a split evolution). One at a time; tap again for all.
+  // Browsing state like the filter text, so not saved.
+  var pokedexScope = "";
+  function pokedexScopeSpecies(){
+    if(!pokedexScope) return null;
+    var statuses = pokedexScope === "team" ? ["alive"] : ["alive", "boxed"];
+    var out = {};
+    currentRun().mons.forEach(function(m){
+      if(statuses.indexOf(m.status) === -1) return;
+      var key = resolveDexSpecies(m.species);
+      if(!key) return;
+      if(pokedexScope !== "final"){ out[key] = true; return; }
+      // Walk every evolution path to its end; `seen` stops a cycle.
+      var seen = {};
+      (function walk(name, k){
+        if(seen[k]) return;
+        seen[k] = true;
+        var next = (evolutionTargets(name) || []).map(function(t){ return [t, resolveDexSpecies(t)]; })
+          .filter(function(t){ return t[1] && !seen[t[1]]; });
+        if(!next.length) out[k] = true;
+        next.forEach(function(t){ walk(t[0], t[1]); });
+      })(key, key);
+    });
+    return out;
+  }
+  function pokedexScopeSignature(){
+    if(!pokedexScope) return "";
+    return pokedexScope + ":" + currentRun().mons.filter(function(m){ return m.status !== "dead"; })
+      .map(function(m){ return m.status + "/" + m.species; }).sort().join(",");
+  }
+
   var ALL_TYPES = ["Normal","Fire","Water","Electric","Grass","Ice","Fighting","Poison",
     "Ground","Flying","Psychic","Bug","Rock","Ghost","Dragon","Dark","Steel","Fairy"];
 
@@ -17768,7 +17810,7 @@
   var pokedexListSig = null;
 
   function pokedexListSignature(q){
-    return state.selectedGame + "|" + q + "|" + Object.keys(pokedexExpanded)
+    return state.selectedGame + "|" + q + "|" + pokedexScopeSignature() + "|" + Object.keys(pokedexExpanded)
       .filter(function(k){ return pokedexExpanded[k]; }).sort().join(",");
   }
 
@@ -17800,6 +17842,11 @@
     pokedexListSig = sig;
 
     var names = getPokedexSpeciesList();
+    Array.prototype.forEach.call(document.querySelectorAll("#pokedexScope button"), function(b){
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-scope") === pokedexScope));
+    });
+    var scoped = pokedexScopeSpecies();
+    if(scoped) names = names.filter(function(n){ return scoped[n]; });
     pokedexMoveHit = null;
     var moveSugg = [];
     if(q){
@@ -17855,7 +17902,9 @@
 
     if(!names.length){
       pokedexRenderToken++;
-      el.innerHTML = headHtml + '<div class="empty">No species match "' + escapeHTML(filterInput ? filterInput.value.trim() : "") + '".</div>';
+      el.innerHTML = headHtml + '<div class="empty">' + (scoped && !Object.keys(scoped).length
+        ? (pokedexScope === "team" ? "No Pokémon in your team." : "No Pokémon in your team or box.")
+        : 'No species match "' + escapeHTML(filterInput ? filterInput.value.trim() : "") + '".') + '</div>';
       return;
     }
     // Origin HeartGold has 1440 species: building every card in one go is
@@ -19121,6 +19170,13 @@
       else crMap[routeKey] = "hidden";
       save();
       renderChecklist();
+      return;
+    }
+
+    if(act === "dex-scope"){
+      var scope = btn.getAttribute("data-scope");
+      pokedexScope = pokedexScope === scope ? "" : scope;
+      renderPokedexList();
       return;
     }
 
