@@ -920,6 +920,10 @@
   .dex-tutors{ display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
   .dex-chip{ font-size: 12px; padding: 2px 6px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--cream); }
   .dex-move-desc{ font-size: 12px; color: var(--cream-dim); margin-top: 3px; line-height: 1.35; }
+  .dex-learn-how{ font-size: 13px; color: var(--gold); margin-top: 3px; overflow-wrap: anywhere; }
+  .dex-move-hit{ font-size: 13px; color: var(--cream-dim); margin: -4px 0 10px; }
+  .dex-move-sugg{ display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 10px; }
+  .dex-move-sugg button{ font: inherit; font-size: 13px; padding: 4px 8px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); color: var(--cream); cursor: pointer; }
 
   /* ---------- quests tab ---------- */
   .quest-list{ margin-bottom: 14px; }
@@ -1243,7 +1247,7 @@
       <div id="pokedexBody" style="display:none;">
         <div class="hard-note" id="pokedexNote" style="display:none;"></div>
         <div class="filter-box">
-          <input type="text" id="pokedexFilter" placeholder="Filter by species or type (e.g. &quot;Charmander&quot; or &quot;Fire&quot;)…" autocomplete="off">
+          <input type="text" id="pokedexFilter" placeholder="Filter by species, type or move (e.g. &quot;Charmander&quot;, &quot;Fire&quot;, &quot;Surf&quot;)…" autocomplete="off">
           <button type="button" class="filter-clear" id="pokedexFilterClear">×</button>
         </div>
         <div id="pokedexList"></div>
@@ -17687,6 +17691,11 @@
             learnsetHtml +
             '<div class="dex-section-title">TMs</div>' +
             tmsHtml +
+            // Egg moves: only games whose data has them (SoulGold); hidden elsewhere.
+            ((info.egg && info.egg.length)
+              ? '<div class="dex-section-title">Egg Moves</div>' +
+                  info.egg.map(function(mv){ return pokedexMoveRowHTML(mv, "", false); }).join("")
+              : "") +
             ((info.extra && info.extra.length)
               ? '<div class="dex-section-title">Other new moves (docs; how is not stated)</div><div class="dex-tutors">' +
                   info.extra.map(function(t){ return '<span class="dex-chip">'+escapeHTML(t)+'</span>'; }).join("") + '</div>'
@@ -17704,9 +17713,47 @@
           '<div class="dex-types">'+typesHtml+'</div>' +
           '<div class="dex-total">'+total+'</div>' +
         '</div>' +
+        ((pokedexMoveHit && pokedexMoveHit.by[name])
+          ? '<div class="dex-learn-how">'+escapeHTML(pokedexMoveHit.name + ": " + pokedexMoveHit.by[name].join(" · "))+'</div>'
+          : "") +
         body +
       '</div>'
     );
+  }
+
+  // Move search: typing a move's full name in the filter lists every species
+  // that learns it, each card saying how (level, TM, tutor, egg). Built once
+  // per game from the same learnset data the cards show; null while a
+  // separately loaded moves file (Wilting Y) hasn't arrived yet.
+  var pokedexMoveIndexes = {};
+  var pokedexMoveHit = null;   // the matched move entry for the current filter
+  function looseMoveName(x){ return String(x).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+  function getPokedexMoveIndex(){
+    var game = state.selectedGame;
+    if(pokedexMoveIndexes[game]) return pokedexMoveIndexes[game];
+    var g = currentGame();
+    if(g.dexMoves && !window[g.dexMoves.global]) return null;
+    var idx = {};
+    Object.keys(dexMoveTable()).forEach(function(mv){ idx[looseMoveName(mv)] = { name: mv, by: {} }; });
+    var poks = dexData().poks;
+    getPokedexSpeciesList().forEach(function(sp){
+      var add = function(mv, how){
+        var k = looseMoveName(mv);
+        var e = idx[k] || (idx[k] = { name: mv, by: {} });
+        var list = e.by[sp] || (e.by[sp] = []);
+        if(list.indexOf(how) === -1) list.push(how);
+      };
+      var info = dexLearnInfo(sp) || {};
+      (info.learnset || []).forEach(function(pair){ add(pair[1], "Lv " + pair[0]); });
+      (poks[sp].forms || []).forEach(function(f){
+        (f.learnset || []).forEach(function(pair){ add(pair[1], "Lv " + pair[0] + " (" + f.names[0] + ")"); });
+      });
+      (info.tms || []).forEach(function(mv){ add(mv, "TM"); });
+      (poks[sp].tutors || []).forEach(function(mv){ add(mv, "Tutor"); });
+      (info.egg || []).forEach(function(mv){ add(mv, "Egg"); });
+      (info.extra || []).forEach(function(mv){ add(mv, "Other"); });
+    });
+    return (pokedexMoveIndexes[game] = idx);
   }
 
   var ALL_TYPES = ["Normal","Fire","Water","Electric","Grass","Ice","Fighting","Poison",
@@ -17753,6 +17800,28 @@
     pokedexListSig = sig;
 
     var names = getPokedexSpeciesList();
+    pokedexMoveHit = null;
+    var moveSugg = [];
+    if(q){
+      var g = currentGame();
+      var moveIdx = getPokedexMoveIndex();
+      if(!moveIdx){
+        // Wilting Y: fetch the moves file once; its arrival re-renders.
+        if(!lazyScriptPromises[g.dexMoves.src] || lazyScriptFailed[g.dexMoves.src]) loadDexMoves();
+      } else {
+        var lq = looseMoveName(q);
+        pokedexMoveHit = moveIdx[lq] || null;
+        if(pokedexMoveHit && !Object.keys(pokedexMoveHit.by).length) pokedexMoveHit = null;
+        // Partial move name: offer the matching moves as one-tap completions.
+        if(!pokedexMoveHit && lq.length >= 3){
+          moveSugg = Object.keys(moveIdx).filter(function(k){
+            return k.indexOf(lq) !== -1 && Object.keys(moveIdx[k].by).length;
+          }).sort(function(a, b){
+            return (b.indexOf(lq) === 0) - (a.indexOf(lq) === 0) || (a < b ? -1 : a > b ? 1 : 0);
+          }).slice(0, 8).map(function(k){ return moveIdx[k].name; });
+        }
+      }
+    }
     if(q){
       // Dual-mode match, same idea as the Checklist filter box: a species
       // NAME match is the common case, but typing a type name (e.g.
@@ -17768,15 +17837,25 @@
         var forms = poks[n].forms || [];
         // A form's name ("Alolan Geodude") or type finds its species' card.
         if(forms.some(function(f){ return f.names.some(function(fn){ return fn.toLowerCase().indexOf(q) !== -1; }); })) return true;
-        if(qIsType) return poks[n].types.concat.apply(poks[n].types, forms.map(function(f){ return f.types || []; }))
-          .some(function(t){ return t.toLowerCase() === q; });
-        return false;
+        if(qIsType && poks[n].types.concat.apply(poks[n].types, forms.map(function(f){ return f.types || []; }))
+          .some(function(t){ return t.toLowerCase() === q; })) return true;
+        return !!(pokedexMoveHit && pokedexMoveHit.by[n]);
       });
+    }
+    var headHtml = "";
+    if(pokedexMoveHit){
+      var nLearn = Object.keys(pokedexMoveHit.by).length;
+      headHtml = '<div class="dex-move-hit">' + nLearn + (nLearn === 1 ? " species learns " : " species learn ") +
+        '<b>' + escapeHTML(pokedexMoveHit.name) + '</b>.</div>';
+    } else if(moveSugg.length){
+      headHtml = '<div class="dex-move-sugg">' + moveSugg.map(function(mv){
+        return '<button type="button" data-act="dex-move-pick" data-move="' + escapeHTML(mv) + '">' + escapeHTML(mv) + '</button>';
+      }).join("") + '</div>';
     }
 
     if(!names.length){
       pokedexRenderToken++;
-      el.innerHTML = '<div class="empty">No species match "' + escapeHTML(filterInput ? filterInput.value.trim() : "") + '".</div>';
+      el.innerHTML = headHtml + '<div class="empty">No species match "' + escapeHTML(filterInput ? filterInput.value.trim() : "") + '".</div>';
       return;
     }
     // Origin HeartGold has 1440 species: building every card in one go is
@@ -17786,7 +17865,7 @@
     // older loop stops.
     var token = ++pokedexRenderToken;
     var first = Math.min(names.length, POKEDEX_BATCH);
-    el.innerHTML = names.slice(0, first).map(pokedexCardHTML).join("");
+    el.innerHTML = headHtml + names.slice(0, first).map(pokedexCardHTML).join("");
     if(dexScrollKey){
       var hit = Array.prototype.filter.call(el.querySelectorAll(".dex-top"), function(t){ return t.getAttribute("data-species") === dexScrollKey; })[0];
       if(hit) hit.parentNode.scrollIntoView({ block: "start" });
@@ -19042,6 +19121,13 @@
       else crMap[routeKey] = "hidden";
       save();
       renderChecklist();
+      return;
+    }
+
+    if(act === "dex-move-pick"){
+      var dexInput = document.getElementById("pokedexFilter");
+      dexInput.value = btn.getAttribute("data-move");
+      renderPokedexList();
       return;
     }
 
