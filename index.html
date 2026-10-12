@@ -923,6 +923,7 @@
   .dex-scope{ display: flex; gap: 6px; margin: -4px 0 12px; }
   .dex-scope button{ flex: 1; font: inherit; font-size: 13px; padding: 6px 4px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); color: var(--cream-dim); cursor: pointer; }
   .dex-scope button[aria-pressed="true"]{ background: var(--lcd); border-color: var(--lcd); color: var(--bg); font-weight: 700; }
+  .dex-sugg-kind{ font-size: 11px; color: var(--cream-dim); }
   .dex-learn-how{ font-size: 13px; color: var(--gold); margin-top: 3px; overflow-wrap: anywhere; }
   .dex-move-hit{ font-size: 13px; color: var(--cream-dim); margin: -4px 0 10px; }
   .dex-move-sugg{ display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 10px; }
@@ -1250,7 +1251,7 @@
       <div id="pokedexBody" style="display:none;">
         <div class="hard-note" id="pokedexNote" style="display:none;"></div>
         <div class="filter-box">
-          <input type="text" id="pokedexFilter" placeholder="Filter by species, type or move (e.g. &quot;Charmander&quot;, &quot;Fire&quot;, &quot;Surf&quot;)…" autocomplete="off">
+          <input type="text" id="pokedexFilter" placeholder="Search species, type, ability or move (e.g. &quot;Fire Flying&quot;, &quot;Levitate&quot;, &quot;Surf&quot;)…" autocomplete="off">
           <button type="button" class="filter-clear" id="pokedexFilterClear">×</button>
         </div>
         <div class="dex-scope" id="pokedexScope">
@@ -17722,6 +17723,9 @@
           '<div class="dex-types">'+typesHtml+'</div>' +
           '<div class="dex-total">'+total+'</div>' +
         '</div>' +
+        ((pokedexAbilityHit && pokedexAbilityHit.by[name])
+          ? '<div class="dex-learn-how">'+escapeHTML(pokedexAbilityHit.name + ": " + pokedexAbilityHit.by[name].join(" · "))+'</div>'
+          : "") +
         ((pokedexMoveHit && pokedexMoveHit.by[name])
           ? '<div class="dex-learn-how">'+escapeHTML(pokedexMoveHit.name + ": " + pokedexMoveHit.by[name].join(" · "))+'</div>'
           : "") +
@@ -17736,6 +17740,31 @@
   // separately loaded moves file (Wilting Y) hasn't arrived yet.
   var pokedexMoveIndexes = {};
   var pokedexMoveHit = null;   // the matched move entry for the current filter
+  var pokedexAbilityHit = null;   // same for an ability name
+  // Ability search: species (and forms) with the ability as a regular,
+  // hidden or innate (SoulGold) ability. Ready whenever the dex is.
+  var pokedexAbilityIndexes = {};
+  function getPokedexAbilityIndex(){
+    var game = state.selectedGame;
+    if(pokedexAbilityIndexes[game]) return pokedexAbilityIndexes[game];
+    var idx = {}, poks = dexData().poks;
+    getPokedexSpeciesList().forEach(function(sp){
+      var add = function(ab, how){
+        if(!ab) return;
+        var k = looseMoveName(ab);
+        var e = idx[k] || (idx[k] = { name: ab, by: {} });
+        var list = e.by[sp] || (e.by[sp] = []);
+        if(list.indexOf(how) === -1) list.push(how);
+      };
+      var addAll = function(abilities, suffix){
+        Object.keys(abilities || {}).forEach(function(k){ add(abilities[k], (k === "H" ? "Hidden" : "Ability") + suffix); });
+      };
+      addAll(poks[sp].abilities, "");
+      (poks[sp].innates || []).forEach(function(ab){ add(ab, "Innate"); });
+      (poks[sp].forms || []).forEach(function(f){ addAll(f.abilities, " (" + f.names[0] + ")"); });
+    });
+    return (pokedexAbilityIndexes[game] = idx);
+  }
   function looseMoveName(x){ return String(x).toLowerCase().replace(/[^a-z0-9]/g, ""); }
   function getPokedexMoveIndex(){
     var game = state.selectedGame;
@@ -17848,55 +17877,73 @@
     var scoped = pokedexScopeSpecies();
     if(scoped) names = names.filter(function(n){ return scoped[n]; });
     pokedexMoveHit = null;
-    var moveSugg = [];
+    pokedexAbilityHit = null;
+    var typeHit = null, sugg = [];
     if(q){
       var g = currentGame();
+      var lq = looseMoveName(q);
+      // Type: one or two type names ("fire", "fire flying", "fire/flying").
+      var words = q.split(/[\s\/,+&]+/).filter(Boolean);
+      var wordTypes = words.map(function(w){ return ALL_TYPES.filter(function(t){ return t.toLowerCase() === w; })[0]; });
+      if(words.length && words.length <= 2 && wordTypes.every(Boolean)) typeHit = wordTypes;
+      var abilIdx = getPokedexAbilityIndex();
+      pokedexAbilityHit = abilIdx[lq] || null;
       var moveIdx = getPokedexMoveIndex();
       if(!moveIdx){
         // Wilting Y: fetch the moves file once; its arrival re-renders.
         if(!lazyScriptPromises[g.dexMoves.src] || lazyScriptFailed[g.dexMoves.src]) loadDexMoves();
       } else {
-        var lq = looseMoveName(q);
         pokedexMoveHit = moveIdx[lq] || null;
         if(pokedexMoveHit && !Object.keys(pokedexMoveHit.by).length) pokedexMoveHit = null;
-        // Partial move name: offer the matching moves as one-tap completions.
-        if(!pokedexMoveHit && lq.length >= 3){
-          moveSugg = Object.keys(moveIdx).filter(function(k){
-            return k.indexOf(lq) !== -1 && Object.keys(moveIdx[k].by).length;
-          }).sort(function(a, b){
-            return (b.indexOf(lq) === 0) - (a.indexOf(lq) === 0) || (a < b ? -1 : a > b ? 1 : 0);
-          }).slice(0, 8).map(function(k){ return moveIdx[k].name; });
-        }
+      }
+      // Partial name: offer matching types, abilities and moves as one-tap
+      // completions (prefix matches first).
+      if(!typeHit && !pokedexMoveHit && !pokedexAbilityHit && lq.length >= 3){
+        var rank = function(a, b){
+          return (b.k.indexOf(lq) === 0) - (a.k.indexOf(lq) === 0) || (a.k < b.k ? -1 : a.k > b.k ? 1 : 0);
+        };
+        var pick = function(idx, kind, max){
+          return Object.keys(idx || {}).filter(function(k){
+            return k.indexOf(lq) !== -1 && Object.keys(idx[k].by).length;
+          }).map(function(k){ return { k: k, name: idx[k].name, kind: kind }; }).sort(rank).slice(0, max);
+        };
+        sugg = ALL_TYPES.filter(function(t){ return t.toLowerCase().indexOf(q) === 0; })
+          .map(function(t){ return { name: t, kind: "type" }; })
+          .concat(pick(abilIdx, "ability", 4), pick(moveIdx, "move", 8));
       }
     }
     if(q){
-      // Dual-mode match, same idea as the Checklist filter box: a species
-      // NAME match is the common case, but typing a type name (e.g.
-      // "fire") is a natural, cheap-to-support bonus — checked as an
-      // exact match against that species' own types rather than a
-      // substring, so "fir" doesn't spuriously match nothing while "ice"
-      // doesn't also match "Iceberg" (not a real name here, but the
-      // principle holds) via substring-on-name collisions.
+      // Species name (substring), plus exact type / ability / move matches.
       var poks = dexData().poks;
-      var qIsType = ALL_TYPES.some(function(t){ return t.toLowerCase() === q; });
       names = names.filter(function(n){
         if(n.toLowerCase().indexOf(q) !== -1) return true;
         var forms = poks[n].forms || [];
         // A form's name ("Alolan Geodude") or type finds its species' card.
         if(forms.some(function(f){ return f.names.some(function(fn){ return fn.toLowerCase().indexOf(q) !== -1; }); })) return true;
-        if(qIsType && poks[n].types.concat.apply(poks[n].types, forms.map(function(f){ return f.types || []; }))
-          .some(function(t){ return t.toLowerCase() === q; })) return true;
+        if(typeHit && [poks[n].types].concat(forms.map(function(f){ return f.types || []; })).some(function(ts){
+          return typeHit.every(function(t){ return ts.indexOf(t) !== -1; });
+        })) return true;
+        if(pokedexAbilityHit && pokedexAbilityHit.by[n]) return true;
         return !!(pokedexMoveHit && pokedexMoveHit.by[n]);
       });
     }
     var headHtml = "";
+    var heads = [];
+    if(typeHit) heads.push('<b>' + escapeHTML(typeHit.join("/")) + '</b>-type species');
+    if(pokedexAbilityHit){
+      var nAb = Object.keys(pokedexAbilityHit.by).length;
+      heads.push(nAb + (nAb === 1 ? " species has " : " species have ") + '<b>' + escapeHTML(pokedexAbilityHit.name) + '</b>');
+    }
     if(pokedexMoveHit){
       var nLearn = Object.keys(pokedexMoveHit.by).length;
-      headHtml = '<div class="dex-move-hit">' + nLearn + (nLearn === 1 ? " species learns " : " species learn ") +
-        '<b>' + escapeHTML(pokedexMoveHit.name) + '</b>.</div>';
-    } else if(moveSugg.length){
-      headHtml = '<div class="dex-move-sugg">' + moveSugg.map(function(mv){
-        return '<button type="button" data-act="dex-move-pick" data-move="' + escapeHTML(mv) + '">' + escapeHTML(mv) + '</button>';
+      heads.push(nLearn + (nLearn === 1 ? " species learns " : " species learn ") + '<b>' + escapeHTML(pokedexMoveHit.name) + '</b>');
+    }
+    if(heads.length){
+      headHtml = '<div class="dex-move-hit">' + heads.join(" · ") + '.</div>';
+    } else if(sugg.length){
+      headHtml = '<div class="dex-move-sugg">' + sugg.map(function(x){
+        return '<button type="button" data-act="dex-move-pick" data-move="' + escapeHTML(x.name) + '">' + escapeHTML(x.name) +
+          (x.kind !== "move" ? ' <span class="dex-sugg-kind">' + x.kind + '</span>' : "") + '</button>';
       }).join("") + '</div>';
     }
 
