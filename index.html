@@ -17402,6 +17402,9 @@
       renderPokedexList();
     }).catch(function(err){
       console.warn("Pokédex moves failed to load", err);
+      // A move search that triggered this must retry on the next render, not
+      // be skipped as an unchanged list.
+      invalidatePokedexList();
       if(state.selectedGame !== game) return;
       Array.prototype.forEach.call(document.querySelectorAll("#pokedexList .dex-moves-loading"), function(el){
         el.textContent = "Couldn't load moves — check your connection and reopen the card.";
@@ -17907,7 +17910,7 @@
             return k.indexOf(lq) !== -1 && Object.keys(idx[k].by).length;
           }).map(function(k){ return { k: k, name: idx[k].name, kind: kind }; }).sort(rank).slice(0, max);
         };
-        sugg = ALL_TYPES.filter(function(t){ return t.toLowerCase().indexOf(q) === 0; })
+        sugg = ALL_TYPES.filter(function(t){ return t.toLowerCase().indexOf(lq) === 0; })
           .map(function(t){ return { name: t, kind: "type" }; })
           .concat(pick(abilIdx, "ability", 4), pick(moveIdx, "move", 8));
       }
