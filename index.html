@@ -968,6 +968,59 @@
      The calculator is the tightest layout in the app: two cards side by side,
      each holding a 6-column stat grid whose EV inputs must fit "252". Every
      px reclaimed from an outer gutter goes straight into those cells. */
+  /* ---------- Battle Planner ---------- */
+  /* A computer screen gets the room: the device widens while the Planner is
+     open (body.planner-open, set by the tab handler). */
+  @media (min-width: 900px){
+    body.planner-open .device{ max-width: 1280px; }
+  }
+  .pl-bar{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin: 8px 0; }
+  .pl-bar select{ flex: 1 1 180px; min-width:0; }
+  .pl-btn{
+    border: 1px solid var(--line); background: var(--panel-raised); color: var(--cream);
+    border-radius: var(--radius); padding: 6px 10px; font: inherit; font-size: 13px; cursor:pointer;
+  }
+  .pl-x{
+    border: none; background: none; color: var(--cream-dim); font-size: 20px; line-height: 1;
+    cursor:pointer; padding: 0 4px; flex-shrink:0;
+  }
+  .pl-sub{ font-size: 12px; color: var(--cream-dim); font-weight: normal; }
+  .pl-icon{ display:inline-block; flex-shrink:0; background-repeat:no-repeat; image-rendering: pixelated; vertical-align: middle; }
+  .pl-team{ display:grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin-bottom: 8px; }
+  .pl-slot{ background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; display:flex; flex-direction:column; gap:5px; }
+  .pl-slot.pl-dead{ border-color: var(--dead-dim); opacity: 0.7; }
+  .pl-slot-top{ display:flex; align-items:center; gap:6px; }
+  .pl-slot-name{ flex:1; min-width:0; font-weight:700; font-size: 14px; }
+  .pl-types{ display:flex; flex-wrap:wrap; gap:3px; margin-top:2px; align-items:center; }
+  .pl-type{ font-size: 10px; text-transform:uppercase; padding: 1px 6px; border-radius: 9px; color:#fff; font-weight:700; text-shadow: 0 1px 1px rgba(0,0,0,0.5); }
+  .pl-spe{ font-size: 11px; color: var(--lcd); margin-left: 4px; }
+  .pl-speed{ display:flex; align-items:center; gap:6px; font-size: 13px; color: var(--cream-dim); }
+  .pl-speed input{ width: 80px; }
+  .pl-move input{ width:100%; font-size: 13px; padding: 5px 7px; }
+  .pl-pool{ display:flex; flex-wrap:wrap; gap:5px; margin: 4px 0 8px; }
+  .pl-chip{
+    display:flex; align-items:center; gap:4px; border: 1px solid var(--line); background: var(--panel);
+    color: var(--cream); border-radius: var(--radius); padding: 2px 8px 2px 2px; font: inherit; font-size: 13px; cursor:pointer;
+  }
+  .pl-fight{ background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; margin-bottom: 10px; }
+  .pl-fight-head{ display:flex; align-items:center; gap:6px; margin-bottom: 6px; }
+  .pl-fight-name{ flex:1; min-width:0; font-weight:700; color: var(--gold); }
+  .pl-icons-row{ display:flex; flex-wrap:wrap; gap:2px; }
+  .pl-grid-wrap{ overflow-x:auto; -webkit-overflow-scrolling: touch; }
+  .pl-grid{ border-collapse: collapse; width:100%; font-size: 12px; }
+  .pl-grid th, .pl-grid td{ border-top: 1px solid var(--line); padding: 5px; vertical-align: top; text-align:left; }
+  .pl-grid thead th{ border-top:none; }
+  .pl-col{ text-align:center !important; font-weight:700; min-width: 74px; font-size: 11px; }
+  .pl-boss-mon{ min-width: 220px; font-weight: normal; }
+  .pl-bmoves{ display:flex; flex-wrap:wrap; gap:3px; margin-top:3px; }
+  .pl-bmove{ font-size: 11px; border: 1px solid var(--line); border-left-width: 4px; border-radius: var(--radius); padding: 0 5px; }
+  .pl-grid td{ text-align:center; }
+  .pl-eff, .pl-spd{ display:block; white-space:nowrap; font-size: 12px; padding: 1px 4px; margin-bottom: 2px; border-radius: var(--radius); }
+  .pl-eff.pl-good, .pl-spd.pl-good{ background: rgba(63,161,41,0.35); }
+  .pl-eff.pl-bad, .pl-spd.pl-bad{ background: rgba(201,82,79,0.4); }
+  .pl-eff.pl-stab{ font-style: italic; }
+  .pl-eff-na{ color: var(--cream-dim); }
+
   @media (max-width: 479px){
     /* Scoped to the calculator, NOT applied to .content globally: the ask was
        for narrower margins on THIS screen, and every other tab is a
@@ -1027,6 +1080,7 @@
     <div class="tab active" data-tab="roster">Route Log</div>
     <div class="tab" data-tab="checklist">Encounters</div>
     <div class="tab" data-tab="bosses">Bosses</div>
+    <div class="tab" data-tab="planner">Planner</div>
     <div class="tab" data-tab="trainers">Trainers</div>
     <div class="tab" data-tab="calculator">Calc</div>
     <div class="tab" data-tab="pokedex">Pokédex</div>
@@ -1238,6 +1292,10 @@
 
         <div id="calcResult"></div>
       </div>
+    </div>
+
+    <div id="panel-planner" style="display:none;">
+      <div id="plannerBody"></div>
     </div>
 
     <div id="panel-pokedex" style="display:none;">
@@ -15312,7 +15370,10 @@
       badgeCount: 8,
       bosses: SG_BOSSES,
       trainerFights: SG_TRAINER_FIGHTS,
-      features: ["trainers", "pokedex"],
+      features: ["trainers", "pokedex", "planner"],
+      // Battle Planner tab (renderPlanner): party icons from sg-icons.js +
+      // sg-icons.png (tools/build_sg_icons.py), species/move data from sg-dex.js.
+      plannerIcons: { src: "./sg-icons.js", global: "SG_ICONS", img: "./sg-icons.png" },
       // No longer blind (user, 2026-10-06): teams start open and each card
       // can fold its team away (run.collapsedTeams).
       collapsibleTeams: true,
@@ -15457,7 +15518,7 @@
   // support. If the open tab just disappeared (game switch), fall back to
   // the Route Log so the player never lands on a blank panel.
   function applyGameFeatures(){
-    ["trainers", "calculator", "pokedex", "quests"].forEach(function(tabId){
+    ["trainers", "planner", "calculator", "pokedex", "quests"].forEach(function(tabId){
       var tab = document.querySelector('.tab[data-tab="' + tabId + '"]');
       if(!tab) return;
       var on = gameHas(tabId === "calculator" ? "calc" : tabId);
@@ -15507,6 +15568,8 @@
       collapsedRoutes: {}, // route name -> true (collapsed, logged) or "hidden" (hidden with no catch)
       collapsedSplits: {}, // trainer-fight split name -> true
       collapsedTimelineSplits: {}, // timeline split label -> true
+      plans: [], // {id, name, team: [monId ≤6], fights: [boss key], folded: {key:true}} — Planner tab
+      activePlan: null, // id of the plan the Planner tab shows
       pastRuns: [] // {id, endedAt, result, note, attempt, runName, badges, mons, beatenBosses} — see "End Run"
     };
   }
@@ -15581,6 +15644,11 @@
         collapsedSplits: r.collapsedSplits || {},
         collapsedTimelineSplits: r.collapsedTimelineSplits || {},
         saveImportMeta: r.saveImportMeta || null,
+        plans: (Array.isArray(r.plans) ? r.plans : []).filter(function(p){ return p && typeof p === "object" && p.id; }).map(function(p){
+          return { id: p.id, name: String(p.name || "Plan"), team: Array.isArray(p.team) ? p.team : [],
+                   fights: Array.isArray(p.fights) ? p.fights : [], folded: p.folded || {} };
+        }),
+        activePlan: r.activePlan || null,
         pastRuns: Array.isArray(r.pastRuns) ? r.pastRuns : []
       };
     }
@@ -16030,6 +16098,7 @@
     renderChecklist();
     renderBosses();
     renderTrainers();
+    renderPlanner();
     renderGuide();
     renderQuests();
     renderGraveyard();
@@ -16093,6 +16162,8 @@
     // a cache — dropping it here is what keeps the two rows consistent
     // instead of leaving one game's trainer sitting opposite another's team.
     calcTeamState.Atk = calcTeamState.Def = null;
+    tabScroll = {};
+    window.scrollTo(0, 0);
     // Pokédex memo/expanded set belong to the game they were built for.
     pokedexExpanded = {};
     invalidatePokedexList();
@@ -16135,6 +16206,10 @@
       "............",".1.......1..",".11.....11..","..1111111...",
       ".111111111..",".11.111.11..",".111111111..",".1.11111.1..",
       "..1111111...","...11111....","............","............"],
+    planner: [           // crossed swords
+      "1..........1",".1........1.","..1......1..","...1....1...",
+      "....1..1....",".....11.....",".....11.....","....1..1....",
+      ".1.1....1.1.","..1......1..",".1.1....1.1.","............"],
     trainers: [          // person: head + shoulders
       "............","....111.....","...11111....","...11111....",
       "....111.....","............","..1111111...",".111111111..",
@@ -16193,8 +16268,14 @@
     tab.classList.add("tab-icon");
   });
 
+  // Every panel shares the window's scroll, so each tab's position is kept
+  // here and put back when it reopens (user, 2026-10-19: tabs "don't
+  // remember where I was scrolled"). Cleared on game switch.
+  var tabScroll = {};
   document.querySelectorAll(".tab").forEach(function(tab){
     tab.addEventListener("click", function(){
+      var prev = document.querySelector(".tab.active");
+      if(prev) tabScroll[prev.getAttribute("data-tab")] = window.scrollY;
       document.querySelectorAll(".tab").forEach(function(t){ t.classList.remove("active"); });
       tab.classList.add("active");
       tab.scrollIntoView({ block: "nearest", inline: "nearest" });
@@ -16202,6 +16283,8 @@
       document.getElementById("panel-roster").style.display = which === "roster" ? "" : "none";
       document.getElementById("panel-checklist").style.display = which === "checklist" ? "" : "none";
       document.getElementById("panel-bosses").style.display = which === "bosses" ? "" : "none";
+      document.getElementById("panel-planner").style.display = which === "planner" ? "" : "none";
+      document.body.classList.toggle("planner-open", which === "planner");
       document.getElementById("panel-trainers").style.display = which === "trainers" ? "" : "none";
       document.getElementById("panel-calculator").style.display = which === "calculator" ? "" : "none";
       document.getElementById("panel-pokedex").style.display = which === "pokedex" ? "" : "none";
@@ -16214,6 +16297,7 @@
       if(which === "timeline") renderTimeline();
       if(which === "pokedex") renderPokedex();
       if(which === "quests") renderQuests();
+      window.scrollTo(0, tabScroll[which] || 0);
     });
   });
 
@@ -16769,6 +16853,427 @@
 
     el.innerHTML = hardNoteHTML() + sgOptionNotesHTML("bosses") + (game.bossesNote ? '<div class="hard-note">' + escapeHTML(game.bossesNote) + '</div>' : "") + html;
   }
+
+  // ---------- Battle Planner (feature "planner"; SoulGold) ----------
+  // One team of up to six of your mons against any number of boss fights
+  // (user, 2026-10-19: "E4, where I fight many people with the same team").
+  // Plans live on the run (run.plans, run.activePlan) and hold mon ids, so
+  // they don't survive End/Reset Run. Your mons' Speed and moves are typed in
+  // here and saved on the mon itself (mon.speed, mon.moves — the same `moves`
+  // array a save import fills), so every plan shares them. No damage calc:
+  // each grid cell is type effectiveness of the best known move each way,
+  // plus who moves first.
+
+  // Gen 6+ chart; checked equal to the hack's gTypeEffectivenessTable
+  // (src/data/types_info.h, tag v.1.1.4) on 2026-10-19. Attacker -> {defender: mult}.
+  var TYPE_CHART = {
+    Normal: { Rock: .5, Ghost: 0, Steel: .5 },
+    Fighting: { Normal: 2, Flying: .5, Poison: .5, Rock: 2, Bug: .5, Ghost: 0, Steel: 2, Psychic: .5, Ice: 2, Dark: 2, Fairy: .5 },
+    Flying: { Fighting: 2, Rock: .5, Bug: 2, Steel: .5, Grass: 2, Electric: .5 },
+    Poison: { Poison: .5, Ground: .5, Rock: .5, Ghost: .5, Steel: 0, Grass: 2, Fairy: 2 },
+    Ground: { Flying: 0, Poison: 2, Rock: 2, Bug: .5, Steel: 2, Fire: 2, Grass: .5, Electric: 2 },
+    Rock: { Fighting: .5, Flying: 2, Ground: .5, Bug: 2, Steel: .5, Fire: 2, Ice: 2 },
+    Bug: { Fighting: .5, Flying: .5, Poison: .5, Ghost: .5, Steel: .5, Fire: .5, Grass: 2, Psychic: 2, Dark: 2, Fairy: .5 },
+    Ghost: { Normal: 0, Ghost: 2, Psychic: 2, Dark: .5 },
+    Steel: { Rock: 2, Steel: .5, Fire: .5, Water: .5, Electric: .5, Ice: 2, Fairy: 2 },
+    Fire: { Rock: .5, Bug: 2, Steel: 2, Fire: .5, Water: .5, Grass: 2, Ice: 2, Dragon: .5 },
+    Water: { Ground: 2, Rock: 2, Fire: 2, Water: .5, Grass: .5, Dragon: .5 },
+    Grass: { Flying: .5, Poison: .5, Ground: 2, Rock: 2, Bug: .5, Steel: .5, Fire: .5, Water: 2, Grass: .5, Dragon: .5 },
+    Electric: { Flying: 2, Ground: 0, Water: 2, Grass: .5, Electric: .5, Dragon: .5 },
+    Psychic: { Fighting: 2, Poison: 2, Steel: .5, Psychic: .5, Dark: 0 },
+    Ice: { Flying: 2, Ground: 2, Steel: .5, Fire: .5, Water: .5, Grass: 2, Ice: .5, Dragon: 2 },
+    Dragon: { Steel: .5, Dragon: 2, Fairy: 0 },
+    Dark: { Fighting: .5, Ghost: 2, Psychic: 2, Dark: .5, Fairy: .5 },
+    Fairy: { Fighting: 2, Poison: .5, Steel: .5, Fire: .5, Dragon: 2, Dark: 2 }
+  };
+  var TYPE_COLORS = {
+    Normal: "#9fa19f", Fighting: "#ff8000", Flying: "#81b9ef", Poison: "#9141cb", Ground: "#915121",
+    Rock: "#afa981", Bug: "#91a119", Ghost: "#704170", Steel: "#60a1b8", Fire: "#e62829", Water: "#2980ef",
+    Grass: "#3fa129", Electric: "#fac000", Psychic: "#ef4179", Ice: "#3dcef3", Dragon: "#5060e1",
+    Dark: "#624d4e", Fairy: "#ef70ef"
+  };
+  function typeEff(atk, defTypes){
+    var row = TYPE_CHART[atk];
+    if(!row) return 1;
+    return (defTypes || []).reduce(function(m, t){ return m * (row[t] != null ? row[t] : 1); }, 1);
+  }
+  function effText(x){
+    return ({ 0: "0×", 0.25: "¼×", 0.5: "½×", 1: "1×", 2: "2×", 4: "4×" })[x] || (x + "×");
+  }
+  function typePillHTML(t){
+    return '<span class="pl-type" style="background:' + (TYPE_COLORS[t] || "#777") + '">' + escapeHTML(t) + '</span>';
+  }
+
+  function plannerDexEntry(name){
+    var dex = dexData();
+    var key = dex && name ? resolveDexSpecies(name) : null;
+    return key ? { key: key, pok: dex.poks[key] } : null;
+  }
+  function plannerMove(name){
+    var moves = dexData() && dexData().moves;
+    if(!moves || !name) return null;
+    if(moves[name]) return moves[name];
+    var low = String(name).trim().toLowerCase();
+    var hit = Object.keys(moves).filter(function(k){ return k.toLowerCase() === low; })[0];
+    return hit ? moves[hit] : null;
+  }
+  function canonicalMoveName(name){
+    var moves = dexData() && dexData().moves;
+    var low = String(name || "").trim().toLowerCase();
+    if(!low || !moves) return "";
+    return Object.keys(moves).filter(function(k){ return k.toLowerCase() === low; })[0] || "";
+  }
+
+  // Party icon from the game's icon atlas, scaled to `px` (32 = native).
+  function monIconHTML(name, px){
+    var g = currentGame(), icons = g.plannerIcons && window[g.plannerIcons.global];
+    px = px || 32;
+    var e = icons && plannerDexEntry(name);
+    var i = e ? icons.map[e.key] : null;
+    if(i == null) return '<span class="pl-icon pl-icon-none" style="width:' + px + 'px;height:' + px + 'px"></span>';
+    var k = px / icons.size;
+    var x = (i % icons.cols) * px, y = Math.floor(i / icons.cols) * px;
+    return '<span class="pl-icon" style="width:' + px + 'px;height:' + px + 'px;background-image:url(' + g.plannerIcons.img + ');' +
+      'background-size:' + (icons.cols * icons.size * k) + 'px auto;background-position:-' + x + 'px -' + y + 'px"></span>';
+  }
+
+  // Every boss card, keyed exactly as renderBosses() keys them.
+  function plannerFightList(){
+    var game = currentGame(), b = game.bosses || {}, out = [];
+    function add(group, key, label, entry){ if(entry && entry.mons) out.push({ group: group, key: key, label: label, b: entry }); }
+    (b.eliteFour || []).forEach(function(x){ add("Elite Four", "elite-" + x.name, x.name, x); });
+    if(b.champion && b.champion.name) add("Champion", "champion-" + b.champion.name, b.champion.name, b.champion);
+    (b.gymLeaders || []).forEach(function(x){ add("Gym Leaders", "gym-" + x.name, x.name, x); });
+    (b.rival || []).forEach(function(x){ add(game.rivalLabel || "Rival", "rival-" + x.stage, x.stage, x); });
+    (b.otherBattles || []).forEach(function(x){ add(game.otherBattlesLabel || "Other", "other-" + x.name + "-" + x.location, x.name + " · " + x.location, x); });
+    (b.evilTeam || []).forEach(function(x){ add(game.evilTeamLabel || "Evil team", "evil-" + x.name + "-" + x.location, x.name + " · " + x.location, x); });
+    return out;
+  }
+  function plannerFight(key){
+    return plannerFightList().filter(function(f){ return f.key === key; })[0] || null;
+  }
+  // A boss mon's move names under the current difficulty (as monBlockHTML).
+  function bossMoveNames(m){
+    var s = (m.auto && sgHardOn()) ? (m.hardMoves || "") : (m.moves || "");
+    return String(s).split(",").map(function(x){ return x.trim(); }).filter(Boolean);
+  }
+
+  function activePlan(){
+    var run = currentRun();
+    if(!run.plans) run.plans = [];
+    return run.plans.filter(function(p){ return p.id === run.activePlan; })[0] || run.plans[0] || null;
+  }
+  function planTeam(plan){
+    var byId = {};
+    currentRun().mons.forEach(function(m){ byId[m.id] = m; });
+    return (plan.team || []).map(function(id){ return byId[id]; }).filter(Boolean);
+  }
+  // Your mons' Speed estimate when none is typed: the user's no-stats
+  // standard (user, 2026-10-19) — IV 15, neutral nature, 0 EVs.
+  function estSpeed(m){
+    var e = plannerDexEntry(m.species), lv = parseInt(m.level, 10);
+    if(!e || !e.pok.bs || !lv) return null;
+    return Math.floor((2 * e.pok.bs.sp + 15) * lv / 100) + 5;
+  }
+  function monSpeed(m){
+    if(typeof m.speed === "number") return { v: m.speed, est: false };
+    var v = estSpeed(m);
+    return v == null ? null : { v: v, est: true };
+  }
+
+  // Best effectiveness of `moves` (names) against `defTypes`; status moves
+  // and unknown names are skipped. Returns {x, move} or null.
+  function bestHit(moves, defTypes){
+    var best = null;
+    moves.forEach(function(n){
+      var mv = plannerMove(n);
+      if(!mv || mv.category === "Status") return;
+      var x = typeEff(mv.type, defTypes);
+      if(!best || x > best.x) best = { x: x, move: n + " (" + mv.type + ")" };
+    });
+    return best;
+  }
+  function stabHit(types, defTypes){
+    var best = null;
+    (types || []).forEach(function(t){
+      var x = typeEff(t, defTypes);
+      if(!best || x > best.x) best = { x: x, move: t + " STAB (no moves entered)", stab: true };
+    });
+    return best;
+  }
+
+  function plannerMonSlotHTML(m){
+    var e = plannerDexEntry(m.species);
+    var types = e ? e.pok.types : [];
+    var est = estSpeed(m);
+    var moves = m.moves || [];
+    var moveInputs = [0, 1, 2, 3].map(function(i){
+      var id = "plMove-" + m.id + "-" + i;
+      var mv = plannerMove(moves[i]);
+      return '<div class="calc-dd-wrap pl-move">' +
+        '<input type="text" id="' + id + '" data-pl-move="' + escapeHTML(m.id) + '" data-slot="' + i + '" value="' + escapeHTML(moves[i] || "") + '" placeholder="Move ' + (i + 1) + '" autocomplete="off"' +
+        (mv ? ' style="border-left:4px solid ' + (TYPE_COLORS[mv.type] || "#777") + '"' : '') + '>' +
+        '<div class="calc-dd-list" id="' + id + '-list" style="display:none;"></div></div>';
+    }).join("");
+    return (
+      '<div class="pl-slot' + (m.status === "dead" ? ' pl-dead' : '') + '">' +
+        '<div class="pl-slot-top">' + monIconHTML(m.species, 48) +
+          '<div class="pl-slot-name"><div>' + escapeHTML(m.nick || m.species || "?") + '</div>' +
+          '<div class="pl-sub">' + (m.nick ? escapeHTML(m.species) + ' · ' : '') + 'Lv ' + escapeHTML(String(m.level || "?")) +
+          (m.status === "boxed" ? ' · PC' : m.status === "dead" ? ' · fainted' : '') + '</div>' +
+          '<div class="pl-types">' + types.map(typePillHTML).join("") + '</div></div>' +
+          '<button type="button" class="pl-x" data-pl="remove-mon" data-id="' + escapeHTML(m.id) + '" title="Remove from team" aria-label="Remove from team">×</button>' +
+        '</div>' +
+        '<label class="pl-speed">Speed <input type="number" min="1" max="999" inputmode="numeric" id="plSpeed-' + escapeHTML(m.id) + '" data-pl-speed="' + escapeHTML(m.id) + '" value="' + (typeof m.speed === "number" ? m.speed : "") + '" placeholder="' + (est != null ? "≈" + est : "") + '"></label>' +
+        moveInputs +
+      '</div>'
+    );
+  }
+
+  function plannerCellHTML(mine, bm, bTypes, bMoves, bSpe){
+    var e = plannerDexEntry(mine.species), myTypes = e ? e.pok.types : [];
+    var myMoves = (mine.moves || []).filter(Boolean);
+    var you = myMoves.length ? bestHit(myMoves, bTypes) : stabHit(myTypes, bTypes);
+    var them = bestHit(bMoves, myTypes);
+    function badge(h, goodHigh, label){
+      if(!h) return '<span class="pl-eff pl-eff-na">' + label + ' ?</span>';
+      var cls = h.x === 1 ? "" : ((h.x > 1) === goodHigh ? " pl-good" : " pl-bad");
+      return '<span class="pl-eff' + cls + (h.stab ? ' pl-stab' : '') + '" title="' + escapeHTML(label + ": " + h.move) + '">' + label + ' ' + effText(h.x) + '</span>';
+    }
+    var sp = monSpeed(mine), spd = "";
+    if(sp && typeof bSpe === "number"){
+      var pre = sp.est ? "≈" : "";
+      spd = sp.v > bSpe ? '<span class="pl-spd pl-good" title="Your Speed ' + pre + sp.v + ' vs ' + bSpe + '">' + pre + 'Faster</span>'
+        : sp.v < bSpe ? '<span class="pl-spd pl-bad" title="Your Speed ' + pre + sp.v + ' vs ' + bSpe + '">' + pre + 'Slower</span>'
+        : '<span class="pl-spd" title="Speed tie at ' + bSpe + '">Tie</span>';
+    }
+    return '<td>' + badge(you, true, "You") + badge(them, false, "Them") + spd + '</td>';
+  }
+
+  function plannerFightHTML(plan, f, team){
+    var folded = !!(plan.folded && plan.folded[f.key]);
+    var mons = teamMons(f.b);
+    var head =
+      '<div class="pl-fight-head">' +
+        '<div class="pl-fight-name">' + escapeHTML(f.label) + '<span class="pl-sub"> · ' + escapeHTML(f.group) +
+          (f.b.cap ? ' · Cap Lv ' + escapeHTML(String(f.b.cap)) : '') + (teamDoubles(f.b) ? ' · Doubles' : '') + '</span></div>' +
+        '<button type="button" class="pl-btn" data-pl="fold" data-key="' + escapeHTML(f.key) + '">' + (folded ? "Show" : "Hide") + '</button>' +
+        '<button type="button" class="pl-x" data-pl="remove-fight" data-key="' + escapeHTML(f.key) + '" title="Remove fight" aria-label="Remove fight">×</button>' +
+      '</div>';
+    if(folded){
+      return '<div class="pl-fight">' + head + '<div class="pl-icons-row">' +
+        mons.map(function(m){ return monIconHTML(m.name, 32); }).join("") + '</div></div>';
+    }
+    var rows = mons.map(function(m){
+      var e = plannerDexEntry(m.name), types = e ? e.pok.types : [];
+      var moves = bossMoveNames(m);
+      var spe = m.stats ? m.stats[5] : null;
+      var moveHtml = moves.map(function(n){
+        var mv = plannerMove(n);
+        return '<span class="pl-bmove"' + (mv ? ' style="border-color:' + (TYPE_COLORS[mv.type] || "#777") + '" title="' + escapeHTML(mv.type + " · " + mv.category + (mv.basePower ? " · " + mv.basePower + " BP" : "")) + '"' : '') + '>' + escapeHTML(n) + '</span>';
+      }).join("");
+      return '<tr><th class="pl-boss-mon">' +
+        '<div class="pl-slot-top">' + monIconHTML(m.name, 40) +
+          '<div class="pl-slot-name"><div>' + dexLinkHTML(m.name, escapeHTML(m.name), "") + ' <span class="pl-sub">Lv ' + escapeHTML(levelText(m.level)) + '</span></div>' +
+          '<div class="pl-types">' + types.map(typePillHTML).join("") + (spe != null ? '<span class="pl-spe">Spe ' + spe + '</span>' : '') + '</div></div></div>' +
+        '<div class="pl-sub">' + escapeHTML(abilityText(m)) + (m.item ? ' · ' + escapeHTML(m.item) : '') + (m.nature ? ' · ' + escapeHTML(m.nature) : '') + '</div>' +
+        '<div class="pl-bmoves">' + moveHtml + '</div>' +
+      '</th>' + team.map(function(t){ return plannerCellHTML(t, m, types, moves, spe); }).join("") + '</tr>';
+    }).join("");
+    var cols = team.map(function(t){
+      return '<th class="pl-col">' + monIconHTML(t.species, 32) + '<div>' + escapeHTML(t.nick || t.species) + '</div></th>';
+    }).join("");
+    return '<div class="pl-fight">' + head +
+      '<div class="pl-grid-wrap"><table class="pl-grid"><thead><tr><th></th>' + cols + '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      (team.length ? '' : '<div class="pl-sub">Add mons to the team above to see matchups.</div>') +
+    '</div>';
+  }
+
+  function renderPlanner(){
+    if(deferPanel("planner", renderPlanner)) return;
+    var el = document.getElementById("plannerBody");
+    var game = currentGame();
+    if(!gameHas("planner")){ el.innerHTML = ""; return; }
+    var icons = game.plannerIcons;
+    if(!window.SG_DEX || !window[icons.global]){
+      el.innerHTML = '<div class="empty">Loading planner…</div>';
+      Promise.all([loadSgDex(), loadLazyScript(icons.src, icons.global)]).then(function(){
+        if(currentGame() === game) renderPlanner();
+      }).catch(function(err){
+        console.warn("Planner data failed to load", err);
+        if(currentGame() === game) el.innerHTML = '<div class="empty">Couldn\'t load the planner data. Reload the page to retry.</div>';
+      });
+      return;
+    }
+    var run = currentRun();
+    var plan = activePlan();
+    var html = '<div class="pl-bar">';
+    if(plan){
+      html += '<select id="plPlanSelect" aria-label="Plan">' + run.plans.map(function(p){
+        return '<option value="' + escapeHTML(p.id) + '"' + (p === plan ? ' selected' : '') + '>' + escapeHTML(p.name) + '</option>';
+      }).join("") + '</select>' +
+      '<button type="button" class="pl-btn" data-pl="rename-plan">Rename</button>' +
+      '<button type="button" class="pl-btn" data-pl="delete-plan">Delete</button>';
+    }
+    html += '<button type="button" class="pl-btn" data-pl="new-plan">+ New plan</button></div>';
+    if(!plan){
+      el.innerHTML = html + '<div class="empty">Make a plan to line up a team of six against one or more boss fights — e.g. one team for the whole Elite Four.</div>';
+      return;
+    }
+
+    var team = planTeam(plan);
+    html += '<div class="boss-section-title">Your team (' + team.length + '/6)</div>' +
+      '<div class="pl-team">' + team.map(plannerMonSlotHTML).join("") + '</div>';
+    var pool = run.mons.filter(function(m){ return (m.status === "alive" || m.status === "boxed") && (plan.team || []).indexOf(m.id) === -1; });
+    if(team.length < 6){
+      html += pool.length
+        ? '<div class="pl-sub">Add from party / PC:</div><div class="pl-pool">' + pool.map(function(m){
+            return '<button type="button" class="pl-chip" data-pl="add-mon" data-id="' + escapeHTML(m.id) + '">' + monIconHTML(m.species, 32) +
+              '<span>' + escapeHTML(m.nick || m.species) + ' <span class="pl-sub">' + (m.level ? 'Lv ' + escapeHTML(String(m.level)) : '') + (m.status === "boxed" ? ' · PC' : '') + '</span></span></button>';
+          }).join("") + '</div>'
+        : '<div class="pl-sub">No more living mons to add — log catches in the Route Log.</div>';
+    }
+
+    var all = plannerFightList();
+    var have = (plan.fights || []).filter(plannerFight);
+    var groups = {};
+    all.forEach(function(f){ if(have.indexOf(f.key) === -1) (groups[f.group] = groups[f.group] || []).push(f); });
+    html += '<div class="boss-section-title">Fights (' + have.length + ')</div>' +
+      '<div class="pl-bar"><select id="plFightAdd" aria-label="Add a fight"><option value="">+ Add a fight…</option>' +
+      Object.keys(groups).map(function(g){
+        return '<optgroup label="' + escapeHTML(g) + '">' + groups[g].map(function(f){
+          return '<option value="' + escapeHTML(f.key) + '">' + escapeHTML(f.label) + '</option>';
+        }).join("") + '</optgroup>';
+      }).join("") + '</select>' +
+      '<button type="button" class="pl-btn" data-pl="add-league">+ Elite Four &amp; Champion</button></div>' +
+      '<div class="hard-note">Each cell: <b>You</b> = your best move\'s effectiveness on that mon (your types\' STAB if you haven\'t entered moves), <b>Them</b> = its best move on you, then who\'s faster. Speeds marked ≈ are estimates (IV 15, neutral nature, no EVs) until you type yours in. Abilities, innates and items aren\'t counted — hover a cell for the move.</div>';
+    html += have.map(function(k){
+      var f = plannerFight(k);
+      return f ? plannerFightHTML(plan, f, team) : "";
+    }).join("");
+    el.innerHTML = html;
+
+    var moveNames = Object.keys(dexData().moves || {}).sort();
+    team.forEach(function(m){
+      var e = plannerDexEntry(m.species);
+      var li = e && e.pok.learnset_info ? e.pok.learnset_info : {};
+      var own = {};
+      (li.learnset || []).forEach(function(r){ own[r[1]] = 1; });
+      (li.tms || []).concat(li.egg || [], (e && e.pok.tutors) || []).forEach(function(n){ own[n] = 1; });
+      var learnable = Object.keys(own).sort();
+      var opts = learnable.concat(moveNames.filter(function(n){ return !own[n]; }));
+      [0, 1, 2, 3].forEach(function(i){
+        var id = "plMove-" + m.id + "-" + i;
+        attachTypeahead(id, id + "-list", function(){ return opts; });
+      });
+    });
+  }
+
+  function plannerMutate(fn){
+    var plan = activePlan();
+    if(!plan) return;
+    // Drop ids of deleted mons and keys of fights that no longer exist, so a
+    // stale entry can't hold a team slot or count as an invisible fight.
+    plan.team = planTeam(plan).map(function(m){ return m.id; });
+    plan.fights = plan.fights.filter(plannerFight);
+    fn(plan, currentRun());
+    save();
+    renderPlanner();
+  }
+  document.getElementById("plannerBody").addEventListener("click", function(e){
+    var btn = e.target.closest("[data-pl]");
+    if(!btn) return;
+    var act = btn.getAttribute("data-pl"), run = currentRun();
+    if(act === "new-plan"){
+      showPrompt("Name this plan:", "e.g. Elite Four", function(name){
+        var p = { id: uid(), name: (name || "").trim() || "Plan " + (run.plans.length + 1), team: [], fights: [], folded: {} };
+        run.plans.push(p);
+        run.activePlan = p.id;
+        save();
+        renderPlanner();
+      });
+    } else if(act === "rename-plan"){
+      var cur = activePlan();
+      showPrompt("Rename plan:", "", function(name){
+        if((name || "").trim()) plannerMutate(function(p){ p.name = name.trim(); });
+      }, cur ? cur.name : "");
+    } else if(act === "delete-plan"){
+      var del = activePlan();
+      if(del) showConfirm('Delete the plan "' + del.name + '"? Your mons\' Speed and moves are kept.', function(){
+        run.plans = run.plans.filter(function(p){ return p !== del; });
+        run.activePlan = run.plans.length ? run.plans[0].id : null;
+        save();
+        renderPlanner();
+      });
+    } else if(act === "add-mon"){
+      plannerMutate(function(p){ if(p.team.length < 6 && p.team.indexOf(btn.getAttribute("data-id")) === -1) p.team.push(btn.getAttribute("data-id")); });
+    } else if(act === "remove-mon"){
+      plannerMutate(function(p){ p.team = p.team.filter(function(id){ return id !== btn.getAttribute("data-id"); }); });
+    } else if(act === "remove-fight"){
+      plannerMutate(function(p){ p.fights = p.fights.filter(function(k){ return k !== btn.getAttribute("data-key"); }); });
+    } else if(act === "fold"){
+      plannerMutate(function(p){
+        if(!p.folded) p.folded = {};
+        var k = btn.getAttribute("data-key");
+        if(p.folded[k]) delete p.folded[k]; else p.folded[k] = true;
+      });
+    } else if(act === "add-league"){
+      plannerMutate(function(p){
+        plannerFightList().forEach(function(f){
+          if((f.group === "Elite Four" || f.group === "Champion") && p.fights.indexOf(f.key) === -1) p.fights.push(f.key);
+        });
+      });
+    }
+  });
+  var plannerPointerDown = false, plannerRenderPending = false;
+  document.getElementById("plannerBody").addEventListener("pointerdown", function(){ plannerPointerDown = true; }, true);
+  document.addEventListener("pointerup", function(){
+    if(!plannerPointerDown) return;
+    // After this event's click handlers (a timeout runs after `click`).
+    setTimeout(function(){
+      plannerPointerDown = false;
+      if(plannerRenderPending){ plannerRenderPending = false; renderPlanner(); }
+    }, 0);
+  });
+  document.getElementById("plannerBody").addEventListener("change", function(e){
+    var t = e.target;
+    if(t.id === "plPlanSelect"){
+      currentRun().activePlan = t.value;
+      save();
+      renderPlanner();
+    } else if(t.id === "plFightAdd"){
+      if(t.value) plannerMutate(function(p){ if(p.fights.indexOf(t.value) === -1) p.fights.push(t.value); });
+    } else if(t.hasAttribute("data-pl-speed") || t.hasAttribute("data-pl-move")){
+      var id = t.getAttribute("data-pl-speed") || t.getAttribute("data-pl-move");
+      var mon = currentRun().mons.filter(function(m){ return m.id === id; })[0];
+      if(!mon) return;
+      if(t.hasAttribute("data-pl-speed")){
+        var v = parseInt(t.value, 10);
+        if(v > 0) mon.speed = v; else delete mon.speed;
+      } else {
+        var name = canonicalMoveName(t.value);
+        if(t.value.trim() && !name){ showToast('"' + t.value.trim() + '" isn\'t a move in this game'); t.value = ""; }
+        var moves = (mon.moves || []).slice();
+        while(moves.length < 4) moves.push("");
+        moves[parseInt(t.getAttribute("data-slot"), 10)] = name;
+        mon.moves = moves;
+      }
+      save();
+      // A tap elsewhere in the planner blurs the field (firing this) on
+      // pointerdown; re-rendering now would swap out the button before its
+      // click lands. So wait for the click (pointerup below), and don't
+      // refocus — that also keeps a picked typeahead list from re-opening.
+      if(plannerPointerDown){ plannerRenderPending = true; return; }
+      // Tab moves focus after `change`; re-render once it has landed and put
+      // it back, so typing four moves in a row isn't interrupted.
+      setTimeout(function(){
+        var f = document.activeElement && document.activeElement.id;
+        renderPlanner();
+        var again = f && document.getElementById(f);
+        if(again && again !== document.activeElement) again.focus();
+      }, 0);
+    }
+  });
 
   function trainerKey(g, f, idx){
     return "trainer-" + g.split + "-" + f.location + "-" + f.trainerClass + "-" + f.name + "-" + idx;
