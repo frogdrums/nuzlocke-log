@@ -970,7 +970,8 @@
      px reclaimed from an outer gutter goes straight into those cells. */
   /* ---------- Battle Planner ---------- */
   /* A computer screen gets the room: the device widens while the Planner is
-     open (body.planner-open, set by the tab handler). */
+     open (body.planner-open, set by the tab handler). Sprites are the main
+     way to tell mons apart (user, 2026-10-20): big icons, small names. */
   @media (min-width: 900px){
     body.planner-open .device{ max-width: 1280px; }
   }
@@ -982,21 +983,26 @@
   }
   .pl-x{
     border: none; background: none; color: var(--cream-dim); font-size: 20px; line-height: 1;
-    cursor:pointer; padding: 0 4px; flex-shrink:0;
+    cursor:pointer; padding: 0 4px; flex-shrink:0; align-self:flex-start;
   }
   .pl-sub{ font-size: 12px; color: var(--cream-dim); font-weight: normal; }
+  .pl-small{ font-size: 11px; color: var(--cream-dim); font-weight: normal; }
   .pl-icon{ display:inline-block; flex-shrink:0; background-repeat:no-repeat; image-rendering: pixelated; vertical-align: middle; }
-  .pl-team{ display:grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin-bottom: 8px; }
-  .pl-slot{ background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; display:flex; flex-direction:column; gap:5px; }
+  .pl-team{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; margin-bottom: 8px; }
+  .pl-slot{ background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 8px; display:flex; flex-direction:column; gap:6px; }
   .pl-slot.pl-dead{ border-color: var(--dead-dim); opacity: 0.7; }
-  .pl-slot-top{ display:flex; align-items:center; gap:6px; }
-  .pl-slot-name{ flex:1; min-width:0; font-weight:700; font-size: 14px; }
-  .pl-types{ display:flex; flex-wrap:wrap; gap:3px; margin-top:2px; align-items:center; }
+  .pl-slot-top{ display:flex; align-items:center; gap:8px; }
+  .pl-slot-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
+  .pl-slot-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  .pl-types{ display:flex; flex-wrap:wrap; gap:3px; align-items:center; }
   .pl-type{ font-size: 10px; text-transform:uppercase; padding: 1px 6px; border-radius: 9px; color:#fff; font-weight:700; text-shadow: 0 1px 1px rgba(0,0,0,0.5); }
-  .pl-spe{ font-size: 11px; color: var(--lcd); margin-left: 4px; }
-  .pl-speed{ display:flex; align-items:center; gap:6px; font-size: 13px; color: var(--cream-dim); }
-  .pl-speed input{ width: 80px; }
-  .pl-move input{ width:100%; font-size: 13px; padding: 5px 7px; }
+  .pl-mega{ font-size: 10px; text-transform:uppercase; padding: 1px 6px; border-radius: 9px; border: 1px solid var(--gold); color: var(--gold); font-weight:700; }
+  .pl-spe{ font-size: 14px; color: var(--lcd); font-weight:700; }
+  .pl-speed{ display:flex; align-items:center; gap:6px; font-size: 15px; color: var(--cream); font-weight:700; }
+  .pl-speed input{ width: 82px; font-size: 16px; padding: 4px 6px; }
+  .pl-mega-sel{ font-size: 13px; min-width:0; max-width: 100%; }
+  .pl-moves{ display:grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .pl-move input{ width:100%; font-size: 15px; padding: 6px 8px; }
   .pl-pool{ display:flex; flex-wrap:wrap; gap:5px; margin: 4px 0 8px; }
   .pl-chip{
     display:flex; align-items:center; gap:4px; border: 1px solid var(--line); background: var(--panel);
@@ -1007,19 +1013,28 @@
   .pl-fight-name{ flex:1; min-width:0; font-weight:700; color: var(--gold); }
   .pl-icons-row{ display:flex; flex-wrap:wrap; gap:2px; }
   .pl-grid-wrap{ overflow-x:auto; -webkit-overflow-scrolling: touch; }
-  .pl-grid{ border-collapse: collapse; width:100%; font-size: 12px; }
-  .pl-grid th, .pl-grid td{ border-top: 1px solid var(--line); padding: 5px; vertical-align: top; text-align:left; }
+  .pl-grid{ border-collapse: collapse; width:100%; }
+  .pl-grid th, .pl-grid td{ border-top: 1px solid var(--line); padding: 4px 6px; vertical-align: middle; }
   .pl-grid thead th{ border-top:none; }
-  .pl-col{ text-align:center !important; font-weight:700; min-width: 74px; font-size: 11px; }
-  .pl-boss-mon{ min-width: 220px; font-weight: normal; }
-  .pl-bmoves{ display:flex; flex-wrap:wrap; gap:3px; margin-top:3px; }
-  .pl-bmove{ font-size: 11px; border: 1px solid var(--line); border-left-width: 4px; border-radius: var(--radius); padding: 0 5px; }
+  /* Alternating shade per team column (user, 2026-10-20). The boss column is
+     child 1, so even children are team members 1, 3, 5. */
+  .pl-grid td:nth-child(even), .pl-grid thead th:nth-child(even){ background: rgba(var(--lcd-rgb), 0.10); }
+  .pl-col{ text-align:center; font-size: 11px; font-weight: normal; color: var(--cream-dim); min-width: 92px; }
+  .pl-boss-mon{ text-align:left; font-weight: normal; min-width: 330px; }
+  .pl-bm{ display:flex; align-items:center; gap:8px; }
+  .pl-bm-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
+  .pl-bm-line{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; }
+  .pl-bmove{ font-size: 13px; border: 1px solid var(--line); border-left-width: 4px; border-radius: var(--radius); padding: 0 5px; }
   .pl-grid td{ text-align:center; }
-  .pl-eff, .pl-spd{ display:block; white-space:nowrap; font-size: 12px; padding: 1px 4px; margin-bottom: 2px; border-radius: var(--radius); }
-  .pl-eff.pl-good, .pl-spd.pl-good{ background: rgba(63,161,41,0.35); }
-  .pl-eff.pl-bad, .pl-spd.pl-bad{ background: rgba(201,82,79,0.4); }
+  .pl-effs{ display:flex; justify-content:center; gap:4px; }
+  .pl-eff, .pl-spd{ display:inline-flex; align-items:center; gap:3px; white-space:nowrap; font-size: 15px; font-weight:700; padding: 1px 5px; border-radius: var(--radius); }
+  .pl-eff svg{ width: 13px; height: 13px; }
+  .pl-spd{ font-size: 13px; margin-top: 3px; }
+  .pl-eff.pl-good, .pl-spd.pl-good{ background: rgba(63,161,41,0.40); }
+  .pl-eff.pl-bad, .pl-spd.pl-bad{ background: rgba(201,82,79,0.45); }
   .pl-eff.pl-stab{ font-style: italic; }
   .pl-eff-na{ color: var(--cream-dim); }
+  .pl-legend .pl-eff{ padding: 0; font-size: inherit; vertical-align: middle; }
 
   @media (max-width: 479px){
     /* Scoped to the calculator, NOT applied to .content globally: the ask was
@@ -16186,7 +16201,7 @@
       currentRun().rules[rule] = e.target.checked; save();
       // Hard mode changes every level the Bosses/Trainers/Guide tabs show.
       if(rule === "hard"){ renderBosses(); renderTrainers(); renderGuide(); }
-      if(rule === "scaling" || rule === "sgHard" || rule === "allInnates"){ renderBosses(); renderTrainers(); }
+      if(rule === "scaling" || rule === "sgHard" || rule === "allInnates"){ renderBosses(); renderTrainers(); renderPlanner(); }
     }
   });
 
@@ -16968,15 +16983,75 @@
     currentRun().mons.forEach(function(m){ byId[m.id] = m; });
     return (plan.team || []).map(function(id){ return byId[id]; }).filter(Boolean);
   }
+  // Megas (SG_ICONS.megas, tools/build_sg_icons.py): holder dex key ->
+  // {stone: Mega form key}. A boss mon holding its stone is shown as its Mega
+  // (trainers Mega Evolve whenever they hold the stone); yours is picked on
+  // its slot (mon.mega = the form key).
+  function megaTable(){
+    var g = currentGame(), d = g.plannerIcons && window[g.plannerIcons.global];
+    return (d && d.megas) || {};
+  }
+  function formEntry(key, mega){
+    var pok = key && dexData().poks[key];
+    return pok ? { key: key, pok: pok, mega: !!mega } : null;
+  }
+  function myForm(m){
+    var e = plannerDexEntry(m.species), forms = e && megaTable()[e.key];
+    if(forms && m.mega && Object.keys(forms).some(function(s){ return forms[s] === m.mega; })) return formEntry(m.mega, true) || e;
+    return e;
+  }
+  function bossForm(m){
+    var e = plannerDexEntry(m.name), forms = e && megaTable()[e.key];
+    var to = forms && forms[m.item];
+    return (to && formEntry(to, true)) || e;
+  }
+  // A boss Mega's Speed, from the mon's own level, IVs, EVs and nature
+  // exactly as tools/build_sg_data.py calc_stats() makes its listed stats
+  // (IV 31 / EV 0 unless the mon carries ivs/evs).
+  function speedStat(base, level, iv, ev, nature){
+    var n = Math.floor((2 * base + iv + Math.floor(ev / 4)) * level / 100) + 5;
+    var nat = NATURE_GUIDE.filter(function(x){ return x.nature === nature; })[0];
+    if(nat && nat.up === "Speed") return Math.floor(n * 110 / 100);
+    if(nat && nat.down === "Speed") return Math.floor(n * 90 / 100);
+    return n;
+  }
+  // Badge word for a held-item form change: the hack runs Megas, some Gmax
+  // forms (Butterfree + Bugtite) and Ogerpon's Tera masks through the same
+  // FORM_CHANGE_BATTLE_MEGA_EVOLUTION_ITEM tables.
+  function formTag(key){
+    var t = /\b(Mega|Gmax|Tera)\b[^)]*\)$/.exec(key || "");
+    return t ? t[1] : "Mega";
+  }
+  // A changed form's own ability and innates: innate slots unlock at Lv
+  // 75/85/95 (see abilityText()), all at once under the bookcase toggle.
+  // The dex drops empty slots, so with fewer than three listed the unlock
+  // levels aren't known and none is shown below the toggle.
+  function formAbilityText(m, form){
+    var inn = form.pok.innates || [];
+    var on = allInnatesOn() ? inn : inn.length === 3 ? inn.filter(function(a, i){ return m.level >= [75, 85, 95][i]; }) : [];
+    return ((form.pok.abilities || {})["0"] || "?") + (on.length ? " + innate " + on.join(", ") : "");
+  }
+  function bossSpeed(m, form){
+    if(!form || !form.mega) return m.stats ? m.stats[5] : null;
+    return speedStat(form.pok.bs.sp, m.level, m.ivs ? m.ivs[5] : 31, m.evs ? m.evs[5] : 0, m.nature);
+  }
   // Your mons' Speed estimate when none is typed: the user's no-stats
   // standard (user, 2026-10-19) — IV 15, neutral nature, 0 EVs.
   function estSpeed(m){
-    var e = plannerDexEntry(m.species), lv = parseInt(m.level, 10);
+    var e = myForm(m), lv = parseInt(m.level, 10);
     if(!e || !e.pok.bs || !lv) return null;
     return Math.floor((2 * e.pok.bs.sp + 15) * lv / 100) + 5;
   }
+  // A Mega has its own typed Speed (mon.megaSpeed), so switching the Mega
+  // on or off never reuses the other form's number.
+  function typedSpeed(m){
+    var e = myForm(m);
+    var v = e && e.mega ? m.megaSpeed : m.speed;
+    return typeof v === "number" ? v : null;
+  }
   function monSpeed(m){
-    if(typeof m.speed === "number") return { v: m.speed, est: false };
+    var t = typedSpeed(m);
+    if(t != null) return { v: t, est: false };
     var v = estSpeed(m);
     return v == null ? null : { v: v, est: true };
   }
@@ -17002,52 +17077,70 @@
     return best;
   }
 
+  var PL_SWORD = pixelIconSVG([
+    "..........11", ".........111", "........111.", ".......111..",
+    "......111...", ".1...111....", "..1.111.....", "...111......",
+    "...11.......", "..1..1......", ".1..........", "1..........."]);
+  var PL_SHIELD = pixelIconSVG([
+    "............", ".1111111111.", ".1111111111.", ".1111111111.",
+    ".1111111111.", ".1111111111.", "..11111111..", "..11111111..",
+    "...111111...", "....1111....", ".....11.....", "............"]);
+
   function plannerMonSlotHTML(m){
-    var e = plannerDexEntry(m.species);
+    var e = myForm(m);
     var types = e ? e.pok.types : [];
     var est = estSpeed(m);
+    var base = plannerDexEntry(m.species), forms = base && megaTable()[base.key];
+    var megaSel = forms
+      ? '<select class="pl-mega-sel" data-pl-mega="' + escapeHTML(m.id) + '" aria-label="Mega Evolution">' +
+          '<option value="">No Mega</option>' + Object.keys(forms).sort().map(function(stone){
+            return '<option value="' + escapeHTML(forms[stone]) + '"' + (e && e.mega && e.key === forms[stone] ? ' selected' : '') + '>' +
+              escapeHTML(formTag(forms[stone]) + (/\b(?:Mega|Gmax|Tera) ([XYZ])\)$/.exec(forms[stone]) || ["", ""])[1].replace(/^./, " $&")) + ' (' + escapeHTML(stone) + ')</option>';
+          }).join("") + '</select>'
+      : '';
     var moves = m.moves || [];
     var moveInputs = [0, 1, 2, 3].map(function(i){
       var id = "plMove-" + m.id + "-" + i;
       var mv = plannerMove(moves[i]);
       return '<div class="calc-dd-wrap pl-move">' +
         '<input type="text" id="' + id + '" data-pl-move="' + escapeHTML(m.id) + '" data-slot="' + i + '" value="' + escapeHTML(moves[i] || "") + '" placeholder="Move ' + (i + 1) + '" autocomplete="off"' +
-        (mv ? ' style="border-left:4px solid ' + (TYPE_COLORS[mv.type] || "#777") + '"' : '') + '>' +
+        (mv ? ' style="border-left:5px solid ' + (TYPE_COLORS[mv.type] || "#777") + '"' : '') + '>' +
         '<div class="calc-dd-list" id="' + id + '-list" style="display:none;"></div></div>';
     }).join("");
     return (
       '<div class="pl-slot' + (m.status === "dead" ? ' pl-dead' : '') + '">' +
-        '<div class="pl-slot-top">' + monIconHTML(m.species, 48) +
-          '<div class="pl-slot-name"><div>' + escapeHTML(m.nick || m.species || "?") + '</div>' +
-          '<div class="pl-sub">' + (m.nick ? escapeHTML(m.species) + ' · ' : '') + 'Lv ' + escapeHTML(String(m.level || "?")) +
-          (m.status === "boxed" ? ' · PC' : m.status === "dead" ? ' · fainted' : '') + '</div>' +
-          '<div class="pl-types">' + types.map(typePillHTML).join("") + '</div></div>' +
+        '<div class="pl-slot-top">' + monIconHTML(e ? e.key : m.species, 64) +
+          '<div class="pl-slot-info">' +
+            '<div class="pl-small">' + escapeHTML(m.nick || m.species || "?") + (m.nick ? ' · ' + escapeHTML(m.species) : '') +
+              ' · Lv ' + escapeHTML(String(m.level || "?")) + (m.status === "boxed" ? ' · PC' : m.status === "dead" ? ' · fainted' : '') + '</div>' +
+            '<div class="pl-types">' + types.map(typePillHTML).join("") + (e && e.mega ? '<span class="pl-mega">' + formTag(e.key) + '</span>' : '') + '</div>' +
+            '<div class="pl-slot-row"><label class="pl-speed">Spe <input type="number" min="1" max="999" inputmode="numeric" id="plSpeed-' + escapeHTML(m.id) + '" data-pl-speed="' + escapeHTML(m.id) + '" value="' + (typedSpeed(m) != null ? typedSpeed(m) : "") + '" placeholder="' + (est != null ? "≈" + est : "") + '"' + (e && e.mega ? ' title="Your ' + formTag(e.key) + '\'s Speed (kept apart from the base form\'s)"' : '') + '></label>' + megaSel + '</div>' +
+          '</div>' +
           '<button type="button" class="pl-x" data-pl="remove-mon" data-id="' + escapeHTML(m.id) + '" title="Remove from team" aria-label="Remove from team">×</button>' +
         '</div>' +
-        '<label class="pl-speed">Speed <input type="number" min="1" max="999" inputmode="numeric" id="plSpeed-' + escapeHTML(m.id) + '" data-pl-speed="' + escapeHTML(m.id) + '" value="' + (typeof m.speed === "number" ? m.speed : "") + '" placeholder="' + (est != null ? "≈" + est : "") + '"></label>' +
-        moveInputs +
+        '<div class="pl-moves">' + moveInputs + '</div>' +
       '</div>'
     );
   }
 
-  function plannerCellHTML(mine, bm, bTypes, bMoves, bSpe){
-    var e = plannerDexEntry(mine.species), myTypes = e ? e.pok.types : [];
+  function plannerCellHTML(mine, bTypes, bMoves, bSpe){
+    var e = myForm(mine), myTypes = e ? e.pok.types : [];
     var myMoves = (mine.moves || []).filter(Boolean);
     var you = myMoves.length ? bestHit(myMoves, bTypes) : stabHit(myTypes, bTypes);
     var them = bestHit(bMoves, myTypes);
-    function badge(h, goodHigh, label){
-      if(!h) return '<span class="pl-eff pl-eff-na">' + label + ' ?</span>';
+    function badge(h, goodHigh, icon, label){
+      if(!h) return '<span class="pl-eff pl-eff-na" title="' + label + ': no known moves">' + icon + ' ?</span>';
       var cls = h.x === 1 ? "" : ((h.x > 1) === goodHigh ? " pl-good" : " pl-bad");
-      return '<span class="pl-eff' + cls + (h.stab ? ' pl-stab' : '') + '" title="' + escapeHTML(label + ": " + h.move) + '">' + label + ' ' + effText(h.x) + '</span>';
+      return '<span class="pl-eff' + cls + (h.stab ? ' pl-stab' : '') + '" title="' + escapeHTML(label + ": " + h.move) + '">' + icon + effText(h.x) + '</span>';
     }
     var sp = monSpeed(mine), spd = "";
     if(sp && typeof bSpe === "number"){
-      var pre = sp.est ? "≈" : "";
-      spd = sp.v > bSpe ? '<span class="pl-spd pl-good" title="Your Speed ' + pre + sp.v + ' vs ' + bSpe + '">' + pre + 'Faster</span>'
-        : sp.v < bSpe ? '<span class="pl-spd pl-bad" title="Your Speed ' + pre + sp.v + ' vs ' + bSpe + '">' + pre + 'Slower</span>'
-        : '<span class="pl-spd" title="Speed tie at ' + bSpe + '">Tie</span>';
+      var pre = sp.est ? "≈" : "", tip = ' title="Your Speed ' + pre + sp.v + ' vs ' + bSpe + '"';
+      spd = sp.v > bSpe ? '<span class="pl-spd pl-good"' + tip + '>' + pre + 'Faster</span>'
+        : sp.v < bSpe ? '<span class="pl-spd pl-bad"' + tip + '>' + pre + 'Slower</span>'
+        : '<span class="pl-spd"' + tip + '>Tie</span>';
     }
-    return '<td>' + badge(you, true, "You") + badge(them, false, "Them") + spd + '</td>';
+    return '<td><div class="pl-effs">' + badge(you, true, PL_SWORD, "Your best hit") + badge(them, false, PL_SHIELD, "Its best hit on you") + '</div>' + spd + '</td>';
   }
 
   function plannerFightHTML(plan, f, team){
@@ -17062,26 +17155,33 @@
       '</div>';
     if(folded){
       return '<div class="pl-fight">' + head + '<div class="pl-icons-row">' +
-        mons.map(function(m){ return monIconHTML(m.name, 32); }).join("") + '</div></div>';
+        mons.map(function(m){ var bf = bossForm(m); return monIconHTML(bf ? bf.key : m.name, 48); }).join("") + '</div></div>';
     }
     var rows = mons.map(function(m){
-      var e = plannerDexEntry(m.name), types = e ? e.pok.types : [];
+      var form = bossForm(m), types = form ? form.pok.types : [];
       var moves = bossMoveNames(m);
-      var spe = m.stats ? m.stats[5] : null;
+      var spe = bossSpeed(m, form);
+      var ability = form && form.mega ? formAbilityText(m, form) : abilityText(m);
       var moveHtml = moves.map(function(n){
         var mv = plannerMove(n);
         return '<span class="pl-bmove"' + (mv ? ' style="border-color:' + (TYPE_COLORS[mv.type] || "#777") + '" title="' + escapeHTML(mv.type + " · " + mv.category + (mv.basePower ? " · " + mv.basePower + " BP" : "")) + '"' : '') + '>' + escapeHTML(n) + '</span>';
       }).join("");
-      return '<tr><th class="pl-boss-mon">' +
-        '<div class="pl-slot-top">' + monIconHTML(m.name, 40) +
-          '<div class="pl-slot-name"><div>' + dexLinkHTML(m.name, escapeHTML(m.name), "") + ' <span class="pl-sub">Lv ' + escapeHTML(levelText(m.level)) + '</span></div>' +
-          '<div class="pl-types">' + types.map(typePillHTML).join("") + (spe != null ? '<span class="pl-spe">Spe ' + spe + '</span>' : '') + '</div></div></div>' +
-        '<div class="pl-sub">' + escapeHTML(abilityText(m)) + (m.item ? ' · ' + escapeHTML(m.item) : '') + (m.nature ? ' · ' + escapeHTML(m.nature) : '') + '</div>' +
-        '<div class="pl-bmoves">' + moveHtml + '</div>' +
-      '</th>' + team.map(function(t){ return plannerCellHTML(t, m, types, moves, spe); }).join("") + '</tr>';
+      var speHtml = spe == null ? '' : form && form.mega && m.stats
+        ? '<span class="pl-spe" title="Mega Speed, from its level, IVs, EVs and nature">Spe ' + m.stats[5] + ' → ' + spe + '</span>'
+        : '<span class="pl-spe">Spe ' + spe + '</span>';
+      return '<tr><th class="pl-boss-mon"><div class="pl-bm">' + monIconHTML(form ? form.key : m.name, 56) +
+        '<div class="pl-bm-info">' +
+          '<div class="pl-bm-line"><span class="pl-small">' + dexLinkHTML(m.name, escapeHTML(m.name), "") + ' · Lv ' + escapeHTML(levelText(m.level)) + '</span>' +
+            types.map(typePillHTML).join("") +
+            (form && form.mega ? '<span class="pl-mega" title="' + escapeHTML("Changes form with its " + m.item + ": " + form.key) + '">' + formTag(form.key) + '</span>' : '') +
+            speHtml + '</div>' +
+          '<div class="pl-bm-line"><span class="pl-small">' + escapeHTML(ability) + (m.item ? ' · ' + escapeHTML(m.item) : '') + (m.nature ? ' · ' + escapeHTML(m.nature) : '') + '</span>' + moveHtml + '</div>' +
+        '</div></div>' +
+      '</th>' + team.map(function(t){ return plannerCellHTML(t, types, moves, spe); }).join("") + '</tr>';
     }).join("");
     var cols = team.map(function(t){
-      return '<th class="pl-col">' + monIconHTML(t.species, 32) + '<div>' + escapeHTML(t.nick || t.species) + '</div></th>';
+      var e = myForm(t);
+      return '<th class="pl-col">' + monIconHTML(e ? e.key : t.species, 48) + '<div>' + escapeHTML(t.nick || t.species) + '</div></th>';
     }).join("");
     return '<div class="pl-fight">' + head +
       '<div class="pl-grid-wrap"><table class="pl-grid"><thead><tr><th></th>' + cols + '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
@@ -17122,6 +17222,9 @@
     }
 
     var team = planTeam(plan);
+    var pruned = false;
+    team.forEach(function(m){ if(m.mega && !(myForm(m) || {}).mega){ delete m.mega; pruned = true; } });
+    if(pruned) save();
     html += '<div class="boss-section-title">Your team (' + team.length + '/6)</div>' +
       '<div class="pl-team">' + team.map(plannerMonSlotHTML).join("") + '</div>';
     var pool = run.mons.filter(function(m){ return (m.status === "alive" || m.status === "boxed") && (plan.team || []).indexOf(m.id) === -1; });
@@ -17146,7 +17249,7 @@
         }).join("") + '</optgroup>';
       }).join("") + '</select>' +
       '<button type="button" class="pl-btn" data-pl="add-league">+ Elite Four &amp; Champion</button></div>' +
-      '<div class="hard-note">Each cell: <b>You</b> = your best move\'s effectiveness on that mon (your types\' STAB if you haven\'t entered moves), <b>Them</b> = its best move on you, then who\'s faster. Speeds marked ≈ are estimates (IV 15, neutral nature, no EVs) until you type yours in. Abilities, innates and items aren\'t counted — hover a cell for the move.</div>';
+      '<div class="hard-note pl-legend">Each cell: <span class="pl-eff">' + PL_SWORD + '</span> your best move\'s effectiveness on that mon (your types\' STAB, in italics, until you enter moves), <span class="pl-eff">' + PL_SHIELD + '</span> its best move on you, then who\'s faster. Speeds marked ≈ are estimates (IV 15, neutral nature, no EVs) until you type yours in. A boss holding its Mega Stone is shown as its Mega, with its Mega Speed. Abilities, innates and items aren\'t counted — hover a cell for the move.</div>';
     html += have.map(function(k){
       var f = plannerFight(k);
       return f ? plannerFightHTML(plan, f, team) : "";
@@ -17243,13 +17346,15 @@
       renderPlanner();
     } else if(t.id === "plFightAdd"){
       if(t.value) plannerMutate(function(p){ if(p.fights.indexOf(t.value) === -1) p.fights.push(t.value); });
-    } else if(t.hasAttribute("data-pl-speed") || t.hasAttribute("data-pl-move")){
-      var id = t.getAttribute("data-pl-speed") || t.getAttribute("data-pl-move");
+    } else if(t.hasAttribute("data-pl-speed") || t.hasAttribute("data-pl-move") || t.hasAttribute("data-pl-mega")){
+      var id = t.getAttribute("data-pl-speed") || t.getAttribute("data-pl-move") || t.getAttribute("data-pl-mega");
       var mon = currentRun().mons.filter(function(m){ return m.id === id; })[0];
       if(!mon) return;
-      if(t.hasAttribute("data-pl-speed")){
-        var v = parseInt(t.value, 10);
-        if(v > 0) mon.speed = v; else delete mon.speed;
+      if(t.hasAttribute("data-pl-mega")){
+        if(t.value) mon.mega = t.value; else delete mon.mega;
+      } else if(t.hasAttribute("data-pl-speed")){
+        var v = parseInt(t.value, 10), field = (myForm(mon) || {}).mega ? "megaSpeed" : "speed";
+        if(v > 0) mon[field] = v; else delete mon[field];
       } else {
         var name = canonicalMoveName(t.value);
         if(t.value.trim() && !name){ showToast('"' + t.value.trim() + '" isn\'t a move in this game'); t.value = ""; }
