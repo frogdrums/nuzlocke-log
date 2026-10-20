@@ -559,6 +559,10 @@
      fix, not anything about using flex vs. grid in the abstract. */
   .dex-move-row{ padding: 4px 0; border-bottom: 1px solid var(--line); }
   .dex-move-row:last-child{ border-bottom:none; }
+  /* The .dex-col wrappers must not change the phone's one-column look: a
+     row that ends a column keeps its divider, unless it ends the card. */
+  .dex-col > .dex-move-row:last-child{ border-bottom: 1px solid var(--line); }
+  .dex-body > .dex-cols:last-child > .dex-col:last-child > .dex-move-row:last-child{ border-bottom:none; }
   /* A same-level continuation row (see the `grouped` param): no top
      border/gap from the row above so a level's moves read as one
      cluster rather than N separately-bordered rows that all happen to
@@ -1069,7 +1073,14 @@
     #bossesList > :not(.boss-card), #trainersList > :not(.boss-card),
     #checklistList > :not(.cl-card), #pokedexList > :not(.dex-card),
     #pokedexList > .dex-expanded{ grid-column: 1 / -1; }
+    /* An opened card's two column pairs (stats | abilities, level-up | TMs
+       + egg moves) side by side instead of one stretched column. */
+    .dex-cols{ display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 24px; align-items:start; }
     #panel-calculator, #panel-timeline{ max-width: 1100px; margin-left:auto; margin-right:auto; }
+    /* Guide tables two to a row instead of one stretched table (user,
+       2026-10-20: "wider with no benefit"); filter box and text span. */
+    #guideContent{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; align-items:start; }
+    #guideContent > :not(details){ grid-column: 1 / -1; }
   }
 
   @media (max-width: 479px){
@@ -18413,8 +18424,12 @@
             p.tutors.map(function(t){ return '<span class="dex-chip">'+escapeHTML(t)+'</span>'; }).join("") + '</div>'
         : "";
       body = (
+        // Two column pairs (.dex-cols): plain blocks on a phone, side by
+        // side on a computer (user, 2026-10-20: two tables, not one wide one).
         '<div class="dex-body">' +
+          '<div class="dex-cols"><div class="dex-col">' +
           '<div class="dex-stats">'+statsHtml+'<div class="dex-stat-total">Total: '+total+'</div></div>' +
+          '</div><div class="dex-col">' +
           '<div class="dex-section-title">Abilities</div>' +
           '<div class="dex-abilities">'+(abilities.length ? escapeHTML(abilities.join(" / ")) : "—")+'</div>' +
           (p.abilityNote ? '<div class="dex-move-desc">'+escapeHTML(p.abilityNote)+'</div>' : "") +
@@ -18422,12 +18437,16 @@
           evosHtml +
           howHtml +
           formsHtml +
+          '</div></div>' +
           (info ?
+            '<div class="dex-cols"><div class="dex-col">' +
             '<div class="dex-section-title">Level-up Learnset</div>' +
             learnsetHtml +
+            '</div><div class="dex-col">' +
             '<div class="dex-section-title">TMs</div>' +
             tmsHtml +
             // Egg moves: only games whose data has them (SoulGold); hidden elsewhere.
+            // Kept after the TMs so the phone's one-column order is unchanged.
             ((info.egg && info.egg.length)
               ? '<div class="dex-section-title">Egg Moves</div>' +
                   info.egg.map(function(mv){ return pokedexMoveRowHTML(mv, "", false); }).join("")
@@ -18435,7 +18454,8 @@
             ((info.extra && info.extra.length)
               ? '<div class="dex-section-title">Other new moves (docs; how is not stated)</div><div class="dex-tutors">' +
                   info.extra.map(function(t){ return '<span class="dex-chip">'+escapeHTML(t)+'</span>'; }).join("") + '</div>'
-              : "")
+              : "") +
+            '</div></div>'
           : '<div class="dex-section-title">Moves</div><div class="dex-move-row-empty dex-moves-loading">Loading moves…</div>') +
           tutorsHtml +
         '</div>'
