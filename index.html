@@ -417,6 +417,17 @@
   .cl-status.hidden{ background: transparent; border: 1px dashed var(--cream-dim); color: var(--cream-dim); }
   .cl-hidden .cl-name{ color: var(--cream-dim); }
   .cl-collapsed.cl-hidden .cl-toggle{ background: var(--panel); color: var(--cream-dim); font-weight: 400; border-color: var(--line); }
+  /* Missed (run.missedRoutes): the route's encounter is gone, nothing caught. */
+  .cl-actions{ display:flex; gap:6px; }
+  .cl-actions .cl-toggle{ flex:1; width:auto; }
+  .cl-card.cl-missed{ border-left: 3px solid var(--dead); background: var(--bg); opacity: 0.8; }
+  .cl-status.missed{ background: var(--dead-dim); color: var(--cream); }
+  .cl-missed .cl-name{ color: var(--cream-dim); text-decoration: line-through; }
+  .cl-collapsed.cl-missed .cl-toggle{ background: var(--panel); color: var(--cream-dim); font-weight: 400; border-color: var(--dead-dim); }
+  .missed-list{ display:flex; flex-wrap:wrap; gap:6px; }
+  .missed-chip{ display:inline-flex; align-items:center; gap:4px; font-size: 13px; padding: 3px 4px 3px 9px; border: 1px solid var(--dead-dim); border-left: 3px solid var(--dead); border-radius: var(--radius); color: var(--cream-dim); }
+  .missed-chip button{ border:none; background:none; color: var(--cream-dim); font-size: 16px; line-height: 1; cursor:pointer; padding: 0 4px; }
+  #missBtn{ width:100%; margin-top: 6px; }
   .cl-method:first-of-type{ margin-top: 8px; }
   .cl-sub{ color: var(--cream); }
   .chip-lv{ opacity: 0.75; font-size: 12px; }
@@ -969,12 +980,8 @@
      each holding a 6-column stat grid whose EV inputs must fit "252". Every
      px reclaimed from an outer gutter goes straight into those cells. */
   /* ---------- Battle Planner ---------- */
-  /* A computer screen gets the room: the device widens while the Planner is
-     open (body.planner-open, set by the tab handler). Sprites are the main
-     way to tell mons apart (user, 2026-10-20): big icons, small names. */
-  @media (min-width: 900px){
-    body.planner-open .device{ max-width: 1280px; }
-  }
+  /* Sprites are the main way to tell mons apart (user, 2026-10-20): big
+     icons, small names. The desktop width comes from the block below. */
   .pl-bar{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin: 8px 0; }
   .pl-bar select{ flex: 1 1 180px; min-width:0; }
   .pl-btn{
@@ -1020,11 +1027,18 @@
      child 1, so even children are team members 1, 3, 5. */
   .pl-grid td:nth-child(even), .pl-grid thead th:nth-child(even){ background: rgba(var(--lcd-rgb), 0.10); }
   .pl-col{ text-align:center; font-size: 11px; font-weight: normal; color: var(--cream-dim); min-width: 92px; }
-  .pl-boss-mon{ text-align:left; font-weight: normal; min-width: 330px; }
+  .pl-boss-mon{ text-align:left; font-weight: normal; min-width: 540px; }
   .pl-bm{ display:flex; align-items:center; gap:8px; }
   .pl-bm-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
   .pl-bm-line{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; }
-  .pl-bmove{ font-size: 13px; border: 1px solid var(--line); border-left-width: 4px; border-radius: var(--radius); padding: 0 5px; }
+  .pl-bm-row2{ display:flex; gap: 10px; align-items:flex-start; }
+  .pl-bm-meta{ flex: 0 0 190px; min-width:0; font-size: 12px; line-height: 1.45; color: var(--cream-dim); }
+  .pl-k{ display:inline-block; width: 38px; font-size: 10px; text-transform:uppercase; letter-spacing: 0.3px; color: var(--cream-dim); opacity: 0.75; }
+  /* 16ch = the longest boss move ("Stomping Tantrum"); longer future names
+     end in an ellipsis with the full name on hover. */
+  .pl-bm-moves{ flex: 0 0 auto; display:grid; grid-template-columns: repeat(2, calc(16ch + 16px)); gap: 3px; font-size: 13px; }
+  .pl-bmove{ font-size: 13px; border: 1px solid var(--line); border-left-width: 4px; border-radius: var(--radius); padding: 1px 5px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--cream); }
   .pl-grid td{ text-align:center; }
   .pl-effs{ display:flex; justify-content:center; gap:4px; }
   .pl-eff, .pl-spd{ display:inline-flex; align-items:center; gap:3px; white-space:nowrap; font-size: 15px; font-weight:700; padding: 1px 5px; border-radius: var(--radius); }
@@ -1035,6 +1049,28 @@
   .pl-eff.pl-stab{ font-style: italic; }
   .pl-eff-na{ color: var(--cream-dim); }
   .pl-legend .pl-eff{ padding: 0; font-size: inherit; vertical-align: middle; }
+
+  /* ---------- Computer screens (user, 2026-10-20: "fill the screen") ----------
+     Phones keep the narrow single column untouched: everything here is
+     behind min-width, and sits before the 479px block per the rule above.
+     The device widens; card lists become grids in reading (= game) order,
+     their section headers spanning the full row; forms and the calculator
+     keep a readable width. */
+  @media (min-width: 1000px){
+    .device{ max-width: 1440px; }
+    #panel-roster{ display:grid; grid-template-columns: 380px minmax(0, 1fr); gap: 0 18px; align-items:start; }
+    #panel-roster > .add-form, #panel-roster > .save-panel{ grid-column: 1; }
+    #panel-roster > #rosterList{ grid-column: 2; grid-row: 1 / span 2; }
+    .route-cards, #graveyardList{ grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    #checklistList, #bossesList, #trainersList{
+      display:grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 0 12px; align-items:start;
+    }
+    #pokedexList{ display:grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 0 10px; align-items:start; }
+    #bossesList > :not(.boss-card), #trainersList > :not(.boss-card),
+    #checklistList > :not(.cl-card), #pokedexList > :not(.dex-card),
+    #pokedexList > .dex-expanded{ grid-column: 1 / -1; }
+    #panel-calculator, #panel-timeline{ max-width: 1100px; margin-left:auto; margin-right:auto; }
+  }
 
   @media (max-width: 479px){
     /* Scoped to the calculator, NOT applied to .content globally: the ask was
@@ -1131,6 +1167,7 @@
         </div>
         <label class="shiny-check"><input type="checkbox" id="fShiny"> ✨ Shiny</label>
         <button class="btn-primary" id="addBtn">+ Add Encounter</button>
+        <button type="button" class="btn-ghost" id="missBtn">✗ Mark route missed</button>
       </div>
 
       <!-- Save-file import. Static markup (not rebuilt by a render*() call)
@@ -15581,6 +15618,7 @@
       timeline: [], // {id, at (ISO), kind: gym|boss|death|note, text, split, key?, monId?} — Timeline tab
       completedQuests: {}, // quest id -> true; Quests tab ("quests" feature)
       collapsedRoutes: {}, // route name -> true (collapsed, logged) or "hidden" (hidden with no catch)
+      missedRoutes: {}, // route name -> true: the encounter there was missed (nothing caught)
       collapsedSplits: {}, // trainer-fight split name -> true
       collapsedTimelineSplits: {}, // timeline split label -> true
       plans: [], // {id, name, team: [monId ≤6], fights: [boss key], folded: {key:true}} — Planner tab
@@ -15628,6 +15666,12 @@
     }
     fixMons(run.mons);
     (run.pastRuns || []).forEach(function(p){ if(p) fixMons(p.mons); });
+    var mr = run.missedRoutes || {};
+    Object.keys(mr).forEach(function(name){
+      if(!Object.prototype.hasOwnProperty.call(aliases, name)) return;
+      mr[aliases[name]] = true;
+      delete mr[name];
+    });
     var cr = run.collapsedRoutes;
     Object.keys(cr).forEach(function(name){
       if(!Object.prototype.hasOwnProperty.call(aliases, name)) return;
@@ -15640,11 +15684,31 @@
   // save/export (flat `mons` array at the top level, from before per-game
   // runs existed) and normalizes both into the current shape. Returns null
   // if `raw` isn't a recognizable save at all.
+  // Moves bare "missed" placeholder mons of a run (or past-run snapshot) into
+  // its missedRoutes; returns the merged map. Mutates rec.mons.
+  function migrateMissed(rec){
+    var missed = Object.assign({}, rec.missedRoutes || {});
+    if(!Array.isArray(rec.mons)) return missed;
+    rec.mons = rec.mons.filter(function(m){
+      var placeholder = m && typeof m.species === "string" && m.species.trim().toLowerCase() === "missed" &&
+        typeof m.route === "string" && m.route.trim() && !String(m.nick || "").trim() && !String(m.notes || "").trim();
+      if(placeholder) missed[m.route.trim()] = true;
+      return !placeholder;
+    });
+    return missed;
+  }
+
   function normalizeState(raw){
     if(!raw || typeof raw !== "object") return null;
 
     function normalizeRun(r){
       r = r || {};
+      // Before missedRoutes existed the user logged a missed encounter as a
+      // mon with species "missed" (user, 2026-10-20); those become missed
+      // routes so they stop counting as encounters and as alive. One with a
+      // nickname or notes carries the user's own words and stays a mon.
+      var missed = migrateMissed(r);
+      (Array.isArray(r.pastRuns) ? r.pastRuns : []).forEach(function(p){ if(p && typeof p === "object") p.missedRoutes = migrateMissed(p); });
       return {
         runName: r.runName || "",
         badges: typeof r.badges === "number" ? r.badges : 0,
@@ -15656,6 +15720,7 @@
         timeline: Array.isArray(r.timeline) ? r.timeline : [],
         completedQuests: r.completedQuests || {},
         collapsedRoutes: r.collapsedRoutes || {},
+        missedRoutes: missed,
         collapsedSplits: r.collapsedSplits || {},
         collapsedTimelineSplits: r.collapsedTimelineSplits || {},
         saveImportMeta: r.saveImportMeta || null,
@@ -15947,11 +16012,24 @@
     return idx === -1 ? 9999 : idx;
   }
 
+  // Missed routes, in playthrough order, each with an undo.
+  function missedSectionHTML(){
+    // A route with a catch logged is no longer missed, whatever the flag says.
+    var names = Object.keys(currentRun().missedRoutes || {}).filter(function(n){ return !findLoggedMonsForRoute(n.trim()).length; });
+    if(!names.length) return "";
+    names.sort(function(a, b){ return routeOrderIndex(a) - routeOrderIndex(b); });
+    return '<div class="roster-group-title">Missed<span class="roster-count">' + names.length + '</span></div>' +
+      '<div class="missed-list">' + names.map(function(n){
+        return '<span class="missed-chip">' + escapeHTML(n) +
+          '<button type="button" data-act="toggle-missed" data-route="' + escapeHTML(n) + '" title="Undo: not missed" aria-label="Undo missed ' + escapeHTML(n) + '">×</button></span>';
+      }).join("") + '</div>';
+  }
+
   function renderRoster(){
     var living = currentRun().mons.filter(function(m){ return m.status !== "dead"; });
     var el = document.getElementById("rosterList");
     if(living.length === 0){
-      el.innerHTML = '<div class="empty">No active encounters logged yet.<br>Add your first catch above, or import a save file.</div>';
+      el.innerHTML = '<div class="empty">No active encounters logged yet.<br>Add your first catch above, or import a save file.</div>' + missedSectionHTML();
       return;
     }
     // Playthrough order within each group. Array#sort is stable, so mons from
@@ -15998,7 +16076,7 @@
               '<div class="route-cards">' + g.mons.map(cardHTML).join("") + '</div>';
     });
 
-    el.innerHTML = html;
+    el.innerHTML = html + missedSectionHTML();
   }
 
   // Read-only rendering for a mon that belongs to a PAST attempt, not the
@@ -16299,7 +16377,6 @@
       document.getElementById("panel-checklist").style.display = which === "checklist" ? "" : "none";
       document.getElementById("panel-bosses").style.display = which === "bosses" ? "" : "none";
       document.getElementById("panel-planner").style.display = which === "planner" ? "" : "none";
-      document.body.classList.toggle("planner-open", which === "planner");
       document.getElementById("panel-trainers").style.display = which === "trainers" ? "" : "none";
       document.getElementById("panel-calculator").style.display = which === "calculator" ? "" : "none";
       document.getElementById("panel-pokedex").style.display = which === "pokedex" ? "" : "none";
@@ -16319,6 +16396,19 @@
   // A location can hold more than one logged mon now (gift + a wild
   // encounter, multiple gifts at one town, etc) — see the mark-species
   // handler below, which no longer enforces one-catch-per-route.
+  // Missed routes are matched like logged ones: trimmed, case-insensitive
+  // (a route typed in the Route Log form vs the guide's location name).
+  function missedKey(routeName){
+    var run = currentRun(), n = String(routeName || "").trim().toLowerCase();
+    return Object.keys(run.missedRoutes || {}).filter(function(k){ return k.trim().toLowerCase() === n; })[0] || null;
+  }
+  function setMissed(routeName, on){
+    var run = currentRun();
+    if(!run.missedRoutes) run.missedRoutes = {};
+    var k = missedKey(routeName);
+    if(on && !k) run.missedRoutes[String(routeName).trim()] = true;
+    if(!on && k) delete run.missedRoutes[k];
+  }
   function findLoggedMonsForRoute(routeName){
     return currentRun().mons.filter(function(m){
       return (m.route || "").trim().toLowerCase() === routeName.toLowerCase();
@@ -16397,6 +16487,18 @@
       var crVal = currentRun().collapsedRoutes[loc.name];
       var collapsed = logged ? !!crVal : crVal === "hidden";
 
+      if(!logged && missedKey(loc.name)){
+        return (
+          '<div class="cl-card cl-missed cl-collapsed">' +
+            '<div class="cl-top">' +
+              '<div class="cl-name">'+escapeHTML(loc.name)+'</div>' +
+              '<div class="cl-status missed">Missed</div>' +
+            '</div>' +
+            '<button type="button" class="cl-toggle" data-act="toggle-missed" data-route="'+escapeHTML(loc.name)+'">Encounter missed — tap to undo</button>' +
+          '</div>'
+        );
+      }
+
       if(collapsed){
         var namesStr = logged ? loggedMons.map(function(m){ return m.species || "?"; }).join(", ") : "Hidden";
         return (
@@ -16453,7 +16555,10 @@
             '<div class="cl-status '+(logged?"done":"pending")+'">'+(logged?"Logged":"Not yet")+'</div>' +
           '</div>' +
           groupsHtml +
-          '<button type="button" class="cl-toggle" data-act="toggle-collapse-route" data-route="'+escapeHTML(loc.name)+'">'+(logged?"Collapse":"Hide")+'</button>' +
+          '<div class="cl-actions">' +
+            '<button type="button" class="cl-toggle" data-act="toggle-collapse-route" data-route="'+escapeHTML(loc.name)+'">'+(logged?"Collapse":"Hide")+'</button>' +
+            (logged ? '' : '<button type="button" class="cl-toggle" data-act="toggle-missed" data-route="'+escapeHTML(loc.name)+'">✗ Missed</button>') +
+          '</div>' +
         '</div>'
       );
     }).filter(function(html){ return html !== ""; });
@@ -17164,7 +17269,8 @@
       var ability = form && form.mega ? formAbilityText(m, form) : abilityText(m);
       var moveHtml = moves.map(function(n){
         var mv = plannerMove(n);
-        return '<span class="pl-bmove"' + (mv ? ' style="border-color:' + (TYPE_COLORS[mv.type] || "#777") + '" title="' + escapeHTML(mv.type + " · " + mv.category + (mv.basePower ? " · " + mv.basePower + " BP" : "")) + '"' : '') + '>' + escapeHTML(n) + '</span>';
+        return '<span class="pl-bmove"' + (mv ? ' style="border-color:' + (TYPE_COLORS[mv.type] || "#777") + '"' : '') +
+          ' title="' + escapeHTML(n + (mv ? " · " + mv.type + " · " + mv.category + (mv.basePower ? " · " + mv.basePower + " BP" : "") : "")) + '">' + escapeHTML(n) + '</span>';
       }).join("");
       var speHtml = spe == null ? '' : form && form.mega && m.stats
         ? '<span class="pl-spe" title="Mega Speed, from its level, IVs, EVs and nature">Spe ' + m.stats[5] + ' → ' + spe + '</span>'
@@ -17175,7 +17281,14 @@
             types.map(typePillHTML).join("") +
             (form && form.mega ? '<span class="pl-mega" title="' + escapeHTML("Changes form with its " + m.item + ": " + form.key) + '">' + formTag(form.key) + '</span>' : '') +
             speHtml + '</div>' +
-          '<div class="pl-bm-line"><span class="pl-small">' + escapeHTML(ability) + (m.item ? ' · ' + escapeHTML(m.item) : '') + (m.nature ? ' · ' + escapeHTML(m.nature) : '') + '</span>' + moveHtml + '</div>' +
+          // Two fixed rows (user, 2026-10-20): ability/item/nature in a
+          // fixed-width column, moves in a 2x2 grid sized to the longest
+          // boss move (16 chars), so every boss row lines up the same.
+          '<div class="pl-bm-row2"><div class="pl-bm-meta">' +
+            '<div><span class="pl-k">Abl</span>' + escapeHTML(ability) + '</div>' +
+            '<div><span class="pl-k">Item</span>' + escapeHTML(m.item || "—") + '</div>' +
+            '<div><span class="pl-k">Nat</span>' + escapeHTML(m.nature || "—") + '</div>' +
+          '</div><div class="pl-bm-moves">' + moveHtml + '</div></div>' +
         '</div></div>' +
       '</th>' + team.map(function(t){ return plannerCellHTML(t, types, moves, spe); }).join("") + '</tr>';
     }).join("");
@@ -19741,6 +19854,7 @@
       showToast("Add at least a species or nickname");
       return;
     }
+    if(route) setMissed(route, false);   // a catch here means it wasn't missed
 
     currentRun().mons.push({
       id: uid(),
@@ -19763,6 +19877,20 @@
     document.getElementById("fRoute").focus();
     renderAll();
     showToast("Encounter added");
+  });
+
+  document.getElementById("missBtn").addEventListener("click", function(){
+    var route = document.getElementById("fRoute").value.trim();
+    if(!route){
+      showToast("Type the route first");
+      document.getElementById("fRoute").focus();
+      return;
+    }
+    setMissed(route, true);
+    save();
+    document.getElementById("fRoute").value = "";
+    renderAll();
+    showToast(route + " marked missed");
   });
 
   function findMon(id){
@@ -19819,6 +19947,16 @@
       save();
       renderBosses();
       renderTrainers();
+      return;
+    }
+
+    if(act === "toggle-missed"){
+      var mRoute = btn.getAttribute("data-route");
+      var wasMissed = !!missedKey(mRoute);
+      setMissed(mRoute, !wasMissed);
+      save();
+      renderAll();
+      showToast(wasMissed ? mRoute + ": no longer missed" : mRoute + " marked missed");
       return;
     }
 
@@ -19970,6 +20108,7 @@
         createdAt: Date.now()
       });
       currentRun().collapsedRoutes[route] = true; // auto-collapse once something's logged here
+      setMissed(route, false);                    // a catch here means it wasn't missed
       save(); renderAll();
       showToast(species + " logged at " + route);
       return;
