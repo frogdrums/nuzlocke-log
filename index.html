@@ -1005,13 +1005,16 @@
   .pl-slot-top{ display:flex; align-items:center; gap:8px; }
   .pl-slot-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
   .pl-slot-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  /* Nature | Ability, Mega: a full-width 2-column grid like the moves, not a
+     stack beside the sprite (user, 2026-10-21). */
+  .pl-picks{ display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 5px; }
   .pl-types{ display:flex; flex-wrap:wrap; gap:3px; align-items:center; }
   .pl-type{ font-size: 10px; text-transform:uppercase; padding: 1px 6px; border-radius: 9px; color:#fff; font-weight:700; text-shadow: 0 1px 1px rgba(0,0,0,0.5); }
   .pl-mega{ font-size: 10px; text-transform:uppercase; padding: 1px 6px; border-radius: 9px; border: 1px solid var(--gold); color: var(--gold); font-weight:700; }
   .pl-spe{ font-size: 14px; color: var(--lcd); font-weight:700; }
   .pl-speed{ display:flex; align-items:center; gap:6px; font-size: 15px; color: var(--cream); font-weight:700; }
   .pl-speed input{ width: 82px; font-size: 16px; padding: 4px 6px; }
-  .pl-mega-sel{ font-size: 13px; min-width:0; max-width: 100%; }
+  .pl-mega-sel, .pl-nature-sel, .pl-ability-sel{ font-size: 12px; min-width:0; width: 100%; }
   .pl-moves{ display:grid; grid-template-columns: 1fr 1fr; gap: 5px; }
   .pl-move input{ width:100%; font-size: 15px; padding: 6px 8px; }
   .pl-pool{ display:flex; flex-wrap:wrap; gap:5px; margin: 4px 0 8px; }
@@ -17153,10 +17156,11 @@
   }
   // Your mons' Speed estimate when none is typed: the user's no-stats
   // standard (user, 2026-10-19) — IV 15, neutral nature, 0 EVs.
+  // With a nature picked (mon.nature), its ±10% applies too.
   function estSpeed(m){
     var e = myForm(m), lv = parseInt(m.level, 10);
     if(!e || !e.pok.bs || !lv) return null;
-    return Math.floor((2 * e.pok.bs.sp + 15) * lv / 100) + 5;
+    return speedStat(e.pok.bs.sp, lv, 15, 0, m.nature);
   }
   // A Mega has its own typed Speed (mon.megaSpeed), so switching the Mega
   // on or off never reuses the other form's number.
@@ -17202,6 +17206,38 @@
     ".1111111111.", ".1111111111.", "..11111111..", "..11111111..",
     "...111111...", "....1111....", ".....11.....", "............"]);
 
+  var STAT_SHORT = { "Attack": "Atk", "Defense": "Def", "Sp. Attack": "SpA", "Sp. Defense": "SpD", "Speed": "Spe" };
+  // The mon's nature (mon.nature — the field save import fills and the Calc
+  // reads), each option saying what it raises and lowers.
+  function natureSelectHTML(m){
+    return '<select class="pl-nature-sel" data-pl-nature="' + escapeHTML(m.id) + '" aria-label="Nature">' +
+      '<option value="">Nature</option>' + NATURE_GUIDE.map(function(n){
+        var fx = n.up === n.down ? " (neutral)" : " +" + STAT_SHORT[n.up] + " −" + STAT_SHORT[n.down];
+        return '<option value="' + n.nature + '"' + (m.nature === n.nature ? ' selected' : '') + '>' + n.nature + fx + '</option>';
+      }).join("") + '</select>';
+  }
+
+  // The mon's ability (mon.ability — save import's field, read by the Calc):
+  // its species' abilities, the hidden one marked, innates in the tooltip. A
+  // Mega's ability is fixed, so it shows that instead. A stored ability the
+  // species doesn't list (it evolved) stays listed rather than silently lost.
+  function abilitySelectHTML(m, e){
+    if(!e) return "";
+    var ab = e.pok.abilities || {}, inn = e.pok.innates || [];
+    var tip = inn.length ? ' title="' + escapeHTML("Innates: " + inn.join(", ")) + '"' : "";
+    if(e.mega){
+      return '<select class="pl-ability-sel" disabled aria-label="Ability"' + tip + '><option>' + escapeHTML(ab["0"] || "?") + ' (' + formTag(e.key) + ')</option></select>';
+    }
+    var names = Object.keys(ab).map(function(k){ return { name: ab[k], hidden: k === "H" }; });
+    var known = names.some(function(a){ return a.name === m.ability; });
+    return '<select class="pl-ability-sel" data-pl-ability="' + escapeHTML(m.id) + '" aria-label="Ability"' + tip + '>' +
+      '<option value="">Ability</option>' +
+      (m.ability && !known ? '<option value="' + escapeHTML(m.ability) + '" selected>' + escapeHTML(m.ability) + '</option>' : '') +
+      names.map(function(a){
+        return '<option value="' + escapeHTML(a.name) + '"' + (m.ability === a.name ? ' selected' : '') + '>' + escapeHTML(a.name) + (a.hidden ? ' (Hidden)' : '') + '</option>';
+      }).join("") + '</select>';
+  }
+
   function plannerMonSlotHTML(m){
     var e = myForm(m);
     var types = e ? e.pok.types : [];
@@ -17230,10 +17266,11 @@
             '<div class="pl-small">' + escapeHTML(m.nick || m.species || "?") + (m.nick ? ' · ' + escapeHTML(m.species) : '') +
               ' · Lv ' + escapeHTML(String(m.level || "?")) + (m.status === "boxed" ? ' · PC' : m.status === "dead" ? ' · fainted' : '') + '</div>' +
             '<div class="pl-types">' + types.map(typePillHTML).join("") + (e && e.mega ? '<span class="pl-mega">' + formTag(e.key) + '</span>' : '') + '</div>' +
-            '<div class="pl-slot-row"><label class="pl-speed">Spe <input type="number" min="1" max="999" inputmode="numeric" id="plSpeed-' + escapeHTML(m.id) + '" data-pl-speed="' + escapeHTML(m.id) + '" value="' + (typedSpeed(m) != null ? typedSpeed(m) : "") + '" placeholder="' + (est != null ? "≈" + est : "") + '"' + (e && e.mega ? ' title="Your ' + formTag(e.key) + '\'s Speed (kept apart from the base form\'s)"' : '') + '></label>' + megaSel + '</div>' +
+            '<div class="pl-slot-row"><label class="pl-speed">Spe <input type="number" min="1" max="999" inputmode="numeric" id="plSpeed-' + escapeHTML(m.id) + '" data-pl-speed="' + escapeHTML(m.id) + '" value="' + (typedSpeed(m) != null ? typedSpeed(m) : "") + '" placeholder="' + (est != null ? "≈" + est : "") + '"' + (e && e.mega ? ' title="Your ' + formTag(e.key) + '\'s Speed (kept apart from the base form\'s)"' : '') + '></label></div>' +
           '</div>' +
           '<button type="button" class="pl-x" data-pl="remove-mon" data-id="' + escapeHTML(m.id) + '" title="Remove from team" aria-label="Remove from team">×</button>' +
         '</div>' +
+        '<div class="pl-picks">' + natureSelectHTML(m) + abilitySelectHTML(m, e) + megaSel + '</div>' +
         '<div class="pl-moves">' + moveInputs + '</div>' +
       '</div>'
     );
@@ -17373,7 +17410,7 @@
         }).join("") + '</optgroup>';
       }).join("") + '</select>' +
       '<button type="button" class="pl-btn" data-pl="add-league">+ Elite Four &amp; Champion</button></div>' +
-      '<div class="hard-note pl-legend">Each cell: <span class="pl-eff">' + PL_SWORD + '</span> your best move\'s effectiveness on that mon (your types\' STAB, in italics, until you enter moves), <span class="pl-eff">' + PL_SHIELD + '</span> its best move on you, then who\'s faster. Speeds marked ≈ are estimates (IV 15, neutral nature, no EVs) until you type yours in. A boss holding its Mega Stone is shown as its Mega, with its Mega Speed. Abilities, innates and items aren\'t counted — hover a cell for the move.</div>';
+      '<div class="hard-note pl-legend">Each cell: <span class="pl-eff">' + PL_SWORD + '</span> your best move\'s effectiveness on that mon (your types\' STAB, in italics, until you enter moves), <span class="pl-eff">' + PL_SHIELD + '</span> its best move on you, then who\'s faster. Speeds marked ≈ are estimates (IV 15, no EVs, your picked nature or neutral) until you type yours in. A boss holding its Mega Stone is shown as its Mega, with its Mega Speed. Abilities, innates and items aren\'t counted — hover a cell for the move.</div>';
     html += have.map(function(k){
       var f = plannerFight(k);
       return f ? plannerFightHTML(plan, f, team) : "";
@@ -17470,11 +17507,15 @@
       renderPlanner();
     } else if(t.id === "plFightAdd"){
       if(t.value) plannerMutate(function(p){ if(p.fights.indexOf(t.value) === -1) p.fights.push(t.value); });
-    } else if(t.hasAttribute("data-pl-speed") || t.hasAttribute("data-pl-move") || t.hasAttribute("data-pl-mega")){
-      var id = t.getAttribute("data-pl-speed") || t.getAttribute("data-pl-move") || t.getAttribute("data-pl-mega");
+    } else if(t.hasAttribute("data-pl-speed") || t.hasAttribute("data-pl-move") || t.hasAttribute("data-pl-mega") || t.hasAttribute("data-pl-nature") || t.hasAttribute("data-pl-ability")){
+      var id = t.getAttribute("data-pl-speed") || t.getAttribute("data-pl-move") || t.getAttribute("data-pl-mega") || t.getAttribute("data-pl-nature") || t.getAttribute("data-pl-ability");
       var mon = currentRun().mons.filter(function(m){ return m.id === id; })[0];
       if(!mon) return;
-      if(t.hasAttribute("data-pl-mega")){
+      if(t.hasAttribute("data-pl-ability")){
+        if(t.value) mon.ability = t.value; else delete mon.ability;
+      } else if(t.hasAttribute("data-pl-nature")){
+        if(t.value) mon.nature = t.value; else delete mon.nature;
+      } else if(t.hasAttribute("data-pl-mega")){
         if(t.value) mon.mega = t.value; else delete mon.mega;
       } else if(t.hasAttribute("data-pl-speed")){
         var v = parseInt(t.value, 10), field = (myForm(mon) || {}).mega ? "megaSpeed" : "speed";
