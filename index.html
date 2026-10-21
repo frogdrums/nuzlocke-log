@@ -162,6 +162,12 @@
     font-family: 'JetBrains Mono', monospace;
     min-height: 100vh;
     padding: calc(14px + var(--safe-top)) 14px calc(14px + env(safe-area-inset-bottom));
+    /* A sideways iPhone puts the notch in a side inset; keep content out
+       of it once the Planner runs edge to edge (0 in portrait, so the
+       phone render is unchanged). Separate lines so a browser without
+       max() keeps the shorthand. */
+    padding-left: max(14px, env(safe-area-inset-left, 0px));
+    padding-right: max(14px, env(safe-area-inset-right, 0px));
     -webkit-font-smoothing: antialiased;
   }
   /* Opaque strip over the status-bar inset. The status bar is translucent,
@@ -1086,6 +1092,19 @@
        2026-10-20: "wider with no benefit"); filter box and text span. */
     #guideContent{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; align-items:start; }
     #guideContent > :not(details){ grid-column: 1 / -1; }
+  }
+
+  /* Sideways phones (user, 2026-10-21: the Planner "doesn't take up enough
+     of the screen"): between the 640px cap and the computer layout, the
+     Planner alone runs full width so more of its matchup grid shows. The
+     other tabs keep the cap (stretched lists/text read worse). A boss's
+     moves go under its ability/item/nature, narrowing the boss column
+     from ~560px to ~360px: two more team columns in view. */
+  @media (min-width: 640px) and (max-width: 999px){
+    .device[data-tab="planner"]{ max-width: none; }
+    .pl-boss-mon{ min-width: 0; }
+    .pl-bm-row2{ flex-direction: column; gap: 4px; }
+    .pl-bm-meta{ flex: none; }
   }
 
   @media (max-width: 479px){
@@ -16390,6 +16409,7 @@
       tab.classList.add("active");
       tab.scrollIntoView({ block: "nearest", inline: "nearest" });
       var which = tab.getAttribute("data-tab");
+      document.querySelector(".device").setAttribute("data-tab", which);   // per-tab width (CSS)
       document.getElementById("panel-roster").style.display = which === "roster" ? "" : "none";
       document.getElementById("panel-checklist").style.display = which === "checklist" ? "" : "none";
       document.getElementById("panel-bosses").style.display = which === "bosses" ? "" : "none";
