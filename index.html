@@ -1017,6 +1017,8 @@
   .pl-mega-sel, .pl-nature-sel, .pl-ability-sel{ font-size: 12px; min-width:0; width: 100%; }
   .pl-moves{ display:grid; grid-template-columns: 1fr 1fr; gap: 5px; }
   .pl-move input{ width:100%; font-size: 15px; padding: 6px 8px; }
+  .pl-move input.pl-move-bad{ border-color: var(--dead); color: var(--dead); text-decoration: line-through; }
+  .pl-item input{ width:100%; font-size: 12px; padding: 5px 7px; }
   .pl-pool{ display:flex; flex-wrap:wrap; gap:5px; margin: 4px 0 8px; }
   .pl-chip{
     display:flex; align-items:center; gap:4px; border: 1px solid var(--line); background: var(--panel);
@@ -16271,6 +16273,7 @@
     calcTeamState.Atk = calcTeamState.Def = null;
     tabScroll = {};
     window.scrollTo(0, 0);
+    learnableCache = {}; plannerItemCache = null;   // per-game planner caches
     // Pokédex memo/expanded set belong to the game they were built for.
     pokedexExpanded = {};
     invalidatePokedexList();
@@ -17217,6 +17220,45 @@
       }).join("") + '</select>';
   }
 
+  // Moves a species can know (user, 2026-10-21: "only moves they can actually
+  // learn"): its level-up, TM, egg and tutor moves plus every pre-evolution's,
+  // which carry over on evolving. Pre-evolutions come from the dex's `evos`.
+  var learnableCache = {};
+  function learnableMoves(key){
+    var dex = dexData();
+    if(!dex || !dex.poks[key]) return {};
+    if(learnableCache[key]) return learnableCache[key];
+    if(!learnableCache.__prevo){
+      var pre = {};
+      Object.keys(dex.poks).forEach(function(k){ (dex.poks[k].evos || []).forEach(function(ev){ if(!pre[ev[0]]) pre[ev[0]] = k; }); });
+      learnableCache.__prevo = pre;
+    }
+    var out = {}, seen = {};
+    for(var k = key; k && !seen[k]; k = learnableCache.__prevo[k]){
+      seen[k] = 1;
+      var p = dex.poks[k] || {}, li = p.learnset_info || {};
+      (li.learnset || []).forEach(function(r){ out[r[1]] = 1; });
+      (li.tms || []).concat(li.egg || [], p.tutors || []).forEach(function(n){ out[n] = 1; });
+    }
+    return (learnableCache[key] = out);
+  }
+  function monLearnable(m){
+    var e = plannerDexEntry(m.species);
+    return e ? learnableMoves(e.key) : null;
+  }
+  // Item suggestions: every item the Guide's tables list, every boss/trainer
+  // held item and every Mega stone. Free text is still accepted.
+  var plannerItemCache = null;
+  function plannerItemNames(){
+    if(plannerItemCache) return plannerItemCache;
+    var g = currentGame(), set = {};
+    (window.SG_ITEM_TABLES || []).forEach(function(t){ t.rows.forEach(function(r){ if(r[1] && !/^(TM|HM)\d/.test(r[1])) set[r[1]] = 1; }); });
+    plannerFightList().forEach(function(f){ [].concat(f.b.mons || [], f.b.hard || []).forEach(function(m){ if(m.item && m.item !== "None") set[m.item] = 1; }); });
+    (g.trainerFights || []).forEach(function(sp){ (sp.fights || []).forEach(function(f){ (f.mons || []).forEach(function(m){ if(m.item && m.item !== "None") set[m.item] = 1; }); }); });
+    Object.keys(megaTable()).forEach(function(h){ Object.keys(megaTable()[h]).forEach(function(st){ set[st] = 1; }); });
+    return (plannerItemCache = Object.keys(set).sort());
+  }
+
   // The mon's ability (mon.ability — save import's field, read by the Calc):
   // its species' abilities, the hidden one marked, innates in the tooltip. A
   // Mega's ability is fixed, so it shows that instead. A stored ability the
@@ -17251,11 +17293,14 @@
           }).join("") + '</select>'
       : '';
     var moves = m.moves || [];
+    var canLearn = monLearnable(m);
     var moveInputs = [0, 1, 2, 3].map(function(i){
       var id = "plMove-" + m.id + "-" + i;
       var mv = plannerMove(moves[i]);
+      var bad = moves[i] && canLearn && !canLearn[moves[i]];
       return '<div class="calc-dd-wrap pl-move">' +
         '<input type="text" id="' + id + '" data-pl-move="' + escapeHTML(m.id) + '" data-slot="' + i + '" value="' + escapeHTML(moves[i] || "") + '" placeholder="Move ' + (i + 1) + '" autocomplete="off"' +
+        (bad ? ' class="pl-move-bad" title="' + escapeHTML(m.species + " can't learn " + moves[i]) + '"' : '') +
         (mv ? ' style="border-left:5px solid ' + (TYPE_COLORS[mv.type] || "#777") + '"' : '') + '>' +
         '<div class="calc-dd-list" id="' + id + '-list" style="display:none;"></div></div>';
     }).join("");
@@ -17270,7 +17315,10 @@
           '</div>' +
           '<button type="button" class="pl-x" data-pl="remove-mon" data-id="' + escapeHTML(m.id) + '" title="Remove from team" aria-label="Remove from team">×</button>' +
         '</div>' +
-        '<div class="pl-picks">' + natureSelectHTML(m) + abilitySelectHTML(m, e) + megaSel + '</div>' +
+        '<div class="pl-picks">' + natureSelectHTML(m) + abilitySelectHTML(m, e) +
+          '<div class="calc-dd-wrap pl-item"><input type="text" id="plItem-' + escapeHTML(m.id) + '" data-pl-item="' + escapeHTML(m.id) + '" value="' + escapeHTML(m.item || "") + '" placeholder="Item" autocomplete="off">' +
+          '<div class="calc-dd-list" id="plItem-' + escapeHTML(m.id) + '-list" style="display:none;"></div></div>' +
+          megaSel + '</div>' +
         '<div class="pl-moves">' + moveInputs + '</div>' +
       '</div>'
     );
@@ -17417,19 +17465,14 @@
     }).join("");
     el.innerHTML = html;
 
-    var moveNames = Object.keys(dexData().moves || {}).sort();
+    var items = plannerItemNames();
     team.forEach(function(m){
-      var e = plannerDexEntry(m.species);
-      var li = e && e.pok.learnset_info ? e.pok.learnset_info : {};
-      var own = {};
-      (li.learnset || []).forEach(function(r){ own[r[1]] = 1; });
-      (li.tms || []).concat(li.egg || [], (e && e.pok.tutors) || []).forEach(function(n){ own[n] = 1; });
-      var learnable = Object.keys(own).sort();
-      var opts = learnable.concat(moveNames.filter(function(n){ return !own[n]; }));
+      var opts = Object.keys(monLearnable(m) || {}).sort();
       [0, 1, 2, 3].forEach(function(i){
         var id = "plMove-" + m.id + "-" + i;
         attachTypeahead(id, id + "-list", function(){ return opts; });
       });
+      attachTypeahead("plItem-" + m.id, "plItem-" + m.id + "-list", function(){ return items; });
     });
   }
 
@@ -17507,11 +17550,14 @@
       renderPlanner();
     } else if(t.id === "plFightAdd"){
       if(t.value) plannerMutate(function(p){ if(p.fights.indexOf(t.value) === -1) p.fights.push(t.value); });
-    } else if(t.hasAttribute("data-pl-speed") || t.hasAttribute("data-pl-move") || t.hasAttribute("data-pl-mega") || t.hasAttribute("data-pl-nature") || t.hasAttribute("data-pl-ability")){
-      var id = t.getAttribute("data-pl-speed") || t.getAttribute("data-pl-move") || t.getAttribute("data-pl-mega") || t.getAttribute("data-pl-nature") || t.getAttribute("data-pl-ability");
+    } else if(t.hasAttribute("data-pl-speed") || t.hasAttribute("data-pl-move") || t.hasAttribute("data-pl-mega") || t.hasAttribute("data-pl-nature") || t.hasAttribute("data-pl-ability") || t.hasAttribute("data-pl-item")){
+      var id = t.getAttribute("data-pl-speed") || t.getAttribute("data-pl-move") || t.getAttribute("data-pl-mega") || t.getAttribute("data-pl-nature") || t.getAttribute("data-pl-ability") || t.getAttribute("data-pl-item");
       var mon = currentRun().mons.filter(function(m){ return m.id === id; })[0];
       if(!mon) return;
-      if(t.hasAttribute("data-pl-ability")){
+      if(t.hasAttribute("data-pl-item")){
+        var it = t.value.trim();
+        if(it) mon.item = it; else delete mon.item;
+      } else if(t.hasAttribute("data-pl-ability")){
         if(t.value) mon.ability = t.value; else delete mon.ability;
       } else if(t.hasAttribute("data-pl-nature")){
         if(t.value) mon.nature = t.value; else delete mon.nature;
@@ -17523,6 +17569,8 @@
       } else {
         var name = canonicalMoveName(t.value);
         if(t.value.trim() && !name){ showToast('"' + t.value.trim() + '" isn\'t a move in this game'); t.value = ""; }
+        var learn = monLearnable(mon);
+        if(name && learn && !learn[name]){ showToast(mon.species + " can't learn " + name); name = ""; t.value = ""; }
         var moves = (mon.moves || []).slice();
         while(moves.length < 4) moves.push("");
         moves[parseInt(t.getAttribute("data-slot"), 10)] = name;
