@@ -286,6 +286,7 @@
   }
   .rules label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
   .rules input{ accent-color: var(--lcd); }
+  .rules select.starter-select{ width:auto; padding: 4px 28px 4px 8px; font-size: 16px; }
 
   /* ---------- stats strip ---------- */
   .stats{
@@ -1170,6 +1171,7 @@
       <label id="hardRuleLabel" style="display:none"><input type="checkbox" data-rule="hard"> Hard mode (+10% levels)</label>
       <label id="sgHardRuleLabel" style="display:none"><input type="checkbox" data-rule="sgHard"> Hard mode (different teams)</label>
       <label id="allInnatesRuleLabel" style="display:none"><input type="checkbox" data-rule="allInnates"> All innates unlocked</label>
+      <label id="starterRuleLabel" style="display:none">Starter <select class="starter-select" data-rule="starter" id="starterSelect"></select></label>
     </div>
   </div>
 
@@ -3151,27 +3153,59 @@
     },
     rival: [
       { stage: "Route 201 (starter reveal)", location: "Route 201",
-        note: "Starter-locked to the Turtwig path — Barry gets the type-advantaged starter (Chimchar).",
         mons: [
           { name: "Chimchar", level: 5, stats: [20,10,10,12,10,13], ability: "Iron Fist (!)", item: "—", moves: "Scratch, Leer", sourceKey: "Lvl 5 Pkmn Trainer Cedric19 " }
-        ] },
+        ],
+        starterMons: {
+          Chimchar: [
+            { name: "Piplup", level: 5, stats: [21,11,11,12,10,11], ability: "Torrent", item: "—", moves: "Pound, Growl", sourceKey: "Lvl 5 Pkmn Trainer Cedric20 " }
+          ],
+          Piplup: [
+            { name: "Turtwig", level: 5, stats: [22,13,12,11,12,9], ability: "Overgrow", item: "—", moves: "Tackle, Withdraw", sourceKey: "Lvl 5 Pkmn Trainer Cedric18 " }
+          ]
+        } },
       { stage: "Route 203", location: "Route 203",
-        note: "Starter-locked to the Turtwig path — Barry gets the type-advantaged starter (Chimchar).",
         mons: [
           { name: "Starly", level: 10, stats: [31,19,14,14,14,20], ability: "Reckless (!)", item: "—", moves: "Wing Attack, Quick Attack, Growl", sourceKey: "Lvl 10 Pkmn Trainer Cedric2 " },
           { name: "Munchlax", level: 10, stats: [50,25,14,17,25,9], ability: "Thick Fat", item: "—", moves: "Metronome, Tackle, Amnesia, Rock Tomb", sourceKey: "Lvl 10 Pkmn Trainer Cedric2 " },
           { name: "Chimchar", level: 11, stats: [33,21,17,23,17,18], ability: "Iron Fist (!)", item: "Oran Berry", moves: "Fury Swipes, Ember, Taunt", sourceKey: "Lvl 11 Pkmn Trainer Cedric2 " }
-        ] },
+        ],
+        starterMons: {
+          Chimchar: [
+            { name: "Starly", level: 10, stats: [31,19,14,14,14,20], ability: "Reckless (!)", item: "—", moves: "Wing Attack, Quick Attack, Growl", sourceKey: "Lvl 10 Pkmn Trainer Cedric3 " },
+            { name: "Munchlax", level: 10, stats: [50,25,14,17,25,9], ability: "Thick Fat", item: "—", moves: "Metronome, Tackle, Amnesia, Rock Tomb", sourceKey: "Lvl 10 Pkmn Trainer Cedric3 " },
+            { name: "Piplup", level: 11, stats: [35,19,17,21,22,17], ability: "Torrent", item: "Oran Berry", moves: "Water Pulse, Peck, Pound", sourceKey: "Lvl 11 Pkmn Trainer Cedric3 " }
+          ],
+          Piplup: [
+            { name: "Starly", level: 10, stats: [31,19,12,14,15,20], ability: "Reckless (!)", item: "—", moves: "Wing Attack, Quick Attack, Growl", sourceKey: "Lvl 10 Pkmn Trainer Cedric " },
+            { name: "Munchlax", level: 10, stats: [50,25,16,16,25,9], ability: "Thick Fat", item: "—", moves: "Metronome, Tackle, Amnesia, Rock Tomb", sourceKey: "Lvl 10 Pkmn Trainer Cedric " },
+            { name: "Turtwig", level: 11, stats: [36,23,22,19,18,15], ability: "Overgrow", item: "Oran Berry", moves: "Razor Leaf, Curse, Tackle", sourceKey: "Lvl 11 Pkmn Trainer Cedric " }
+          ]
+        } },
       { stage: "Route 209 (Hearthome City gate)", location: "Hearthome City Gate East",
-        note: "Starter-locked to the Turtwig path — Barry's team is Chimchar-line. Fights you when you walk through the gate between Route 209 and Hearthome City; beating him sends a Maid from the Pokémon Mansion to ask for help.",
+        note: "Fights you when you walk through the gate between Route 209 and Hearthome City; beating him sends a Maid from the Pokémon Mansion to ask for help.",
         mons: [
           { name: "Heracross", level: 32, stats: [102,94,55,44,75,69], ability: "Guts", item: "Coba Berry", moves: "Bug Bite, Brick Break, Aerial Ace, Knock Off", sourceKey: "Lvl 32 Pkmn Trainer Cedric5 " },
           { name: "Staravia", level: 32, stats: [86,62,46,36,44,65], ability: "Reckless", item: "Muscle Band", moves: "Facade, Aerial Ace, Double Team, Endeavor", sourceKey: "Lvl 32 Pkmn Trainer Cedric5 " },
           { name: "Snorlax", level: 32, stats: [154,93,56,56,76,33], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Yawn, Amnesia, Rock Slide", sourceKey: "Lvl 32 Pkmn Trainer Cedric5 " },
           { name: "Monferno", level: 33, stats: [95,66,49,66,49,68], ability: "Iron Fist", item: "Sitrus Berry", moves: "Flamethrower, Low Kick, Grass Knot, Fake Out", sourceKey: "Lvl 33 Pkmn Trainer Cedric5 " }
-        ] },
+        ],
+        starterMons: {
+          Chimchar: [
+            { name: "Staravia", level: 32, stats: [86,62,46,44,40,58], ability: "Reckless", item: "Muscle Band", moves: "Facade, Aerial Ace, Double Team, Endeavor", sourceKey: "Lvl 32 Pkmn Trainer Cedric6 " },
+            { name: "Heracross", level: 32, stats: [102,84,62,40,75,75], ability: "Guts", item: "Coba Berry", moves: "Bug Bite, Brick Break, Aerial Ace, Knock Off", sourceKey: "Lvl 32 Pkmn Trainer Cedric6 " },
+            { name: "Snorlax", level: 32, stats: [154,93,56,56,76,33], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Yawn, Amnesia, Rock Slide", sourceKey: "Lvl 32 Pkmn Trainer Cedric6 " },
+            { name: "Prinplup", level: 33, stats: [95,63,59,68,58,47], ability: "Torrent", item: "Sitrus Berry", moves: "Scald (!), Icy Wind, Grass Knot, Aerial Ace", sourceKey: "Lvl 33 Pkmn Trainer Cedric6 " }
+          ],
+          Piplup: [
+            { name: "Staravia", level: 32, stats: [86,68,46,40,36,65], ability: "Reckless", item: "Muscle Band", moves: "Facade, Aerial Ace, Double Team, Endeavor", sourceKey: "Lvl 32 Pkmn Trainer Cedric4 " },
+            { name: "Heracross", level: 32, stats: [102,94,55,44,75,69], ability: "Guts", item: "Coba Berry", moves: "Bug Bite, Brick Break, Aerial Ace, Knock Off", sourceKey: "Lvl 32 Pkmn Trainer Cedric4 " },
+            { name: "Snorlax", level: 32, stats: [154,85,56,61,76,33], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Yawn, Amnesia, Rock Slide", sourceKey: "Lvl 32 Pkmn Trainer Cedric4 " },
+            { name: "Grotle", level: 33, stats: [102,80,71,51,57,34], ability: "Overgrow", item: "Sitrus Berry", moves: "Seed Bomb, Crunch, Leech Seed, Protect", sourceKey: "Lvl 33 Pkmn Trainer Cedric4 " }
+          ]
+        } },
       { stage: "Pastoria City (gym door)", location: "Pastoria City",
-        note: "Starter-locked to the Turtwig path — Barry's team is Chimchar-line. Fights you when you walk to the door of the Pastoria Gym.",
+        note: "Fights you when you walk to the door of the Pastoria Gym.",
         mons: [
           { name: "Heracross", level: 41, stats: [129,120,79,50,85,95], ability: "Guts", item: "Coba Berry", moves: "Megahorn, Brick Break, Bullet Seed, Night Slash", sourceKey: "Lvl 41 Pkmn Trainer Cedric8 " },
           { name: "Azumarill", level: 41, stats: [153,58,74,91,83,58], ability: "Huge Power", item: "Life Orb", moves: "Aqua Tail, Play Rough (!), Body Slam, Aqua Jet", sourceKey: "Lvl 41 Pkmn Trainer Cedric8 " },
@@ -3179,9 +3213,27 @@
           { name: "Infernape", level: 42, stats: [128,105,77,115,77,98], ability: "Iron Fist", item: "Sitrus Berry", moves: "Flamethrower, Close Combat, Fake Out, Thunder Punch", sourceKey: "Lvl 42 Pkmn Trainer Cedric8 " },
           { name: "Breloom", level: 41, stats: [112,111,91,66,66,75], ability: "Technician", item: "Focus Sash", moves: "Bullet Seed, Force Palm, Spore, Rock Tomb", sourceKey: "Lvl 41 Pkmn Trainer Cedric8 " },
           { name: "Snorlax", level: 41, stats: [194,117,71,71,107,37], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Crunch, Rest, Sleep Talk", sourceKey: "Lvl 41 Pkmn Trainer Cedric8 " }
-        ] },
+        ],
+        starterMons: {
+          Chimchar: [
+            { name: "Staraptor", level: 41, stats: [133,116,75,58,66,99], ability: "Reckless", item: "Muscle Band", moves: "Double-Edge, Close Combat, Aerial Ace, Roost", sourceKey: "Lvl 41 Pkmn Trainer Cedric9 " },
+            { name: "Heracross", level: 41, stats: [129,120,79,50,95,87], ability: "Guts", item: "Coba Berry", moves: "Megahorn, Brick Break, Bullet Seed, Night Slash", sourceKey: "Lvl 41 Pkmn Trainer Cedric9 " },
+            { name: "Snorlax", level: 41, stats: [194,107,63,71,117,42], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Crunch, Rest, Sleep Talk", sourceKey: "Lvl 41 Pkmn Trainer Cedric9 " },
+            { name: "Breloom", level: 41, stats: [112,111,91,66,66,75], ability: "Technician", item: "Focus Sash", moves: "Bullet Seed, Force Palm, Spore, Rock Tomb", sourceKey: "Lvl 41 Pkmn Trainer Cedric9 " },
+            { name: "Arcanine", level: 41, stats: [137,96,83,108,83,95], ability: "Intimidate", item: "Expert Belt", moves: "Heat Wave, Thunder Fang, Outrage, Crunch", sourceKey: "Lvl 41 Pkmn Trainer Cedric9 " },
+            { name: "Empoleon", level: 42, stats: [135,90,81,115,112,68], ability: "Torrent", item: "Sitrus Berry", moves: "Scald (!), Flash Cannon, Agility, Swagger", sourceKey: "Lvl 42 Pkmn Trainer Cedric9 " }
+          ],
+          Piplup: [
+            { name: "Staraptor", level: 41, stats: [133,116,67,58,72,99], ability: "Reckless", item: "Muscle Band", moves: "Double-Edge, Close Combat, Aerial Ace, Roost", sourceKey: "Lvl 41 Pkmn Trainer Cedric7 " },
+            { name: "Heracross", level: 41, stats: [129,120,79,50,85,95], ability: "Guts", item: "Coba Berry", moves: "Megahorn, Brick Break, Bullet Seed, Night Slash", sourceKey: "Lvl 41 Pkmn Trainer Cedric7 " },
+            { name: "Snorlax", level: 41, stats: [194,107,78,63,107,42], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Crunch, Rest, Sleep Talk", sourceKey: "Lvl 41 Pkmn Trainer Cedric7 " },
+            { name: "Azumarill", level: 41, stats: [153,58,83,83,83,58], ability: "Huge Power", item: "Life Orb", moves: "Aqua Tail, Play Rough (!), Body Slam, Aqua Jet", sourceKey: "Lvl 41 Pkmn Trainer Cedric7 " },
+            { name: "Arcanine", level: 41, stats: [137,107,74,99,83,104], ability: "Intimidate", item: "Expert Belt", moves: "Heat Wave, Thunder Fang, Outrage, Crunch", sourceKey: "Lvl 41 Pkmn Trainer Cedric7 " },
+            { name: "Torterra", level: 42, stats: [144,113,110,89,80,65], ability: "Overgrow", item: "Sitrus Berry", moves: "Seed Bomb, Earthquake, Crunch, Iron Head", sourceKey: "Lvl 42 Pkmn Trainer Cedric7 " }
+          ]
+        } },
       { stage: "Canalave City (bridge)", location: "Canalave City",
-        note: "Starter-locked to the Turtwig path — Barry's team is Chimchar-line. Fights you when you try to cross the Canalave bridge — mandatory, no item to prepare for it.",
+        note: "Fights you when you try to cross the Canalave bridge — mandatory, no item to prepare for it.",
         mons: [
           { name: "Heracross", level: 48, stats: [149,125,91,58,122,101], ability: "Guts", item: "Muscle Band", moves: "Megahorn, Close Combat, Rock Slide, Night Slash", sourceKey: "Lvl 48 Pkmn Trainer Cedric11 " },
           { name: "Azumarill", level: 48, stats: [178,67,96,96,96,67], ability: "Huge Power", item: "Life Orb", moves: "Aqua Tail, Play Rough (!), Ice Punch, Aqua Jet", sourceKey: "Lvl 48 Pkmn Trainer Cedric11 " },
@@ -3189,9 +3241,27 @@
           { name: "Infernape", level: 49, stats: [148,134,89,122,80,127], ability: "Iron Fist", item: "Sitrus Berry", moves: "Fire Blast, Close Combat, Fake Out, Thunder Punch", sourceKey: "Lvl 49 Pkmn Trainer Cedric11 " },
           { name: "Breloom", level: 48, stats: [130,158,86,77,77,87], ability: "Technician", item: "Focus Sash", moves: "Bullet Seed, Force Palm, Spore, Stone Edge", sourceKey: "Lvl 48 Pkmn Trainer Cedric11 " },
           { name: "Snorlax", level: 48, stats: [226,125,82,82,112,52], ability: "Thick Fat", item: "Leftovers", moves: "Curse, Body Slam, Crunch, Slack Off", sourceKey: "Lvl 48 Pkmn Trainer Cedric11 " }
-        ] },
+        ],
+        starterMons: {
+          Chimchar: [
+            { name: "Staraptor", level: 48, stats: [154,135,78,67,84,115], ability: "Reckless", item: "Choice Band", moves: "Double-Edge, Close Combat, Brave Bird, U-turn", sourceKey: "Lvl 48 Pkmn Trainer Cedric12 " },
+            { name: "Heracross", level: 48, stats: [149,139,91,58,99,111], ability: "Guts", item: "Muscle Band", moves: "Megahorn, Close Combat, Rock Slide, Night Slash", sourceKey: "Lvl 48 Pkmn Trainer Cedric12 " },
+            { name: "Snorlax", level: 48, stats: [226,125,90,73,125,48], ability: "Thick Fat", item: "Leftovers", moves: "Curse, Body Slam, Crunch, Slack Off", sourceKey: "Lvl 48 Pkmn Trainer Cedric12 " },
+            { name: "Breloom", level: 48, stats: [130,144,86,77,77,95], ability: "Technician", item: "Focus Sash", moves: "Bullet Seed, Force Palm, Spore, Stone Edge", sourceKey: "Lvl 48 Pkmn Trainer Cedric12 " },
+            { name: "Arcanine", level: 48, stats: [159,125,86,115,96,122], ability: "Intimidate", item: "Expert Belt", moves: "Flare Blitz, Extreme Speed, Crunch, Close Combat", sourceKey: "Lvl 48 Pkmn Trainer Cedric12 " },
+            { name: "Empoleon", level: 49, stats: [156,114,106,133,119,70], ability: "Torrent", item: "Sitrus Berry", moves: "Surf, Flash Cannon, Grass Knot, Agility", sourceKey: "Lvl 49 Pkmn Trainer Cedric12 " }
+          ],
+          Piplup: [
+            { name: "Staraptor", level: 48, stats: [154,148,87,67,77,103], ability: "Reckless", item: "Choice Band", moves: "Double-Edge, Close Combat, Brave Bird, U-turn", sourceKey: "Lvl 48 Pkmn Trainer Cedric10 " },
+            { name: "Heracross", level: 48, stats: [149,152,81,58,111,101], ability: "Guts", item: "Muscle Band", moves: "Megahorn, Close Combat, Rock Slide, Night Slash", sourceKey: "Lvl 48 Pkmn Trainer Cedric10 " },
+            { name: "Snorlax", level: 48, stats: [226,125,82,73,137,48], ability: "Thick Fat", item: "Leftovers", moves: "Curse, Body Slam, Crunch, Slack Off", sourceKey: "Lvl 48 Pkmn Trainer Cedric10 " },
+            { name: "Azumarill", level: 48, stats: [178,67,96,96,96,67], ability: "Huge Power", item: "Life Orb", moves: "Aqua Tail, Play Rough (!), Ice Punch, Aqua Jet", sourceKey: "Lvl 48 Pkmn Trainer Cedric10 " },
+            { name: "Arcanine", level: 48, stats: [159,125,96,126,96,99], ability: "Intimidate", item: "Expert Belt", moves: "Flare Blitz, Extreme Speed, Crunch, Close Combat", sourceKey: "Lvl 48 Pkmn Trainer Cedric10 " },
+            { name: "Torterra", level: 49, stats: [167,131,127,93,103,75], ability: "Overgrow", item: "Sitrus Berry", moves: "Wood Hammer, Earthquake, Crunch, Iron Head", sourceKey: "Lvl 49 Pkmn Trainer Cedric10 " }
+          ]
+        } },
       { stage: "Mt. Coronet, Spear Pillar", location: "Mt. Coronet, Spear Pillar",
-        note: "Starter-locked to the Turtwig path — Barry's team is Chimchar-line. He heals your team after this fight, right before the Commander Mars & Jupiter double battle.",
+        note: "He heals your team after this fight, right before the Commander Mars & Jupiter double battle.",
         mons: [
           { name: "Heracross", level: 58, stats: [178,167,109,69,133,121], ability: "Guts", item: "Muscle Band", moves: "Megahorn, Close Combat, Rock Blast, Bullet Seed", sourceKey: "Lvl 58 Pkmn Trainer Cedric16 " },
           { name: "Azumarill", level: 58, stats: [213,80,103,115,115,88], ability: "Huge Power", item: "Life Orb", moves: "Aqua Tail, Play Rough (!), Superpower, Aqua Ring", sourceKey: "Lvl 58 Pkmn Trainer Cedric16 " },
@@ -3199,9 +3269,27 @@
           { name: "Infernape", level: 59, stats: [176,160,107,131,107,151], ability: "Iron Fist", item: "Sitrus Berry", moves: "Flare Blitz, Close Combat, Thunder Punch, Stone Edge", sourceKey: "Lvl 59 Pkmn Trainer Cedric16 " },
           { name: "Breloom", level: 58, stats: [155,173,115,92,92,104], ability: "Technician", item: "Focus Sash", moves: "Bullet Seed, Force Palm, Rock Tomb, Spore", sourceKey: "Lvl 58 Pkmn Trainer Cedric16 " },
           { name: "Snorlax", level: 58, stats: [271,150,98,88,150,62], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Crunch, Zen Headbutt, Slack Off", sourceKey: "Lvl 58 Pkmn Trainer Cedric16 " }
-        ] },
+        ],
+        starterMons: {
+          Chimchar: [
+            { name: "Staraptor", level: 58, stats: [184,145,104,80,101,138], ability: "Reckless", item: "Sharp Beak", moves: "Double-Edge, Brave Bird, Close Combat, U-turn", sourceKey: "Lvl 58 Pkmn Trainer Cedric17 " },
+            { name: "Heracross", level: 58, stats: [178,167,109,75,119,121], ability: "Guts", item: "Muscle Band", moves: "Megahorn, Close Combat, Rock Blast, Bullet Seed", sourceKey: "Lvl 58 Pkmn Trainer Cedric17 " },
+            { name: "Snorlax", level: 58, stats: [271,150,107,98,150,51], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Crunch, Zen Headbutt, Slack Off", sourceKey: "Lvl 58 Pkmn Trainer Cedric17 " },
+            { name: "Breloom", level: 58, stats: [155,173,103,101,92,104], ability: "Technician", item: "Focus Sash", moves: "Bullet Seed, Force Palm, Rock Tomb, Spore", sourceKey: "Lvl 58 Pkmn Trainer Cedric17 " },
+            { name: "Arcanine", level: 58, stats: [190,135,115,138,115,146], ability: "Intimidate", item: "Expert Belt", moves: "Flare Blitz, Wild Charge (!), Close Combat, Crunch", sourceKey: "Lvl 58 Pkmn Trainer Cedric17 " },
+            { name: "Empoleon", level: 59, stats: [186,124,139,160,142,84], ability: "Torrent", item: "Sitrus Berry", moves: "Hydro Pump, Flash Cannon, Ice Beam, Grass Knot", sourceKey: "Lvl 59 Pkmn Trainer Cedric17 " }
+          ],
+          Piplup: [
+            { name: "Staraptor", level: 58, stats: [184,178,93,80,92,138], ability: "Reckless", item: "Sharp Beak", moves: "Double-Edge, Brave Bird, Close Combat, U-turn", sourceKey: "Lvl 58 Pkmn Trainer Cedric15 " },
+            { name: "Heracross", level: 58, stats: [178,167,109,75,119,121], ability: "Guts", item: "Muscle Band", moves: "Megahorn, Close Combat, Rock Blast, Bullet Seed", sourceKey: "Lvl 58 Pkmn Trainer Cedric15 " },
+            { name: "Snorlax", level: 58, stats: [271,150,98,88,150,62], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Crunch, Zen Headbutt, Slack Off", sourceKey: "Lvl 58 Pkmn Trainer Cedric15 " },
+            { name: "Azumarill", level: 58, stats: [213,80,103,115,115,88], ability: "Huge Power", item: "Life Orb", moves: "Aqua Tail, Play Rough (!), Superpower, Aqua Ring", sourceKey: "Lvl 58 Pkmn Trainer Cedric15 " },
+            { name: "Arcanine", level: 58, stats: [190,150,103,151,115,133], ability: "Intimidate", item: "Expert Belt", moves: "Flare Blitz, Wild Charge (!), Close Combat, Crunch", sourceKey: "Lvl 58 Pkmn Trainer Cedric15 " },
+            { name: "Torterra", level: 59, stats: [199,157,153,111,123,89], ability: "Overgrow", item: "Sitrus Berry", moves: "Wood Hammer, Earthquake, Crunch, Stone Edge", sourceKey: "Lvl 59 Pkmn Trainer Cedric15 " }
+          ]
+        } },
       { stage: "Pokémon League (first room)", location: "Pokémon League — Inside",
-        note: "Starter-locked to the Turtwig path — Barry's team is Chimchar-line. Fights you when you walk onto the tile in front of the Ace Trainer guarding the League's first room — mandatory, no way to decline. Can use 2 Full Restores.",
+        note: "Fights you when you walk onto the tile in front of the Ace Trainer guarding the League's first room — mandatory, no way to decline. Can use 2 Full Restores.",
         mons: [
           { name: "Heracross", level: 70, stats: [213,180,131,82,174,145], ability: "Guts", item: "Toxic Orb", moves: "Megahorn, Close Combat, Stone Edge, Protect", sourceKey: "Lvl 70 Pkmn Trainer Cedric14 " },
           { name: "Azumarill", level: 70, stats: [255,96,138,138,151,86], ability: "Huge Power", item: "Life Orb", moves: "Aqua Tail, Play Rough (!), Ice Punch, Aqua Jet", sourceKey: "Lvl 70 Pkmn Trainer Cedric14 " },
@@ -3209,7 +3297,25 @@
           { name: "Infernape", level: 71, stats: [210,174,127,156,139,181], ability: "Iron Fist", item: "Sitrus Berry", moves: "Flare Blitz, Close Combat, Stone Edge, Grass Knot", sourceKey: "Lvl 71 Pkmn Trainer Cedric14 " },
           { name: "Breloom", level: 70, stats: [185,208,138,121,110,111], ability: "Technician", item: "Life Orb", moves: "Bullet Seed, Force Palm, Stone Edge, Spore", sourceKey: "Lvl 70 Pkmn Trainer Cedric14 " },
           { name: "Snorlax", level: 70, stats: [325,180,128,105,180,68], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Earthquake, Curse, Slack Off", sourceKey: "Lvl 70 Pkmn Trainer Cedric14 " }
-        ] }
+        ],
+        starterMons: {
+          Chimchar: [
+            { name: "Staraptor", level: 70, stats: [220,194,124,96,110,166], ability: "Reckless", item: "Choice Scarf", moves: "Double-Edge, Brave Bird, Close Combat, U-turn", sourceKey: "Lvl 70 Pkmn Trainer Cedric |Route 223| " },
+            { name: "Heracross", level: 70, stats: [213,201,131,82,143,159], ability: "Guts", item: "Toxic Orb", moves: "Megahorn, Close Combat, Stone Edge, Protect", sourceKey: "Lvl 70 Pkmn Trainer Cedric |Route 223| " },
+            { name: "Snorlax", level: 70, stats: [325,180,128,105,180,68], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Earthquake, Curse, Slack Off", sourceKey: "Lvl 70 Pkmn Trainer Cedric |Route 223| " },
+            { name: "Breloom", level: 70, stats: [185,208,124,110,110,136], ability: "Technician", item: "Life Orb", moves: "Bullet Seed, Force Palm, Stone Edge, Spore", sourceKey: "Lvl 70 Pkmn Trainer Cedric |Route 223| " },
+            { name: "Arcanine", level: 70, stats: [227,198,138,166,138,143], ability: "Intimidate", item: "Life Orb", moves: "Flare Blitz, Close Combat, Wild Charge (!), Crunch", sourceKey: "Lvl 70 Pkmn Trainer Cedric |Route 223| " },
+            { name: "Empoleon", level: 71, stats: [222,163,151,191,170,100], ability: "Torrent", item: "Sitrus Berry", moves: "Hydro Pump, Flash Cannon, Grass Knot, Blizzard", sourceKey: "Lvl 71 Pkmn Trainer Cedric |Route 223| " }
+          ],
+          Piplup: [
+            { name: "Staraptor", level: 70, stats: [220,213,124,96,110,149], ability: "Reckless", item: "Choice Scarf", moves: "Double-Edge, Brave Bird, Close Combat, U-turn", sourceKey: "Lvl 70 Pkmn Trainer Cedric13 " },
+            { name: "Heracross", level: 70, stats: [213,180,131,82,174,145], ability: "Guts", item: "Toxic Orb", moves: "Megahorn, Close Combat, Stone Edge, Protect", sourceKey: "Lvl 70 Pkmn Trainer Cedric13 " },
+            { name: "Snorlax", level: 70, stats: [325,180,117,117,162,74], ability: "Thick Fat", item: "Leftovers", moves: "Body Slam, Earthquake, Curse, Slack Off", sourceKey: "Lvl 70 Pkmn Trainer Cedric13 " },
+            { name: "Azumarill", level: 70, stats: [255,96,138,138,138,96], ability: "Huge Power", item: "Life Orb", moves: "Aqua Tail, Play Rough (!), Ice Punch, Aqua Jet", sourceKey: "Lvl 70 Pkmn Trainer Cedric13 " },
+            { name: "Arcanine", level: 70, stats: [227,180,138,182,138,143], ability: "Intimidate", item: "Life Orb", moves: "Flare Blitz, Close Combat, Wild Charge (!), Crunch", sourceKey: "Lvl 70 Pkmn Trainer Cedric13 " },
+            { name: "Torterra", level: 71, stats: [237,188,183,133,147,106], ability: "Overgrow", item: "Sitrus Berry", moves: "Wood Hammer, Earthquake, Stone Edge, Crunch", sourceKey: "Lvl 71 Pkmn Trainer Cedric13 " }
+          ]
+        } }
     ],
     otherBattles: [
       { name: "Elite Four Aaron", location: "Hearthome City Gate West (Route 208)",
@@ -3826,10 +3932,18 @@
   var RENEGADE_TRAINER_FIGHTS = [
     { split: "Roark", levelCap: 16, fights: [
       { location: "Route 202", trainerClass: "Pkmn Trainer", name: "Lucas",
-        note: "Shown as Lucas (girl playthrough); same fight appears as Dawn if playing as a boy. Starter-locked to the Turtwig path.",
+        note: "Shown as Lucas (girl playthrough); same fight appears as Dawn if playing as a boy.",
         mons: [
           { name: "Piplup", level: 9, stats: [31,16,18,18,15,14], ability: "Torrent", item: "—", moves: "Water Sport, Bubble, Growl, Pound", sourceKey: "Lvl 9 Pkmn Trainer Lucas7" }
-        ] },
+        ],
+        starterMons: {
+          Chimchar: [
+            { name: "Turtwig", level: 9, stats: [31,20,19,15,15,13], ability: "Overgrow", item: "—", moves: "Tackle, Withdraw, Absorb, Razor Leaf", sourceKey: "Lvl 9 Pkmn Trainer Lucas8 " }
+          ],
+          Piplup: [
+            { name: "Chimchar", level: 9, stats: [29,19,15,16,15,18], ability: "Iron Fist", item: "—", moves: "Scratch, Leer, Ember, Taunt", sourceKey: "Lvl 9 Pkmn Trainer Lucas9 " }
+          ]
+        } },
       { location: "Route 202", trainerClass: "Lass", name: "Natalie",
         mons: [
           { name: "Sentret", level: 7, stats: [24,12,9,10,12,12], ability: "Run Away", item: "—", moves: "Fury Swipes, Quick Attack, Defense Curl, Foresight", sourceKey: "Lvl 7 Lass Natalie" },
@@ -4338,13 +4452,27 @@
           { name: "Dunsparce", level: 25, stats: [90,60,55,35,35,27], ability: "Serene Grace", item: "—", moves: "Ancient Power, Body Slam, Drill Run (!), Roost", sourceKey: "Lvl 25 Hiker Kevin 1" }
         ] },
       { location: "Route 207", trainerClass: "Pkmn Trainer", name: "Lucas",
-        note: "Shown as Lucas (girl playthrough); same fight appears as Dawn if playing as a boy. Starter-locked to the Turtwig path.",
+        note: "Shown as Lucas (girl playthrough); same fight appears as Dawn if playing as a boy.",
         mons: [
           { name: "Piloswine", level: 29, stats: [105,71,54,48,48,46], ability: "Thick Fat", item: "Focus Sash", moves: "Avalanche, Take Down, Rock Slide, Ice Shard", sourceKey: "Lvl 29 Pkmn Trainer Lucas12" },
           { name: "Granbull", level: 29, stats: [100,74,57,48,52,40], ability: "Intimidate", item: "Muscle Band", moves: "Play Rough, Fire Fang, Thunder Fang, Ice Fang", sourceKey: "Lvl 29 Pkmn Trainer Lucas12" },
           { name: "Lickilicky", level: 29, stats: [111,63,69,54,69,46], ability: "Own Tempo", item: "Leftovers", moves: "Slam, Magnitude, Knock Off, Protect", sourceKey: "Lvl 29 Pkmn Trainer Lucas12" },
           { name: "Prinplup", level: 30, stats: [87,47,60,62,59,44], ability: "Torrent", item: "Sitrus Berry", moves: "Bubble Beam, Icy Wind, Brick Break, Shadow Claw", sourceKey: "Lvl 30 Pkmn Trainer Lucas12" }
-        ] },
+        ],
+        starterMons: {
+          Chimchar: [
+            { name: "Piloswine", level: 29, stats: [105,71,60,48,48,42], ability: "Thick Fat", item: "Focus Sash", moves: "Avalanche, Take Down, Rock Slide, Ice Shard", sourceKey: "Lvl 29 Pkmn Trainer Lucas10 " },
+            { name: "Granbull", level: 29, stats: [100,83,62,43,48,40], ability: "Intimidate", item: "Muscle Band", moves: "Play Rough, Fire Fang, Thunder Fang, Ice Fang", sourceKey: "Lvl 29 Pkmn Trainer Lucas10 " },
+            { name: "Lickilicky", level: 29, stats: [111,69,62,60,69,42], ability: "Own Tempo", item: "Leftovers", moves: "Slam, Magnitude, Knock Off, Protect", sourceKey: "Lvl 29 Pkmn Trainer Lucas10 " },
+            { name: "Grotle", level: 30, stats: [94,67,71,47,53,31], ability: "Overgrow", item: "Sitrus Berry", moves: "Seed Bomb, Body Slam, Leech Seed, Bulldoze", sourceKey: "Lvl 30 Pkmn Trainer Lucas10 " }
+          ],
+          Piplup: [
+            { name: "Piloswine", level: 29, stats: [105,63,66,48,48,42], ability: "Thick Fat", item: "Focus Sash", moves: "Avalanche, Take Down, Rock Slide, Ice Shard", sourceKey: "Lvl 29 Pkmn Trainer Lucas11 " },
+            { name: "Granbull", level: 29, stats: [100,83,57,48,43,44], ability: "Intimidate", item: "Muscle Band", moves: "Play Rough, Fire Fang, Thunder Fang, Ice Fang", sourceKey: "Lvl 29 Pkmn Trainer Lucas11 " },
+            { name: "Lickilicky", level: 29, stats: [111,63,75,60,69,37], ability: "Own Tempo", item: "Leftovers", moves: "Slam, Magnitude, Knock Off, Protect", sourceKey: "Lvl 29 Pkmn Trainer Lucas11 " },
+            { name: "Monferno", level: 30, stats: [87,61,45,61,45,62], ability: "Iron Fist", item: "Sitrus Berry", moves: "Flamethrower, Fake Out, Mach Punch, Grass Knot", sourceKey: "Lvl 30 Pkmn Trainer Lucas11 " }
+          ]
+        } },
       { location: "Route 208", trainerClass: "Hiker", name: "Jonathan",
         mons: [
           { name: "Hippopotas", level: 26, stats: [74,45,43,27,31,24], ability: "Sand Stream", item: "—", moves: "Yawn, Bulldoze (!), Take Down, Dig", sourceKey: "Lvl 26 Hiker Jonathan" },
@@ -5024,7 +5152,7 @@
           { name: "Feraligatr", level: 43, stats: [139,112,103,76,89,92], ability: "Intimidate", item: "—", moves: "Aqua Tail, Crunch, Ice Fang", sourceKey: "Lvl 43 Veteran Brian" }
         ] },
       { location: "Route 210 ~ North", trainerClass: "Pkmn Trainer", name: "Lucas",
-        note: "Shown as Lucas (girl playthrough); same fight appears as Dawn if playing as a boy. Starter-locked to the Turtwig path.",
+        note: "Shown as Lucas (girl playthrough); same fight appears as Dawn if playing as a boy.",
         mons: [
           { name: "Alakazam", level: 44, stats: [116,68,58,123,102,124], ability: "Magic Guard", item: "Life Orb", moves: "Psychic, Shadow Ball, Energy Ball, Dazzling Gleam", sourceKey: "Lvl 44 Pkmn Trainer Lucas15" },
           { name: "Mamoswine", level: 44, stats: [164,146,80,80,71,89], ability: "Thick Fat", item: "Passho Berry", moves: "Earthquake, Avalanche, Stone Edge, Ice Shard", sourceKey: "Lvl 44 Pkmn Trainer Lucas15" },
@@ -5032,7 +5160,25 @@
           { name: "Lickilicky", level: 44, stats: [164,93,91,97,102,62], ability: "Own Tempo", item: "Leftovers", moves: "Body Slam, Zen Headbutt, Earthquake, Amnesia", sourceKey: "Lvl 44 Pkmn Trainer Lucas15" },
           { name: "Flareon", level: 44, stats: [164,146,71,75,67,102], ability: "Flash Fire", item: "Muscle Band", moves: "Flare Blitz, Play Rough, Close Combat, Will-O-Wisp", sourceKey: "Lvl 44 Pkmn Trainer Lucas15" },
           { name: "Empoleon", level: 45, stats: [144,96,98,123,98,79], ability: "Torrent", item: "Sitrus Berry", moves: "Surf, Flash Cannon, Grass Knot, Feather Dance", sourceKey: "Lvl 45 Pkmn Trainer Lucas15" }
-        ] },
+        ],
+        starterMons: {
+          Chimchar: [
+            { name: "Alakazam", level: 44, stats: [116,62,52,150,102,124], ability: "Magic Guard", item: "Life Orb", moves: "Psychic, Shadow Ball, Energy Ball, Dazzling Gleam", sourceKey: "Lvl 44 Pkmn Trainer Lucas13 " },
+            { name: "Mamoswine", level: 44, stats: [164,133,89,80,63,97], ability: "Thick Fat", item: "Passho Berry", moves: "Earthquake, Avalanche, Stone Edge, Ice Shard", sourceKey: "Lvl 44 Pkmn Trainer Lucas13 " },
+            { name: "Granbull", level: 44, stats: [146,124,75,71,71,63], ability: "Intimidate", item: "Choice Band", moves: "Play Rough, Close Combat, Crunch, Earthquake", sourceKey: "Lvl 44 Pkmn Trainer Lucas13 " },
+            { name: "Lickilicky", level: 44, stats: [164,102,102,89,91,62], ability: "Own Tempo", item: "Leftovers", moves: "Body Slam, Zen Headbutt, Earthquake, Amnesia", sourceKey: "Lvl 44 Pkmn Trainer Lucas13 " },
+            { name: "Vaporeon", level: 44, stats: [182,67,78,115,102,75], ability: "Water Absorb", item: "Wise Glasses", moves: "Hydro Pump, Ice Beam, Extrasensory, Aqua Ring", sourceKey: "Lvl 44 Pkmn Trainer Lucas13 " },
+            { name: "Torterra", level: 45, stats: [154,121,105,94,95,69], ability: "Overgrow", item: "Sitrus Berry", moves: "Wood Hammer, Earthquake, Iron Head, Rock Slide", sourceKey: "Lvl 45 Pkmn Trainer Lucas13 " }
+          ],
+          Piplup: [
+            { name: "Alakazam", level: 44, stats: [116,62,58,137,112,111], ability: "Magic Guard", item: "Life Orb", moves: "Psychic, Shadow Ball, Energy Ball, Dazzling Gleam", sourceKey: "Lvl 44 Pkmn Trainer Lucas14 " },
+            { name: "Mamoswine", level: 44, stats: [164,119,89,80,78,89], ability: "Thick Fat", item: "Passho Berry", moves: "Earthquake, Avalanche, Stone Edge, Ice Shard", sourceKey: "Lvl 44 Pkmn Trainer Lucas14 " },
+            { name: "Granbull", level: 44, stats: [146,124,84,78,71,52], ability: "Intimidate", item: "Choice Band", moves: "Play Rough, Close Combat, Crunch, Earthquake", sourceKey: "Lvl 44 Pkmn Trainer Lucas14 " },
+            { name: "Lickilicky", level: 44, stats: [164,83,102,89,102,68], ability: "Own Tempo", item: "Leftovers", moves: "Body Slam, Zen Headbutt, Earthquake, Amnesia", sourceKey: "Lvl 44 Pkmn Trainer Lucas14 " },
+            { name: "Jolteon", level: 44, stats: [124,75,71,126,102,119], ability: "Volt Absorb", item: "Wise Glasses", moves: "Thunder, Shadow Ball, Extrasensory, Thunder Wave", sourceKey: "Lvl 44 Pkmn Trainer Lucas14 " },
+            { name: "Infernape", level: 45, stats: [137,100,82,123,82,117], ability: "Iron Fist", item: "Sitrus Berry", moves: "Fire Blast, Close Combat, Thunder Punch, Rock Slide", sourceKey: "Lvl 45 Pkmn Trainer Lucas14 " }
+          ]
+        } },
       { location: "Oreburgh Gate ~ B1f", trainerClass: "Veteran", name: "Grant",
         mons: [
           { name: "Lucario", level: 45, stats: [131,117,72,134,81,99], ability: "Adaptability", item: "—", moves: "Me First, Dragon Pulse, Blaze Kick, Close Combat", sourceKey: "Lvl 45 Veteran Grant" },
@@ -5920,7 +6066,7 @@
           { name: "Dragonite", level: 67, stats: [219,204,152,159,159,132], ability: "Marvel Scale", item: "—", moves: "Dragon Dance, Outrage, Extreme Speed, Wing Attack", sourceKey: "Lvl 67 Dragon Tamer Hayden" }
         ] },
       { location: "Route 224 ~ Stone Of Gratitude", trainerClass: "Pkmn Trainer", name: "Lucas",
-        note: "Shown as Lucas (girl playthrough); same fight appears as Dawn if playing as a boy. Starter-locked to the Turtwig path.",
+        note: "Shown as Lucas (girl playthrough); same fight appears as Dawn if playing as a boy.",
         mons: [
           { name: "Alakazam", level: 69, stats: [176,95,88,212,157,191], ability: "Magic Guard", item: "Life Orb", moves: "Psychic, Shadow Ball, Aura Sphere, Dazzling Gleam", sourceKey: "Lvl 69 Pkmn Trainer Lucas18" },
           { name: "Mamoswine", level: 69, stats: [252,205,136,109,119,136], ability: "Thick Fat", item: "Choice Band", moves: "Earthquake, Icicle Crash, Stone Edge, Superpower", sourceKey: "Lvl 69 Pkmn Trainer Lucas18" },
@@ -5928,7 +6074,25 @@
           { name: "Lickilicky", level: 69, stats: [252,143,157,122,157,104], ability: "Own Tempo", item: "Leftovers", moves: "Double-Edge, Earthquake, Hammer Arm, Swords Dance", sourceKey: "Lvl 69 Pkmn Trainer Lucas18" },
           { name: "Flareon", level: 69, stats: [252,225,98,116,116,157], ability: "Flash Fire", item: "Passho Berry", moves: "Flare Blitz, Play Rough, Close Combat, Wild Charge", sourceKey: "Lvl 69 Pkmn Trainer Lucas18" },
           { name: "Empoleon", level: 70, stats: [219,147,134,189,168,121], ability: "Torrent", item: "Sitrus Berry", moves: "Hydro Cannon, Flash Cannon, Grass Knot, Ice Beam", sourceKey: "Lvl 70 Pkmn Trainer Lucas18" }
-        ] },
+        ],
+        starterMons: {
+          Chimchar: [
+            { name: "Alakazam", level: 69, stats: [176,95,88,190,157,210], ability: "Magic Guard", item: "Life Orb", moves: "Psychic, Shadow Ball, Aura Sphere, Dazzling Gleam", sourceKey: "Lvl 69 Pkmn Trainer Lucas16 " },
+            { name: "Mamoswine", level: 69, stats: [252,205,122,122,109,149], ability: "Thick Fat", item: "Choice Band", moves: "Earthquake, Icicle Crash, Stone Edge, Superpower", sourceKey: "Lvl 69 Pkmn Trainer Lucas16 " },
+            { name: "Granbull", level: 69, stats: [224,191,141,98,109,88], ability: "Intimidate", item: "Muscle Band", moves: "Play Rough, Close Combat, Crunch, Earthquake", sourceKey: "Lvl 69 Pkmn Trainer Lucas16 " },
+            { name: "Lickilicky", level: 69, stats: [252,157,141,136,157,95], ability: "Own Tempo", item: "Leftovers", moves: "Double-Edge, Earthquake, Hammer Arm, Swords Dance", sourceKey: "Lvl 69 Pkmn Trainer Lucas16 " },
+            { name: "Vaporeon", level: 69, stats: [279,127,109,178,157,104], ability: "Water Absorb", item: "Wacan Berry", moves: "Muddy Water, Ice Beam, Rest, Sleep Talk", sourceKey: "Lvl 69 Pkmn Trainer Lucas16 " },
+            { name: "Torterra", level: 70, stats: [234,186,180,117,145,115], ability: "Overgrow", item: "Sitrus Berry", moves: "Frenzy Plant, Earthquake, Stone Edge, Iron Head", sourceKey: "Lvl 70 Pkmn Trainer Lucas16 " }
+          ],
+          Piplup: [
+            { name: "Alakazam", level: 69, stats: [176,95,88,233,141,191], ability: "Magic Guard", item: "Life Orb", moves: "Psychic, Shadow Ball, Aura Sphere, Dazzling Gleam", sourceKey: "Lvl 69 Pkmn Trainer Lucas17 " },
+            { name: "Mamoswine", level: 69, stats: [252,205,136,134,109,122], ability: "Thick Fat", item: "Choice Band", moves: "Earthquake, Icicle Crash, Stone Edge, Superpower", sourceKey: "Lvl 69 Pkmn Trainer Lucas17 " },
+            { name: "Granbull", level: 69, stats: [224,191,129,109,98,96], ability: "Intimidate", item: "Muscle Band", moves: "Play Rough, Close Combat, Crunch, Earthquake", sourceKey: "Lvl 69 Pkmn Trainer Lucas17 " },
+            { name: "Lickilicky", level: 69, stats: [252,143,172,136,157,85], ability: "Own Tempo", item: "Leftovers", moves: "Double-Edge, Earthquake, Hammer Arm, Swords Dance", sourceKey: "Lvl 69 Pkmn Trainer Lucas17 " },
+            { name: "Jolteon", level: 69, stats: [190,116,109,178,141,225], ability: "Volt Absorb", item: "Shuca Berry", moves: "Thunderbolt, Grass Knot, Shadow Ball, Thunder Wave", sourceKey: "Lvl 69 Pkmn Trainer Lucas17 " },
+            { name: "Infernape", level: 70, stats: [208,172,126,172,126,179], ability: "Iron Fist", item: "Sitrus Berry", moves: "Blast Burn, Close Combat, Stone Edge, Thunder Punch", sourceKey: "Lvl 70 Pkmn Trainer Lucas17 " }
+          ]
+        } },
       { location: "Victory Road ~ 1f", trainerClass: "Veteran", name: "Edgar",
         mons: [
           { name: "Porygon-Z", level: 64, stats: [202,113,113,216,120,139], ability: "Adaptability", item: "—", moves: "Hyper Beam, Ice Beam, Psychic, Thunderbolt", sourceKey: "Lvl 64 Veteran Edgar" },
@@ -15515,6 +15679,9 @@
       guideComplete: true,
       bosses: RENEGADE_BOSSES,
       trainerFights: RENEGADE_TRAINER_FIGHTS,
+      // Your starter changes Barry's and Lucas's teams (entries with
+      // `starterMons`); the first one is the default (`mons`). See starterChoice().
+      starters: ["Turtwig", "Chimchar", "Piplup"],
       features: ["trainers", "calc", "pokedex", "saveImport"],
       // Natures are shown directly in-game for Renegade Platinum, so no
       // Natures subtab is needed here (Emerald's UI never shows nature,
@@ -15820,8 +15987,14 @@
     if(sgHardLabel) sgHardLabel.style.display = currentGame().hardTeams ? "" : "none";
     var innatesLabel = document.getElementById("allInnatesRuleLabel");
     if(innatesLabel) innatesLabel.style.display = currentGame().innates ? "" : "none";
+    var starterLabel = document.getElementById("starterRuleLabel");
+    var starters = currentGame().starters;
+    if(starterLabel){
+      starterLabel.style.display = starters ? "" : "none";
+      document.getElementById("starterSelect").innerHTML = (starters || []).map(function(s){ return '<option value="' + escapeHTML(s) + '">' + escapeHTML(s) + '</option>'; }).join("");
+    }
     var rulesRow = document.getElementById("rulesRow");
-    if(rulesRow) rulesRow.style.display = (currentGame().hardMode || currentGame().levelScaling || currentGame().hardTeams || currentGame().innates) ? "" : "none";
+    if(rulesRow) rulesRow.style.display = (currentGame().hardMode || currentGame().levelScaling || currentGame().hardTeams || currentGame().innates || starters) ? "" : "none";
   }
 
   // One run's worth of state — kept per-game (see `runs` below) so
@@ -15834,7 +16007,8 @@
     // and it is now always enforced. `scaling` shows on GAMES[id].levelScaling,
     // `sgHard` (SoulGold's Difficulty option: swaps teams) on GAMES[id].hardTeams,
     // `allInnates` (SoulGold's Elm's-lab bookcase) on GAMES[id].innates.
-    return { species:true, dupes:true, shiny:true, nickname:true, hard:false, scaling:false, sgHard:false, allInnates:false };
+    // `starter` ("" = the game's default) on GAMES[id].starters.
+    return { species:true, dupes:true, shiny:true, nickname:true, hard:false, scaling:false, sgHard:false, allInnates:false, starter:"" };
   }
   function defaultRunState(){
     return {
@@ -16412,8 +16586,10 @@
     document.getElementById("gameSelect").value = state.selectedGame;
     Object.keys(run.rules).forEach(function(k){
       var input = document.querySelector('[data-rule="'+k+'"]');
-      if(input) input.checked = !!run.rules[k];
+      if(input && input.type === "checkbox") input.checked = !!run.rules[k];
     });
+    var starterSel = document.getElementById("starterSelect");
+    if(starterSel && currentGame().starters) starterSel.value = starterChoice();
     renderBadges();
     renderStats();
     renderRoster();
@@ -16507,7 +16683,8 @@
   document.getElementById("rulesRow").addEventListener("change", function(e){
     var rule = e.target.getAttribute("data-rule");
     if(rule){
-      currentRun().rules[rule] = e.target.checked; save();
+      currentRun().rules[rule] = e.target.type === "checkbox" ? e.target.checked : e.target.value; save();
+      if(rule === "starter"){ renderBosses(); renderTrainers(); renderPlanner(); }
       // Hard mode changes every level the Bosses/Trainers/Guide tabs show.
       if(rule === "hard"){ renderBosses(); renderTrainers(); renderGuide(); }
       if(rule === "scaling" || rule === "sgHard" || rule === "allInnates"){ renderBosses(); renderTrainers(); renderPlanner(); }
@@ -16958,14 +17135,29 @@
     if(!inn) return m.ability;
     return String(m.ability).split(" + innate ")[0] + " + innate " + inn.join(", ");
   }
-  // The team a boss entry fights with under the current difficulty.
-  function teamMons(b){ return (sgHardOn() && b.hard) ? b.hard : b.mons; }
+  // The player's starter on games where it changes rival teams
+  // (GAMES[id].starters; first = default, which is what `mons` holds).
+  function starterChoice(){
+    var list = currentGame().starters;
+    if(!list) return null;
+    var s = currentRun().rules.starter;
+    return list.indexOf(s) !== -1 ? s : list[0];
+  }
+  // The team a boss/trainer entry fights with under the current difficulty
+  // and starter (`starterMons[<starter>]`, else `mons`).
+  function teamMons(b){
+    if(sgHardOn() && b.hard) return b.hard;
+    var s = b.starterMons && starterChoice();
+    return (s && b.starterMons[s]) || b.mons;
+  }
   function teamDoubles(b){ return (sgHardOn() && b.hard) ? !!b.hardDoubles : !!b.doubles; }
+  function starterMetaText(b){ return (b.starterMons && starterChoice()) ? "Team if you chose " + starterChoice() : ""; }
   // Extra boss-card meta: battle format, and which team is shown.
   function teamMetaHTML(b){
     var out = [];
     if(teamDoubles(b)) out.push("Double battle");
     if(sgHardOn()) out.push(b.hard ? "Hard team" : "Same team on Hard");
+    if(starterMetaText(b)) out.push(starterMetaText(b));
     return out.length ? ' · ' + out.join(' · ') : "";
   }
   function statSpreadText(label, vals, dflt){
@@ -17164,7 +17356,7 @@
         html += '<div class="boss-section-title">'+escapeHTML(game.rivalLabel)+'</div>';
         rival.forEach(function(b){
           var body =
-            '<div class="boss-note">'+escapeHTML(b.note)+'</div>' +
+            (b.note ? '<div class="boss-note">'+escapeHTML(b.note)+'</div>' : '') +
             (b.mons ? teamHTML("rival-"+b.stage, teamMons(b)) : (b.teamSummary ? '<div class="boss-summary">'+escapeHTML(b.teamSummary)+'</div>' : ""));
           html += bossCardHTML("rival-"+b.stage, escapeHTML(b.stage), "", escapeHTML(b.location)+teamMetaHTML(b), body);
         });
@@ -17469,7 +17661,7 @@
     var g = currentGame(), set = {};
     (window.SG_ITEM_TABLES || []).forEach(function(t){ t.rows.forEach(function(r){ if(r[1] && !/^(TM|HM)\d/.test(r[1])) set[r[1]] = 1; }); });
     plannerFightList().forEach(function(f){ [].concat(f.b.mons || [], f.b.hard || []).forEach(function(m){ if(m.item && m.item !== "None") set[m.item] = 1; }); });
-    (g.trainerFights || []).forEach(function(sp){ (sp.fights || []).forEach(function(f){ (f.mons || []).forEach(function(m){ if(m.item && m.item !== "None") set[m.item] = 1; }); }); });
+    (g.trainerFights || []).forEach(function(sp){ (sp.fights || []).forEach(function(f){ (teamMons(f) || []).forEach(function(m){ if(m.item && m.item !== "None") set[m.item] = 1; }); }); });
     Object.keys(megaTable()).forEach(function(h){ Object.keys(megaTable()[h]).forEach(function(st){ set[st] = 1; }); });
     return (plannerItemCache = Object.keys(set).sort());
   }
@@ -17863,7 +18055,7 @@
       var visibleFights = g.fights
         .map(function(f, idx){ return { f: f, idx: idx }; })
         .filter(function(entry){
-          return splitMatch || nameLocMonsMatch(q, entry.f.trainerClass + " " + entry.f.name, entry.f.location, matchMons(trainerKey(g, entry.f, entry.idx), entry.f.mons));
+          return splitMatch || nameLocMonsMatch(q, entry.f.trainerClass + " " + entry.f.name, entry.f.location, matchMons(trainerKey(g, entry.f, entry.idx), teamMons(entry.f)));
         });
 
       if(visibleFights.length === 0) return; // nothing in this split matches — skip the whole split, header included
@@ -17883,8 +18075,9 @@
           lastLoc = f.location;
         }
         var key = trainerKey(g, f, idx);
-        var body = teamHTML(key, f.mons, { blankLevel: scalingOn() });
-        html += bossCardHTML(key, escapeHTML(f.trainerClass) + ' ' + escapeHTML(f.name), "", f.note ? escapeHTML(f.note) : "", body);
+        var body = teamHTML(key, teamMons(f), { blankLevel: scalingOn() });
+        var tMeta = [f.note ? escapeHTML(f.note) : "", escapeHTML(starterMetaText(f))].filter(Boolean).join(" · ");
+        html += bossCardHTML(key, escapeHTML(f.trainerClass) + ' ' + escapeHTML(f.name), "", tMeta, body);
       });
     });
 
